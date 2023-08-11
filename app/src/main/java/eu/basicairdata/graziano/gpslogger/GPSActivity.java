@@ -28,14 +28,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import androidx.annotation.NonNull;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -123,7 +121,7 @@ public class GPSActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(
                 new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
+                    public void onTabSelected(@NonNull TabLayout.Tab tab) {
                         super.onTabSelected(tab);
                         gpsApp.setGPSActivityActiveTab(tab.getPosition());
                         updateBottomSheetPosition();
@@ -171,7 +169,6 @@ public class GPSActivity extends AppCompatActivity {
             checkLocationPermission();
             gpsApp.setLocationPermissionChecked(true);
         }
-
         activateActionModeIfNeeded();
 
         if (gpsApp.preferenceFlagExists(GPSApplication.FLAG_RECORDING) && !gpsApp.isRecording()) {
@@ -180,24 +177,22 @@ public class GPSActivity extends AppCompatActivity {
             gpsApp.clearPreferenceFlag_NoBackup(GPSApplication.FLAG_RECORDING);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                builder.setMessage(getResources().getString(R.string.dlg_app_killed) + "\n\n" + getResources().getString(R.string.dlg_app_killed_description));
-                builder.setNeutralButton(R.string.open_android_app_settings, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent();
-                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        intent.setData(uri);
-                        try {
-                            startActivity(intent);
-                        } catch (Exception e) {
-                            //Log.w("myApp", "[#] GPSActivity.java - Unable to open the settings screen");
-                        }
-                        dialog.dismiss();
+            builder.setMessage(getResources().getString(R.string.dlg_app_killed) + "\n\n" + getResources().getString(R.string.dlg_app_killed_description));
+            builder.setNeutralButton(R.string.open_android_app_settings, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    try {
+                        startActivity(intent);
+
+                    } catch (Exception e) {
+                        //Log.w("myApp", "[#] GPSActivity.java - Unable to open the settings screen");
                     }
-                });
-            }
-            else builder.setMessage(getResources().getString(R.string.dlg_app_killed));
+                    dialog.dismiss();
+                }
+            });
             builder.setIcon(android.R.drawable.ic_menu_info_details);
             builder.setPositiveButton(R.string.about_ok, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
@@ -237,11 +232,13 @@ public class GPSActivity extends AppCompatActivity {
                 if (!gpsApp.isStopButtonFlag() && !gpsApp.isRecording())
                     gpsApp.setRecording(true);
                 return true;
+
             case KeyEvent.KEYCODE_P:
                 // Pause Recording
                 if (!gpsApp.isStopButtonFlag() && gpsApp.isRecording())
                     gpsApp.setRecording(false);
                 return true;
+
             case KeyEvent.KEYCODE_T:
                 // Toggle Recording
                 if (!gpsApp.isStopButtonFlag())
@@ -255,6 +252,7 @@ public class GPSActivity extends AppCompatActivity {
                     gpsApp.setPlacemarkRequested(true);
                 }
                 return true;
+
             case KeyEvent.KEYCODE_Q:
                 // Request a quick Annotation, without dialog
                 if (!gpsApp.isStopButtonFlag()) {
@@ -262,6 +260,7 @@ public class GPSActivity extends AppCompatActivity {
                     gpsApp.setPlacemarkRequested(true);
                 }
                 return true;
+
             case KeyEvent.KEYCODE_S:
                 // Stop button, with dialog
                 if (gpsApp.isRecording()
@@ -269,6 +268,7 @@ public class GPSActivity extends AppCompatActivity {
                         || (gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0))
                     onRequestStop(true, true);
                 return true;
+
             case KeyEvent.KEYCODE_X:
                 // Stop and finalize the current track, without dialog
                 if (gpsApp.isRecording()
@@ -295,12 +295,14 @@ public class GPSActivity extends AppCompatActivity {
                 tab1.select();
                 gpsApp.setGPSActivityActiveTab(tabLayout.getSelectedTabPosition());
                 return true;
+
             case KeyEvent.KEYCODE_2:
                 // Shows the TRACK Tab
                 TabLayout.Tab tab2 = tabLayout.getTabAt(1);
                 tab2.select();
                 gpsApp.setGPSActivityActiveTab(tabLayout.getSelectedTabPosition());
                 return true;
+
             case KeyEvent.KEYCODE_3:
                 // Shows the TRACKLIST Tab
                 TabLayout.Tab tab3 = tabLayout.getTabAt(2);
@@ -363,31 +365,33 @@ public class GPSActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_ID_MULTIPLE_PERMISSIONS: {
-                Map<String, Integer> perms = new HashMap<>();
-                if (grantResults.length > 0) {
-                    // Fill with actual results from user
-                    for (int i = 0; i < permissions.length; i++) perms.put(permissions[i], grantResults[i]);
-                    // Check for permissions
-                    if (perms.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                            Log.w("myApp", "[#] GPSActivity.java - ACCESS_FINE_LOCATION = PERMISSION_GRANTED; setGPSLocationUpdates!");
-                            gpsApp.setGPSLocationUpdates(false);
-                            gpsApp.setGPSLocationUpdates(true);
-                            gpsApp.updateGPSLocationFrequency();
-                        } else {
-                            Log.w("myApp", "[#] GPSActivity.java - ACCESS_FINE_LOCATION = PERMISSION_DENIED");
-                        }
+        if (requestCode == REQUEST_ID_MULTIPLE_PERMISSIONS) {
+            Map<String, Integer> perms = new HashMap<>();
+            if (grantResults.length > 0) {
+                // Fill with actual results from user
+                for (int i = 0; i < permissions.length; i++)
+                    perms.put(permissions[i], grantResults[i]);
+                // Check for permissions
+                if (perms.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        Log.w("myApp", "[#] GPSActivity.java - ACCESS_FINE_LOCATION = PERMISSION_GRANTED; setGPSLocationUpdates!");
+                        gpsApp.setGPSLocationUpdates(false);
+                        gpsApp.setGPSLocationUpdates(true);
+                        gpsApp.updateGPSLocationFrequency();
+
+                    } else {
+                        Log.w("myApp", "[#] GPSActivity.java - ACCESS_FINE_LOCATION = PERMISSION_DENIED");
                     }
-                    if (perms.containsKey(Manifest.permission.INTERNET)) {
-                        if (perms.get(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) {
-                            Log.w("myApp", "[#] GPSActivity.java - INTERNET = PERMISSION_GRANTED");
-                        } else {
-                            Log.w("myApp", "[#] GPSActivity.java - INTERNET = PERMISSION_DENIED");
-                        }
+                }
+                if (perms.containsKey(Manifest.permission.INTERNET)) {
+                    if (perms.get(Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) {
+                        Log.w("myApp", "[#] GPSActivity.java - INTERNET = PERMISSION_GRANTED");
+
+                    } else {
+                        Log.w("myApp", "[#] GPSActivity.java - INTERNET = PERMISSION_DENIED");
                     }
-                    // TODO: Manage Android 4 storage permission
+                }
+                // TODO: Manage Android 4 storage permission
 //                    if (perms.containsKey(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 //                        if (perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 //                            gpsApp.createFolders();
@@ -402,12 +406,9 @@ public class GPSActivity extends AppCompatActivity {
 //                            }
 //                        }
 //                    }
-                }
-                break;
             }
-            default: {
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -435,54 +436,42 @@ public class GPSActivity extends AppCompatActivity {
                 FragmentPlacemarkDialog placemarkDialog = new FragmentPlacemarkDialog();
                 placemarkDialog.show(fm, "");
                 break;
+
             case EventBusMSG.UPDATE_TRACKLIST:
             case EventBusMSG.NOTIFY_TRACKS_DELETED:
                 activateActionModeIfNeeded();
                 break;
+
             case EventBusMSG.APPLY_SETTINGS:
                 loadPreferences();
                 break;
+
             case EventBusMSG.TOAST_TRACK_EXPORTED:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast toast = Toast.makeText(gpsApp.getApplicationContext(),
-                                gpsApp.getString(R.string.toast_track_exported, gpsApp.extractFolderNameFromEncodedUri(gpsApp.getPrefExportFolder())), Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
-                        toast.show();
-                    }
+                runOnUiThread(() -> {
+                    Toast toast = Toast.makeText(gpsApp.getApplicationContext(),
+                            gpsApp.getString(R.string.toast_track_exported, gpsApp.extractFolderNameFromEncodedUri(gpsApp.getPrefExportFolder())), Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
+                    toast.show();
                 });
                 break;
+
             case EventBusMSG.TOAST_UNABLE_TO_WRITE_THE_FILE:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.export_unable_to_write_file, Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
-                        toast.show();
-                    }
+                runOnUiThread(() -> {
+                    Toast toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.export_unable_to_write_file, Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
+                    toast.show();
                 });
                 break;
 
             case EventBusMSG.ACTION_BULK_EXPORT_TRACKS:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    // Android 5+
-                    if (!gpsApp.isExportFolderWritable()) {
-                        openDirectory();
-                    } else {
-                        gpsApp.loadJob(GPSApplication.JOB_TYPE_EXPORT);
-                        gpsApp.executeJob();
-                        gpsApp.deselectAllTracks();
-                    }
+                // Android 5+
+                if (!gpsApp.isExportFolderWritable()) {
+                    openDirectory();
+
                 } else {
-                    // Android 4
-                    if (gpsApp.isExportFolderWritable()) {
-                        gpsApp.loadJob(GPSApplication.JOB_TYPE_EXPORT);
-                        gpsApp.executeJob();
-                        gpsApp.deselectAllTracks();
-                    } else {
-                        EventBus.getDefault().post(EventBusMSG.TOAST_UNABLE_TO_WRITE_THE_FILE);
-                    }
+                    gpsApp.loadJob(GPSApplication.JOB_TYPE_EXPORT);
+                    gpsApp.executeJob();
+                    gpsApp.deselectAllTracks();
                 }
         }
     }
@@ -508,6 +497,7 @@ public class GPSActivity extends AppCompatActivity {
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             //Log.w("myApp", "[#] GPSActivity.java - mBottomSheetBehavior.setPeekHeight(" + bottomSheet.getHeight() +");");
             bottomSheetBehavior.setPeekHeight(bottomSheet.getHeight());
+
         } else {
             bottomSheetBehavior.setPeekHeight(1);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED) ;
@@ -522,6 +512,7 @@ public class GPSActivity extends AppCompatActivity {
         adapter.addFragment(new FragmentGPSFix(), getString(R.string.tab_gpsfix));
         adapter.addFragment(new FragmentTrack(), getString(R.string.tab_track));
         adapter.addFragment(new FragmentTracklist(), getString(R.string.tab_tracklist));
+        adapter.addFragment(new FuncTestFragment(), "func TEST");
         viewPager.setAdapter(adapter);
     }
 
@@ -635,6 +626,7 @@ public class GPSActivity extends AppCompatActivity {
                 if ((gpsApp.getNumberOfSelectedTracks() > 0) && (gpsApp.getGPSActivityActiveTab()  == 2)) {
                     if (actionMode == null) actionMode = (startSupportActionMode(new ToolbarActionMode()));
                     if (actionMode != null) actionMode.setTitle(gpsApp.getNumberOfSelectedTracks() > 1 ? String.valueOf(gpsApp.getNumberOfSelectedTracks()) : "");
+
                 } else if (actionMode != null) {
                     actionMode.finish();
                     actionMode = null;
@@ -652,6 +644,7 @@ public class GPSActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission granted");
             // Permission Granted
+
         } else {
             Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission denied");
             boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -661,6 +654,8 @@ public class GPSActivity extends AppCompatActivity {
                 List<String> listPermissionsNeeded = new ArrayList<>();
                 listPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
                 listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                listPermissionsNeeded.add(Manifest.permission.CAMERA);
+                listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
                 ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]) , REQUEST_ID_MULTIPLE_PERMISSIONS);
             }
         }
@@ -671,7 +666,6 @@ public class GPSActivity extends AppCompatActivity {
      * For Android >= LOLLYPOP
      */
     @Override
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         if (requestCode == REQUEST_ACTION_OPEN_DOCUMENT_TREE && resultCode == Activity.RESULT_OK) {
             // The result data contains a URI for the document or directory that
@@ -686,7 +680,7 @@ public class GPSActivity extends AppCompatActivity {
                         .FLAG_GRANT_WRITE_URI_PERMISSION);
                 //getContentResolver().takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-                Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri.toString());
+                Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri);
                 Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri.getPath());
                 Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri.getEncodedPath());
 
@@ -702,17 +696,15 @@ public class GPSActivity extends AppCompatActivity {
     }
 
     public void openDirectory() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Choose a directory using the system's file picker.
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-            intent.putExtra("android.content.extra.FANCY", true);
-            //intent.putExtra("android.content.extra.SHOW_FILESIZE", true);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            startActivityForResult(intent, REQUEST_ACTION_OPEN_DOCUMENT_TREE);
-        }
+        // Choose a directory using the system's file picker.
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        intent.putExtra("android.content.extra.FANCY", true);
+        //intent.putExtra("android.content.extra.SHOW_FILESIZE", true);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_ACTION_OPEN_DOCUMENT_TREE);
     }
 
     /**
@@ -732,6 +724,7 @@ public class GPSActivity extends AppCompatActivity {
                 }
                 //Update();
             }
+
         } else {
             if (toast != null) toast.cancel();
             toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
@@ -759,12 +752,14 @@ public class GPSActivity extends AppCompatActivity {
                         tpDialog.setTitleResource(R.string.finalize_track);
                         tpDialog.setFinalizeTrackWithOk(true);
                         tpDialog.show(fm, "");
+
                     } else {
                         EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
                         toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
                         toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
                         toast.show();
                     }
+
                 } else {
                     if (toast != null) toast.cancel();
                     toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_nothing_to_save, Toast.LENGTH_SHORT);
@@ -772,6 +767,7 @@ public class GPSActivity extends AppCompatActivity {
                     toast.show();
                 }
             }
+
         } else {
             if (toast != null) toast.cancel();
             toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
@@ -797,6 +793,7 @@ public class GPSActivity extends AppCompatActivity {
                 }
                 //Update();
             }
+
         } else {
             if (toast != null) toast.cancel();
             toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
