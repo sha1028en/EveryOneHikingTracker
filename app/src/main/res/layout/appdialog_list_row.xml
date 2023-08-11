@@ -27,8 +27,9 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:padding="10dp"
-
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:viewBindingIgnore="true">
 
     <ImageView
         android:id="@+id/id_appdialog_row_imageView_icon"

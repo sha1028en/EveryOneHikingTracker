@@ -28,6 +28,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    tools:viewBindingIgnore="true"
     tools:context="eu.basicairdata.graziano.gpslogger.SettingsActivity">
 
     <androidx.appcompat.widget.Toolbar

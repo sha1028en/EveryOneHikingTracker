@@ -31,7 +31,8 @@
     android:orientation="vertical"
     android:focusable="false"
     android:descendantFocusability="blocksDescendants"
-    tools:context="eu.basicairdata.graziano.gpslogger.FragmentRecordingControls">
+    tools:context="eu.basicairdata.graziano.gpslogger.FragmentRecordingControls"
+    tools:viewBindingIgnore="true">
 
     <LinearLayout
         android:layout_width="match_parent"
