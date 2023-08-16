@@ -46,6 +46,9 @@ import androidx.documentfile.provider.DocumentFile;
 /**
  * A Thread that performs the exportation of a Track in KML, GPX, and/or TXT format.
  * The files exported and the destination folder depend on the input parameters.
+ *
+ * <br>
+ * now, store wpt and trk different *.gpx files
  */
 class Exporter extends Thread {
 
@@ -63,6 +66,8 @@ class Exporter extends Thread {
 
     private DocumentFile kmlFile;
     private DocumentFile gpxFile;
+
+    private DocumentFile gpxWptFile;
     private DocumentFile txtFile;
 
     int groupOfLocations;                           // Reads and writes location grouped by this number;
@@ -110,12 +115,15 @@ class Exporter extends Thread {
      */
     private boolean tryToInitFiles(String fName) {
         // Create files, deleting old version if exists
+        final String wptFileIdentity = "wpt_";
+        final String trkFileIdentity = "trk_";
 
         try {
             DocumentFile pickedDir;
             if (saveIntoFolder.startsWith("content")) {
                 Uri uri = Uri.parse(saveIntoFolder);
                 pickedDir = DocumentFile.fromTreeUri(getInstance(), uri);
+
             } else {
                 pickedDir = DocumentFile.fromFile(new File(saveIntoFolder));
             }
@@ -129,24 +137,35 @@ class Exporter extends Thread {
                 kmlFile = pickedDir.findFile(fName + ".kml");
                 if ((kmlFile != null) && (kmlFile.exists())) kmlFile.delete();
                 kmlFile = pickedDir.createFile("", fName + ".kml");
-                Log.w("myApp", "[#] Exporter.java - Export " + kmlFile.getUri().toString());
+                Log.w("myApp", "[#] Exporter.java - Export " + kmlFile.getUri());
             }
+
             if (exportGPX) {
-                gpxFile = pickedDir.findFile(fName + ".gpx");
+                // Way Point *.gpx file
+                gpxFile = pickedDir.findFile(trkFileIdentity + fName + ".gpx");
                 if ((gpxFile != null) && (gpxFile.exists())) gpxFile.delete();
-                gpxFile = pickedDir.createFile("", fName + ".gpx");
-                Log.w("myApp", "[#] Exporter.java - Export " + gpxFile.getUri().toString());
+                gpxFile = pickedDir.createFile("",trkFileIdentity +  fName + ".gpx");
+                Log.w("myApp", "[#] Exporter.java - Export " + gpxFile.getUri());
+
+                // POI *.gpx File
+                this.gpxWptFile = pickedDir.findFile(wptFileIdentity + fName + ".gpx");
+                if ((gpxWptFile != null) && (gpxWptFile.exists())) gpxWptFile.delete();
+                gpxWptFile = pickedDir.createFile("",wptFileIdentity + fName + ".gpx");
+                Log.w("myApp", "[#] Exporter.java - Export " + gpxWptFile.getUri());
             }
+
             if (exportTXT) {
                 txtFile = pickedDir.findFile(fName + ".txt");
                 if ((txtFile != null) && (txtFile.exists())) txtFile.delete();
                 txtFile = pickedDir.createFile("", fName + ".txt");
-                Log.w("myApp", "[#] Exporter.java - Export " + txtFile.getUri().toString());
+                Log.w("myApp", "[#] Exporter.java - Export " + txtFile.getUri());
             }
+
         } catch (SecurityException e) {
             Log.w("myApp", "[#] Exporter.java - Unable to write the file: SecurityException");
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
             return false;
+
         } catch (NullPointerException e) {
             Log.w("myApp", "[#] Exporter.java - Unable to write the file: IOException");
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
@@ -192,6 +211,215 @@ class Exporter extends Thread {
         }
     }
 
+    /**
+     * append TrackPoint into BufferWriter to Save trk_*.gpx file
+     *
+     * @param writeStream to Save *.gpx Stream Instance
+     * @param dfdtGPX_NoMillis date and time formatter for GPX timestamp (without millis)
+     * @param dfdtGPX date and time formatter for GPX timestamp (with millis)
+     * @param formattedLatitude (8 decimal places)
+     * @param formattedLongitude (8 decimal places)
+     * @param formattedAltitude (3 decimal places)
+     * @param formattedSpeed (3 decimal places)
+     * @param loc {@link LocationExtended}
+     * @throws IOException
+     */
+    private void writeGpxTrack(BufferedWriter writeStream, SimpleDateFormat dfdtGPX_NoMillis, SimpleDateFormat dfdtGPX,
+                               String formattedLatitude, String formattedLongitude, String formattedAltitude, String formattedSpeed,
+                               LocationExtended loc) throws IOException {
+        final String newLine = "\r\n";
+        final int GPX1_0 = 100;
+
+        if(exportGPX) {
+            writeStream.write("  <trkpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
+            if (loc.getLocation().hasAltitude()) {
+                writeStream.write("<ele>");     // Elevation
+                writeStream.write(formattedAltitude);
+                writeStream.write("</ele>");
+            }
+
+            writeStream.write("<time>");     // Time
+            //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
+            writeStream.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
+                    dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
+                    dfdtGPX.format(loc.getLocation().getTime()));
+            writeStream.write("</time>");
+
+            if (getPrefGPXVersion == GPX1_0) {
+                if (loc.getLocation().hasSpeed()) {
+                    writeStream.write("<speed>");     // Speed
+                    writeStream.write(formattedSpeed);
+                    writeStream.write("</speed>");
+                }
+            }
+
+            if (loc.getNumberOfSatellitesUsedInFix() > 0) {                   // GPX standards requires sats used for FIX.
+                writeStream.write("<sat>");                                         // and NOT the number of satellites in view!!!
+                writeStream.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
+                writeStream.write("</sat>");
+            }
+                        /*
+                        if (getPrefGPXVersion == GPX1_1) {                                // GPX 1.1 doesn't support speed tags. Let's switch to Garmin extensions :(
+                            if (loc.getLocation().hasSpeed()) {
+                                gpxBW.write("<extensions><gpxtpx:TrackPointExtension><gpxtpx:speed>");     // Speed (as Garmin extension)
+                                gpxBW.write(formattedSpeed);
+                                gpxBW.write("</gpxtpx:speed></gpxtpx:TrackPointExtension></extensions>");
+                            }
+                        } */
+            writeStream.write("</trkpt>" + newLine);
+        }
+    }
+
+    /**
+     * append PlaceMarker into BufferWriter Instance to save wpt_*.gpx file
+     *
+     * @param writeStream to Save *.gpx Stream Instance
+     * @param dfdtGPX_NoMillis  date and time formatter for GPX timestamp (without millis)
+     * @param dfdtGPX date and time formatter for GPX timestamp (with millis)
+     * @param formattedLatitude (8 decimal places)
+     * @param formattedLongitude (8 decimal places)
+     * @param formattedAltitude (3 decimal places)
+     * @param loc {@link LocationExtended}
+     * @throws IOException
+     **/
+    private void writeGpxPlaceMark(BufferedWriter writeStream, SimpleDateFormat dfdtGPX_NoMillis, SimpleDateFormat dfdtGPX,
+                                   String formattedLatitude, String formattedLongitude, String formattedAltitude, LocationExtended loc) throws IOException {
+        final String newLine = "\r\n";
+
+        if (exportGPX) {
+            writeStream.write("<wpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
+            if (loc.getLocation().hasAltitude()) {
+                writeStream.write("<ele>");     // Elevation
+                writeStream.write(formattedAltitude);
+                writeStream.write("</ele>");
+            }
+            writeStream.write("<time>");     // Time
+            //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
+            writeStream.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
+                    dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
+                    dfdtGPX.format(loc.getLocation().getTime()));
+            writeStream.write("</time>");
+            writeStream.write("<name>");     // Name
+            writeStream.write(stringToXML(loc.getDescription()));
+            writeStream.write("</name>");
+            if (loc.getNumberOfSatellitesUsedInFix() > 0) {     // Satellites used in fix
+                writeStream.write("<sat>");
+                writeStream.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
+                writeStream.write("</sat>");
+            }
+            writeStream.write("</wpt>" + newLine + newLine);
+        }
+    }
+
+
+    /**
+     * append Header into BufferWriter Instance to Save *.gpx file
+     *
+     * @param writeStream to Save *.gpx Stream Instance
+     * @param creationTime when this file created?
+     * @param gpsApp {@link GPSApplication} Instance
+     * @throws IOException
+     **/
+    private void writeGpxHeader(BufferedWriter writeStream, Date creationTime, GPSApplication gpsApp) throws IOException {
+        final String newLine = "\r\n";
+        final int GPX1_0 = 100;
+        final int GPX1_1 = 110;
+        final String versionName = BuildConfig.VERSION_NAME;
+
+        SimpleDateFormat dfdtGPX = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);        // date and time formatter for GPX timestamp (with millis)
+        dfdtGPX.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat dfdtGPX_NoMillis = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);   // date and time formatter for GPX timestamp (without millis)
+        dfdtGPX_NoMillis.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat dfdtTXT = new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSS", Locale.US);           // date and time formatter for TXT timestamp (with millis)
+        dfdtTXT.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat dfdtTXT_NoMillis = new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss", Locale.US);      // date and time formatter for TXT timestamp (without millis)
+        dfdtTXT_NoMillis.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        writeStream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
+        writeStream.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
+        writeStream.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+                + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine + newLine);
+
+        if (track.getNumberOfLocations() > 0) {
+            writeStream.write("<!-- Track Statistics (based on Total Time | Time in Movement): -->" + newLine);
+            PhysicalDataFormatter phdformatter = new PhysicalDataFormatter();
+            PhysicalData phdDuration;
+            PhysicalData phdDurationMoving;
+            PhysicalData phdSpeedMax;
+            PhysicalData phdSpeedAvg;
+            PhysicalData phdSpeedAvgMoving;
+            PhysicalData phdDistance;
+            PhysicalData phdAltitudeGap;
+            PhysicalData phdOverallDirection;
+            phdDuration = phdformatter.format(track.getDuration(), PhysicalDataFormatter.FORMAT_DURATION);
+            phdDurationMoving = phdformatter.format(track.getDurationMoving(), PhysicalDataFormatter.FORMAT_DURATION);
+            phdSpeedMax = phdformatter.format(track.getSpeedMax(), PhysicalDataFormatter.FORMAT_SPEED);
+            phdSpeedAvg = phdformatter.format(track.getSpeedAverage(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+            phdSpeedAvgMoving = phdformatter.format(track.getSpeedAverageMoving(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+            phdDistance = phdformatter.format(track.getEstimatedDistance(), PhysicalDataFormatter.FORMAT_DISTANCE);
+            phdAltitudeGap = phdformatter.format(track.getEstimatedAltitudeGap(gpsApp.getPrefEGM96AltitudeCorrection()), PhysicalDataFormatter.FORMAT_ALTITUDE);
+            phdOverallDirection = phdformatter.format(track.getBearing(), PhysicalDataFormatter.FORMAT_BEARING);
+
+            if (!phdDistance.value.isEmpty()) writeStream.write("<!--  Distance = " + phdDistance.value + " " + phdDistance.um + " -->" + newLine);
+            if (!phdDuration.value.isEmpty()) writeStream.write("<!--  Duration = " + phdDuration.value + " | " + phdDurationMoving.value + " -->" + newLine);
+            if (!phdAltitudeGap.value.isEmpty()) writeStream.write("<!--  Altitude Gap = " + phdAltitudeGap.value + " " + phdAltitudeGap.um + " -->" + newLine);
+            if (!phdSpeedMax.value.isEmpty()) writeStream.write("<!--  Max Speed = " + phdSpeedMax.value + " " + phdSpeedMax.um + " -->" + newLine);
+            if (!phdSpeedAvg.value.isEmpty()) writeStream.write("<!--  Avg Speed = " + phdSpeedAvg.value + " | " + phdSpeedAvgMoving.value + " " + phdSpeedAvg.um + " -->" + newLine);
+            if (!phdOverallDirection.value.isEmpty()) writeStream.write("<!--  Direction = " + phdOverallDirection.value + phdOverallDirection.um + " -->" + newLine);
+            if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write("<!--  Activity = " + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + " -->" + newLine);
+            writeStream.write(newLine);
+        }
+
+        if (getPrefGPXVersion == GPX1_0) {     // GPX 1.0
+            writeStream.write("<gpx version=\"1.0\"" + newLine
+                    + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+                    + "     xmlns=\"http://www.topografix.com/GPX/1/0\"" + newLine
+                    + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+                    + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" + newLine);
+            writeStream.write("<name>GPS Logger " + track.getName() + "</name>" + newLine);
+            if (!track.getDescription().isEmpty()) writeStream.write("<desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+            writeStream.write("<time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+            if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+            if ((track.getValidMap() != 0)
+                    && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+                    && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+                writeStream.write("<bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+                        + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+                        + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+                        + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+                        + "\" />" + newLine);
+            }
+            writeStream.write(newLine);
+        }
+
+        if (getPrefGPXVersion == GPX1_1) {    // GPX 1.1
+            writeStream.write("<gpx version=\"1.1\"" + newLine
+                    + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+                    + "     xmlns=\"http://www.topografix.com/GPX/1/1\"" + newLine
+                    + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+                    + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">" + newLine);
+            //          + "     xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" + newLine           // Garmin extension to include speeds
+            //          + "     xmlns:gpxtrkx=\"http://www.garmin.com/xmlschemas/TrackStatsExtension/v1\"" + newLine  //
+            //          + "     xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\">" + newLine); //
+            writeStream.write("<metadata> " + newLine);    // GPX Metadata
+            writeStream.write(" <name>GPS Logger " + track.getName() + "</name>" + newLine);
+            if (!track.getDescription().isEmpty()) writeStream.write(" <desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+            writeStream.write(" <time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+            if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write(" <keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+            if ((track.getValidMap() != 0)
+                    && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+                    && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+                writeStream.write(" <bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+                        + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+                        + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+                        + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+                        + "\" />" + newLine);
+            }
+            writeStream.write("</metadata>" + newLine + newLine);
+        }
+        gpsApp = null;
+    }
+
 
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
@@ -202,8 +430,8 @@ class Exporter extends Thread {
         gpxFile = null;
         txtFile = null;
 
-        final int GPX1_0 = 100;
-        final int GPX1_1 = 110;
+//        final int GPX1_0 = 100;
+//        final int GPX1_1 = 110;
 
         Date creationTime;
         long elements_total;
@@ -216,11 +444,11 @@ class Exporter extends Thread {
 
         // ----------------------------------------------------------------------------------------
 
-        if (track == null) {
-            //Log.w("myApp", "[#] Exporter.java - Track = null!!");
-            exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
-            return;
-        }
+//        if (track == null) {
+//            //Log.w("myApp", "[#] Exporter.java - Track = null!!");
+//            exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
+//            return;
+//        }
         if (track.getNumberOfLocations() + track.getNumberOfPlacemarks() == 0) {
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
             //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TOAST_UNABLE_TO_WRITE_THE_FILE, track.getId()));
@@ -236,6 +464,7 @@ class Exporter extends Thread {
                     Thread.sleep(200);
                     // Lazy polling until EGM grid finish to load
                 } while (EGM96.getInstance().isLoading());
+
             } catch (InterruptedException e) {
                 Log.w("myApp", "[#] Exporter.java - Cannot wait!!");
             }
@@ -265,9 +494,9 @@ class Exporter extends Thread {
 
         // Create buffers for Write operations
         BufferedWriter kmlBW = null;
-        BufferedWriter gpxBW = null;
+        BufferedWriter trackGpxBW = null; // trk
+        BufferedWriter trackWptBw = null; // wpt ( POI )
         BufferedWriter txtBW = null;
-
         asyncGeopointsLoader.start();
 
         try {
@@ -275,15 +504,21 @@ class Exporter extends Thread {
                 OutputStream outputStream = GPSApplication.getInstance().getContentResolver().openOutputStream(kmlFile.getUri(), "rw");
                 kmlBW = new BufferedWriter(new OutputStreamWriter(outputStream));
             }
+
             if (exportGPX) {
                 OutputStream outputStream = GPSApplication.getInstance().getContentResolver().openOutputStream(gpxFile.getUri(), "rw");
-                gpxBW = new BufferedWriter(new OutputStreamWriter(outputStream));
+                trackGpxBW = new BufferedWriter(new OutputStreamWriter(outputStream));
             }
+
+            if(exportGPX) {
+                OutputStream outputStream = GPSApplication.getInstance().getContentResolver().openOutputStream(gpxWptFile.getUri(), "rw");
+                trackWptBw = new BufferedWriter(new OutputStreamWriter(outputStream));
+            }
+
             if (exportTXT) {
                 OutputStream outputStream = GPSApplication.getInstance().getContentResolver().openOutputStream(txtFile.getUri(), "rw");
                 txtBW = new BufferedWriter(new OutputStreamWriter(outputStream));
             }
-
             creationTime = Calendar.getInstance().getTime();
 
             // ---------------------------------------------------------------------- Writing Heads
@@ -294,13 +529,13 @@ class Exporter extends Thread {
 
                 kmlBW.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
                 kmlBW.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
-                kmlBW.write("<!-- Track " + String.valueOf(track.getId()) + " = " + String.valueOf(track.getNumberOfLocations())
-                        + " TrackPoints + " + String.valueOf(track.getNumberOfPlacemarks()) + " Placemarks -->" + newLine);
+                kmlBW.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+                        + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine);
                 kmlBW.write("<kml xmlns=\"http://www.opengis.net/kml/2.2\">" + newLine);
                 kmlBW.write(" <Document>" + newLine);
                 kmlBW.write("  <name>GPS Logger " + track.getName() + "</name>" + newLine);
                 kmlBW.write("  <description><![CDATA[" + (track.getDescription().isEmpty() ? "" : stringToCDATA(track.getDescription()) + newLine));
-                kmlBW.write(String.valueOf(track.getNumberOfLocations()) + " Trackpoints + " + String.valueOf(track.getNumberOfPlacemarks()) + " Placemarks]]></description>" + newLine);
+                kmlBW.write(track.getNumberOfLocations() + " Trackpoints + " + track.getNumberOfPlacemarks() + " Placemarks]]></description>" + newLine);
                 if (track.getNumberOfLocations() > 0) {
                     kmlBW.write("  <Style id=\"TrackStyle\">" + newLine);
                     kmlBW.write("   <LineStyle>" + newLine);
@@ -330,97 +565,187 @@ class Exporter extends Thread {
 
             if (exportGPX) {
                 // Writing head of GPX file
+                // trk, wpt( POI )
 
-                gpxBW.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
-                gpxBW.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
-                gpxBW.write("<!-- Track " + String.valueOf(track.getId()) + " = " + String.valueOf(track.getNumberOfLocations())
-                        + " TrackPoints + " + String.valueOf(track.getNumberOfPlacemarks()) + " Placemarks -->" + newLine + newLine);
+                this.writeGpxHeader(trackGpxBW, creationTime, gpsApp);
+                this.writeGpxHeader(trackWptBw, creationTime, gpsApp);
 
-                if (track.getNumberOfLocations() > 0) {
-                    gpxBW.write("<!-- Track Statistics (based on Total Time | Time in Movement): -->" + newLine);
-                    PhysicalDataFormatter phdformatter = new PhysicalDataFormatter();
-                    PhysicalData phdDuration;
-                    PhysicalData phdDurationMoving;
-                    PhysicalData phdSpeedMax;
-                    PhysicalData phdSpeedAvg;
-                    PhysicalData phdSpeedAvgMoving;
-                    PhysicalData phdDistance;
-                    PhysicalData phdAltitudeGap;
-                    PhysicalData phdOverallDirection;
-                    phdDuration = phdformatter.format(track.getDuration(), PhysicalDataFormatter.FORMAT_DURATION);
-                    phdDurationMoving = phdformatter.format(track.getDurationMoving(), PhysicalDataFormatter.FORMAT_DURATION);
-                    phdSpeedMax = phdformatter.format(track.getSpeedMax(), PhysicalDataFormatter.FORMAT_SPEED);
-                    phdSpeedAvg = phdformatter.format(track.getSpeedAverage(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
-                    phdSpeedAvgMoving = phdformatter.format(track.getSpeedAverageMoving(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
-                    phdDistance = phdformatter.format(track.getEstimatedDistance(), PhysicalDataFormatter.FORMAT_DISTANCE);
-                    phdAltitudeGap = phdformatter.format(track.getEstimatedAltitudeGap(gpsApp.getPrefEGM96AltitudeCorrection()), PhysicalDataFormatter.FORMAT_ALTITUDE);
-                    phdOverallDirection = phdformatter.format(track.getBearing(), PhysicalDataFormatter.FORMAT_BEARING);
-
-                    if (!phdDistance.value.isEmpty())
-                        gpxBW.write("<!--  Distance = " + phdDistance.value + " " + phdDistance.um + " -->" + newLine);
-                    if (!phdDuration.value.isEmpty())
-                        gpxBW.write("<!--  Duration = " + phdDuration.value + " | " + phdDurationMoving.value + " -->" + newLine);
-                    if (!phdAltitudeGap.value.isEmpty())
-                        gpxBW.write("<!--  Altitude Gap = " + phdAltitudeGap.value + " " + phdAltitudeGap.um + " -->" + newLine);
-                    if (!phdSpeedMax.value.isEmpty())
-                        gpxBW.write("<!--  Max Speed = " + phdSpeedMax.value + " " + phdSpeedMax.um + " -->" + newLine);
-                    if (!phdSpeedAvg.value.isEmpty())
-                        gpxBW.write("<!--  Avg Speed = " + phdSpeedAvg.value + " | " + phdSpeedAvgMoving.value + " " + phdSpeedAvg.um + " -->" + newLine);
-                    if (!phdOverallDirection.value.isEmpty())
-                        gpxBW.write("<!--  Direction = " + phdOverallDirection.value + phdOverallDirection.um + " -->" + newLine);
-                    if (track.getEstimatedTrackType() != NOT_AVAILABLE)
-                        gpxBW.write("<!--  Activity = " + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + " -->" + newLine);
-
-                    gpxBW.write(newLine);
-                }
-
-                if (getPrefGPXVersion == GPX1_0) {     // GPX 1.0
-                    gpxBW.write("<gpx version=\"1.0\"" + newLine
-                              + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
-                              + "     xmlns=\"http://www.topografix.com/GPX/1/0\"" + newLine
-                              + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
-                              + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" + newLine);
-                    gpxBW.write("<name>GPS Logger " + track.getName() + "</name>" + newLine);
-                    if (!track.getDescription().isEmpty()) gpxBW.write("<desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
-                    gpxBW.write("<time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
-                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) gpxBW.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
-                    if ((track.getValidMap() != 0)
-                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
-                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
-                        gpxBW.write("<bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
-                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
-                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
-                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
-                                + "\" />" + newLine);
-                    }
-                    gpxBW.write(newLine);
-                }
-
-                if (getPrefGPXVersion == GPX1_1) {    // GPX 1.1
-                    gpxBW.write("<gpx version=\"1.1\"" + newLine
-                              + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
-                              + "     xmlns=\"http://www.topografix.com/GPX/1/1\"" + newLine
-                              + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
-                              + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">" + newLine);
-                    //          + "     xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" + newLine           // Garmin extension to include speeds
-                    //          + "     xmlns:gpxtrkx=\"http://www.garmin.com/xmlschemas/TrackStatsExtension/v1\"" + newLine  //
-                    //          + "     xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\">" + newLine); //
-                    gpxBW.write("<metadata> " + newLine);    // GPX Metadata
-                    gpxBW.write(" <name>GPS Logger " + track.getName() + "</name>" + newLine);
-                    if (!track.getDescription().isEmpty()) gpxBW.write(" <desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
-                    gpxBW.write(" <time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
-                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) gpxBW.write(" <keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
-                    if ((track.getValidMap() != 0)
-                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
-                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
-                        gpxBW.write(" <bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
-                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
-                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
-                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
-                                + "\" />" + newLine);
-                    }
-                    gpxBW.write("</metadata>" + newLine + newLine);
-                }
+//                // write trk header
+//                trackGpxBW.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
+//                trackGpxBW.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
+//                trackGpxBW.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+//                        + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine + newLine);
+//
+//                if (track.getNumberOfLocations() > 0) {
+//                    trackGpxBW.write("<!-- Track Statistics (based on Total Time | Time in Movement): -->" + newLine);
+//                    PhysicalDataFormatter phdformatter = new PhysicalDataFormatter();
+//                    PhysicalData phdDuration;
+//                    PhysicalData phdDurationMoving;
+//                    PhysicalData phdSpeedMax;
+//                    PhysicalData phdSpeedAvg;
+//                    PhysicalData phdSpeedAvgMoving;
+//                    PhysicalData phdDistance;
+//                    PhysicalData phdAltitudeGap;
+//                    PhysicalData phdOverallDirection;
+//                    phdDuration = phdformatter.format(track.getDuration(), PhysicalDataFormatter.FORMAT_DURATION);
+//                    phdDurationMoving = phdformatter.format(track.getDurationMoving(), PhysicalDataFormatter.FORMAT_DURATION);
+//                    phdSpeedMax = phdformatter.format(track.getSpeedMax(), PhysicalDataFormatter.FORMAT_SPEED);
+//                    phdSpeedAvg = phdformatter.format(track.getSpeedAverage(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+//                    phdSpeedAvgMoving = phdformatter.format(track.getSpeedAverageMoving(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+//                    phdDistance = phdformatter.format(track.getEstimatedDistance(), PhysicalDataFormatter.FORMAT_DISTANCE);
+//                    phdAltitudeGap = phdformatter.format(track.getEstimatedAltitudeGap(gpsApp.getPrefEGM96AltitudeCorrection()), PhysicalDataFormatter.FORMAT_ALTITUDE);
+//                    phdOverallDirection = phdformatter.format(track.getBearing(), PhysicalDataFormatter.FORMAT_BEARING);
+//
+//                    if (!phdDistance.value.isEmpty())
+//                        trackGpxBW.write("<!--  Distance = " + phdDistance.value + " " + phdDistance.um + " -->" + newLine);
+//                    if (!phdDuration.value.isEmpty())
+//                        trackGpxBW.write("<!--  Duration = " + phdDuration.value + " | " + phdDurationMoving.value + " -->" + newLine);
+//                    if (!phdAltitudeGap.value.isEmpty())
+//                        trackGpxBW.write("<!--  Altitude Gap = " + phdAltitudeGap.value + " " + phdAltitudeGap.um + " -->" + newLine);
+//                    if (!phdSpeedMax.value.isEmpty())
+//                        trackGpxBW.write("<!--  Max Speed = " + phdSpeedMax.value + " " + phdSpeedMax.um + " -->" + newLine);
+//                    if (!phdSpeedAvg.value.isEmpty())
+//                        trackGpxBW.write("<!--  Avg Speed = " + phdSpeedAvg.value + " | " + phdSpeedAvgMoving.value + " " + phdSpeedAvg.um + " -->" + newLine);
+//                    if (!phdOverallDirection.value.isEmpty())
+//                        trackGpxBW.write("<!--  Direction = " + phdOverallDirection.value + phdOverallDirection.um + " -->" + newLine);
+//                    if (track.getEstimatedTrackType() != NOT_AVAILABLE)
+//                        trackGpxBW.write("<!--  Activity = " + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + " -->" + newLine);
+//
+//                    trackGpxBW.write(newLine);
+//                }
+//
+//                if (getPrefGPXVersion == GPX1_0) {     // GPX 1.0
+//                    trackGpxBW.write("<gpx version=\"1.0\"" + newLine
+//                              + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+//                              + "     xmlns=\"http://www.topografix.com/GPX/1/0\"" + newLine
+//                              + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+//                              + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" + newLine);
+//                    trackGpxBW.write("<name>GPS Logger " + track.getName() + "</name>" + newLine);
+//                    if (!track.getDescription().isEmpty()) trackGpxBW.write("<desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+//                    trackGpxBW.write("<time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+//                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) trackGpxBW.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+//                    if ((track.getValidMap() != 0)
+//                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+//                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+//                        trackGpxBW.write("<bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+//                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+//                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+//                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+//                                + "\" />" + newLine);
+//                    }
+//                    trackGpxBW.write(newLine);
+//                }
+//
+//                if (getPrefGPXVersion == GPX1_1) {    // GPX 1.1
+//                    trackGpxBW.write("<gpx version=\"1.1\"" + newLine
+//                              + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+//                              + "     xmlns=\"http://www.topografix.com/GPX/1/1\"" + newLine
+//                              + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+//                              + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">" + newLine);
+//                    //          + "     xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" + newLine           // Garmin extension to include speeds
+//                    //          + "     xmlns:gpxtrkx=\"http://www.garmin.com/xmlschemas/TrackStatsExtension/v1\"" + newLine  //
+//                    //          + "     xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\">" + newLine); //
+//                    trackGpxBW.write("<metadata> " + newLine);    // GPX Metadata
+//                    trackGpxBW.write(" <name>GPS Logger " + track.getName() + "</name>" + newLine);
+//                    if (!track.getDescription().isEmpty()) trackGpxBW.write(" <desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+//                    trackGpxBW.write(" <time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+//                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) trackGpxBW.write(" <keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+//                    if ((track.getValidMap() != 0)
+//                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+//                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+//                        trackGpxBW.write(" <bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+//                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+//                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+//                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+//                                + "\" />" + newLine);
+//                    }
+//                    trackGpxBW.write("</metadata>" + newLine + newLine);
+//                }
+//
+//                // write wpt header
+//                trackWptBw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
+//                trackWptBw.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
+//                trackWptBw.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+//                        + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine + newLine);
+//
+//                if (track.getNumberOfLocations() > 0) {
+//                    trackGpxBW.write("<!-- Track Statistics (based on Total Time | Time in Movement): -->" + newLine);
+//                    PhysicalDataFormatter phdformatter = new PhysicalDataFormatter();
+//                    PhysicalData phdDuration;
+//                    PhysicalData phdDurationMoving;
+//                    PhysicalData phdSpeedMax;
+//                    PhysicalData phdSpeedAvg;
+//                    PhysicalData phdSpeedAvgMoving;
+//                    PhysicalData phdDistance;
+//                    PhysicalData phdAltitudeGap;
+//                    PhysicalData phdOverallDirection;
+//                    phdDuration = phdformatter.format(track.getDuration(), PhysicalDataFormatter.FORMAT_DURATION);
+//                    phdDurationMoving = phdformatter.format(track.getDurationMoving(), PhysicalDataFormatter.FORMAT_DURATION);
+//                    phdSpeedMax = phdformatter.format(track.getSpeedMax(), PhysicalDataFormatter.FORMAT_SPEED);
+//                    phdSpeedAvg = phdformatter.format(track.getSpeedAverage(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+//                    phdSpeedAvgMoving = phdformatter.format(track.getSpeedAverageMoving(), PhysicalDataFormatter.FORMAT_SPEED_AVG);
+//                    phdDistance = phdformatter.format(track.getEstimatedDistance(), PhysicalDataFormatter.FORMAT_DISTANCE);
+//                    phdAltitudeGap = phdformatter.format(track.getEstimatedAltitudeGap(gpsApp.getPrefEGM96AltitudeCorrection()), PhysicalDataFormatter.FORMAT_ALTITUDE);
+//                    phdOverallDirection = phdformatter.format(track.getBearing(), PhysicalDataFormatter.FORMAT_BEARING);
+//
+//                    if (!phdDistance.value.isEmpty()) trackWptBw.write("<!--  Distance = " + phdDistance.value + " " + phdDistance.um + " -->" + newLine);
+//                    if (!phdDuration.value.isEmpty()) trackWptBw.write("<!--  Duration = " + phdDuration.value + " | " + phdDurationMoving.value + " -->" + newLine);
+//                    if (!phdAltitudeGap.value.isEmpty()) trackWptBw.write("<!--  Altitude Gap = " + phdAltitudeGap.value + " " + phdAltitudeGap.um + " -->" + newLine);
+//                    if (!phdSpeedMax.value.isEmpty()) trackWptBw.write("<!--  Max Speed = " + phdSpeedMax.value + " " + phdSpeedMax.um + " -->" + newLine);
+//                    if (!phdSpeedAvg.value.isEmpty()) trackWptBw.write("<!--  Avg Speed = " + phdSpeedAvg.value + " | " + phdSpeedAvgMoving.value + " " + phdSpeedAvg.um + " -->" + newLine);
+//                    if (!phdOverallDirection.value.isEmpty()) trackWptBw.write("<!--  Direction = " + phdOverallDirection.value + phdOverallDirection.um + " -->" + newLine);if (track.getEstimatedTrackType() != NOT_AVAILABLE)
+//                        trackWptBw.write("<!--  Activity = " + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + " -->" + newLine);
+//
+//                    trackGpxBW.write(newLine);
+//                }
+//
+//                if (getPrefGPXVersion == GPX1_0) {     // GPX 1.0
+//                    trackWptBw.write("<gpx version=\"1.0\"" + newLine
+//                            + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+//                            + "     xmlns=\"http://www.topografix.com/GPX/1/0\"" + newLine
+//                            + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+//                            + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" + newLine);
+//                    trackWptBw.write("<name>GPS Logger " + track.getName() + "</name>" + newLine);
+//                    if (!track.getDescription().isEmpty()) trackGpxBW.write("<desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+//                    trackWptBw.write("<time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+//                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) trackGpxBW.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+//                    if ((track.getValidMap() != 0)
+//                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+//                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+//                        trackWptBw.write("<bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+//                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+//                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+//                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+//                                + "\" />" + newLine);
+//                    }
+//                    trackWptBw.write(newLine);
+//                }
+//
+//                if (getPrefGPXVersion == GPX1_1) {    // GPX 1.1
+//                    trackGpxBW.write("<gpx version=\"1.1\"" + newLine
+//                            + "     creator=\"BasicAirData GPS Logger " + versionName + "\"" + newLine
+//                            + "     xmlns=\"http://www.topografix.com/GPX/1/1\"" + newLine
+//                            + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
+//                            + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">" + newLine);
+//                    //          + "     xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\"" + newLine           // Garmin extension to include speeds
+//                    //          + "     xmlns:gpxtrkx=\"http://www.garmin.com/xmlschemas/TrackStatsExtension/v1\"" + newLine  //
+//                    //          + "     xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\">" + newLine); //
+//                    trackWptBw.write("<metadata> " + newLine);    // GPX Metadata
+//                    trackWptBw.write(" <name>GPS Logger " + track.getName() + "</name>" + newLine);
+//                    if (!track.getDescription().isEmpty()) trackGpxBW.write(" <desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
+//                    trackWptBw.write(" <time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
+//                    if (track.getEstimatedTrackType() != NOT_AVAILABLE) trackGpxBW.write(" <keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+//                    if ((track.getValidMap() != 0)
+//                            && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
+//                            && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
+//                        trackWptBw.write(" <bounds minlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMin())
+//                                + "\" minlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMin())
+//                                + "\" maxlat=\"" + String.format(Locale.US, "%.8f", track.getLatitudeMax())
+//                                + "\" maxlon=\"" + String.format(Locale.US, "%.8f", track.getLongitudeMax())
+//                                + "\" />" + newLine);
+//                    }
+//                    trackWptBw.write("</metadata>" + newLine + newLine);
+//                }
             }
 
             if (exportTXT) {
@@ -428,8 +753,8 @@ class Exporter extends Thread {
                 txtBW.write("type,date time,latitude,longitude,accuracy(m),altitude(m),geoid_height(m),speed(m/s),bearing(deg),sat_used,sat_inview,name,desc" + newLine);
             }
 
-            String formattedLatitude = "";
-            String formattedLongitude = "";
+            String formattedLatitude;
+            String formattedLongitude;
             String formattedAltitude = "";
             String formattedSpeed = "";
 
@@ -479,29 +804,30 @@ class Exporter extends Thread {
                             }
 
                             // GPX
-                            if (exportGPX) {
-                                gpxBW.write("<wpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
-                                if (loc.getLocation().hasAltitude()) {
-                                    gpxBW.write("<ele>");     // Elevation
-                                    gpxBW.write(formattedAltitude);
-                                    gpxBW.write("</ele>");
-                                }
-                                gpxBW.write("<time>");     // Time
-                                //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
-                                gpxBW.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
-                                        dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
-                                        dfdtGPX.format(loc.getLocation().getTime()));
-                                gpxBW.write("</time>");
-                                gpxBW.write("<name>");     // Name
-                                gpxBW.write(stringToXML(loc.getDescription()));
-                                gpxBW.write("</name>");
-                                if (loc.getNumberOfSatellitesUsedInFix() > 0) {     // Satellites used in fix
-                                    gpxBW.write("<sat>");
-                                    gpxBW.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
-                                    gpxBW.write("</sat>");
-                                }
-                                gpxBW.write("</wpt>" + newLine + newLine);
-                            }
+                            this.writeGpxPlaceMark(trackWptBw, dfdtGPX_NoMillis, dfdtGPX, formattedLatitude, formattedLongitude, formattedAltitude, loc);
+//                            if (exportGPX) {
+//                                trackGpxBW.write("<wpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
+//                                if (loc.getLocation().hasAltitude()) {
+//                                    trackGpxBW.write("<ele>");     // Elevation
+//                                    trackGpxBW.write(formattedAltitude);
+//                                    trackGpxBW.write("</ele>");
+//                                }
+//                                trackGpxBW.write("<time>");     // Time
+//                                //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
+//                                trackGpxBW.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
+//                                        dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
+//                                        dfdtGPX.format(loc.getLocation().getTime()));
+//                                trackGpxBW.write("</time>");
+//                                trackGpxBW.write("<name>");     // Name
+//                                trackGpxBW.write(stringToXML(loc.getDescription()));
+//                                trackGpxBW.write("</name>");
+//                                if (loc.getNumberOfSatellitesUsedInFix() > 0) {     // Satellites used in fix
+//                                    trackGpxBW.write("<sat>");
+//                                    trackGpxBW.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
+//                                    trackGpxBW.write("</sat>");
+//                                }
+//                                trackGpxBW.write("</wpt>" + newLine + newLine);
+//                            }
 
                             // TXT
                             if (exportTXT) {
@@ -544,7 +870,6 @@ class Exporter extends Thread {
                         placemarkList.clear();
                     }
                 }
-
                 exportingTask.setNumberOfPoints_Processed(track.getNumberOfPlacemarks());
             }
 
@@ -598,9 +923,9 @@ class Exporter extends Thread {
                     kmlBW.write("    <coordinates>" + newLine);
                 }
                 if (exportGPX) {
-                    gpxBW.write("<trk>" + newLine);
-                    gpxBW.write(" <name>" + gpsApp.getApplicationContext().getString(R.string.tab_track) + " " + track.getName() + "</name>" + newLine);
-                    gpxBW.write(" <trkseg>" + newLine);
+                    trackGpxBW.write("<trk>" + newLine);
+                    trackGpxBW.write(" <name>" + gpsApp.getApplicationContext().getString(R.string.tab_track) + " " + track.getName() + "</name>" + newLine);
+                    trackGpxBW.write(" <trkseg>" + newLine);
                 }
 
                 LocationExtended loc;
@@ -609,7 +934,7 @@ class Exporter extends Thread {
 
                     loc = arrayGeopoints.take();
 
-                                        // Create formatted strings
+                    // Create formatted strings
                     formattedLatitude = String.format(Locale.US, "%.8f", loc.getLocation().getLatitude());
                     formattedLongitude = String.format(Locale.US, "%.8f", loc.getLocation().getLongitude());
                     if (loc.getLocation().hasAltitude()) formattedAltitude = String.format(Locale.US, "%.3f", loc.getLocation().getAltitude() + altitudeManualCorrection - (((loc.getAltitudeEGM96Correction() == NOT_AVAILABLE) || (!egmAltitudeCorrection)) ? 0 : loc.getAltitudeEGM96Correction()));
@@ -626,39 +951,40 @@ class Exporter extends Thread {
 
                     // GPX
                     if (exportGPX) {
-                        gpxBW.write("  <trkpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
-                        if (loc.getLocation().hasAltitude()) {
-                            gpxBW.write("<ele>");     // Elevation
-                            gpxBW.write(formattedAltitude);
-                            gpxBW.write("</ele>");
-                        }
-                        gpxBW.write("<time>");     // Time
-                        //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
-                        gpxBW.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
-                                dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
-                                dfdtGPX.format(loc.getLocation().getTime()));
-                        gpxBW.write("</time>");
-                        if (getPrefGPXVersion == GPX1_0) {
-                            if (loc.getLocation().hasSpeed()) {
-                                gpxBW.write("<speed>");     // Speed
-                                gpxBW.write(formattedSpeed);
-                                gpxBW.write("</speed>");
-                            }
-                        }
-                        if (loc.getNumberOfSatellitesUsedInFix() > 0) {                   // GPX standards requires sats used for FIX.
-                            gpxBW.write("<sat>");                                         // and NOT the number of satellites in view!!!
-                            gpxBW.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
-                            gpxBW.write("</sat>");
-                        }
-                        /*
-                        if (getPrefGPXVersion == GPX1_1) {                                // GPX 1.1 doesn't support speed tags. Let's switch to Garmin extensions :(
-                            if (loc.getLocation().hasSpeed()) {
-                                gpxBW.write("<extensions><gpxtpx:TrackPointExtension><gpxtpx:speed>");     // Speed (as Garmin extension)
-                                gpxBW.write(formattedSpeed);
-                                gpxBW.write("</gpxtpx:speed></gpxtpx:TrackPointExtension></extensions>");
-                            }
-                        } */
-                        gpxBW.write("</trkpt>" + newLine);
+                        this.writeGpxTrack(trackGpxBW, dfdtGPX_NoMillis, dfdtGPX, formattedLatitude, formattedLongitude, formattedAltitude, formattedSpeed, loc);
+//                        trackGpxBW.write("  <trkpt lat=\"" + formattedLatitude + "\" lon=\"" + formattedLongitude + "\">");
+//                        if (loc.getLocation().hasAltitude()) {
+//                            trackGpxBW.write("<ele>");     // Elevation
+//                            trackGpxBW.write(formattedAltitude);
+//                            trackGpxBW.write("</ele>");
+//                        }
+//                        trackGpxBW.write("<time>");     // Time
+//                        //gpxBW.write(dfdtGPX.format(loc.getLocation().getTime()));
+//                        trackGpxBW.write(((loc.getLocation().getTime() % 1000L) == 0L) ?
+//                                dfdtGPX_NoMillis.format(loc.getLocation().getTime()) :
+//                                dfdtGPX.format(loc.getLocation().getTime()));
+//                        trackGpxBW.write("</time>");
+//                        if (getPrefGPXVersion == GPX1_0) {
+//                            if (loc.getLocation().hasSpeed()) {
+//                                trackGpxBW.write("<speed>");     // Speed
+//                                trackGpxBW.write(formattedSpeed);
+//                                trackGpxBW.write("</speed>");
+//                            }
+//                        }
+//                        if (loc.getNumberOfSatellitesUsedInFix() > 0) {                   // GPX standards requires sats used for FIX.
+//                            trackGpxBW.write("<sat>");                                         // and NOT the number of satellites in view!!!
+//                            trackGpxBW.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
+//                            trackGpxBW.write("</sat>");
+//                        }
+//                        /*
+//                        if (getPrefGPXVersion == GPX1_1) {                                // GPX 1.1 doesn't support speed tags. Let's switch to Garmin extensions :(
+//                            if (loc.getLocation().hasSpeed()) {
+//                                gpxBW.write("<extensions><gpxtpx:TrackPointExtension><gpxtpx:speed>");     // Speed (as Garmin extension)
+//                                gpxBW.write(formattedSpeed);
+//                                gpxBW.write("</gpxtpx:speed></gpxtpx:TrackPointExtension></extensions>");
+//                            }
+//                        } */
+//                        trackGpxBW.write("</trkpt>" + newLine);
                     }
 
                     // TXT
@@ -710,8 +1036,8 @@ class Exporter extends Thread {
                     kmlBW.write("  </Placemark>" + newLine + newLine);
                 }
                 if (exportGPX) {
-                    gpxBW.write(" </trkseg>" + newLine);
-                    gpxBW.write("</trk>" + newLine + newLine);
+                    trackGpxBW.write(" </trkseg>" + newLine);
+                    trackGpxBW.write("</trk>" + newLine + newLine);
                 }
             }
 
@@ -727,9 +1053,15 @@ class Exporter extends Thread {
                 kmlBW.close();
             }
             if (exportGPX) {
-                gpxBW.write("</gpx>" + newLine + " ");
-                gpxBW.flush();
-                gpxBW.close();
+                // List of Track point
+                trackGpxBW.write("</gpx>" + newLine + " ");
+                trackGpxBW.flush();
+                trackGpxBW.close();
+
+                // List of POI
+                trackWptBw.write("</gpx>" + newLine + " ");
+                trackWptBw.flush();
+                trackWptBw.close();
             }
             if (exportTXT) {
                 txtBW.flush();
@@ -739,6 +1071,7 @@ class Exporter extends Thread {
             Log.w("myApp", "[#] Exporter.java - Track "+ track.getId() +" exported in " + (System.currentTimeMillis() - startTime) + " ms (" + elements_total + " pts @ " + ((1000L * elements_total) / (System.currentTimeMillis() - startTime)) + " pts/s)");
             //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACK_EXPORTED, track.getId()));
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_SUCCESS);
+
         } catch (IOException e) {
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
             //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TOAST_UNABLE_TO_WRITE_THE_FILE, track.getId()));
