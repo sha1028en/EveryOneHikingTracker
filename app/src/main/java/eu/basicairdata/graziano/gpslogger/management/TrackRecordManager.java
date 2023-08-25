@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.EventBusMSGNormal;
@@ -154,13 +155,13 @@ public class TrackRecordManager {
     /**
      * record PlaceMarker when GPS provider ENABLED
      *
-     * @param placeMarkDesc place marker desc
+     * @param placeMarkDesc placemarker desc
+     * @param parentTrackName placemarker's parent Track Name
      */
-    public void addPlaceMark(@NonNull final String placeMarkDesc) {
+    public void addPlaceMark(@NonNull final String placeMarkDesc, @NonNull final String parentTrackName) {
 
         // add black desc place marker <-
 //        this.gpsApp.setQuickPlacemarkRequest(true);
-        this.gpsApp.setPlacemarkRequested(true);
         if (!gpsApp.isStopButtonFlag() || this.gpsApp.getGPSStatus() != GPS_OK) {
             if (!gpsApp.isFirstFixFound() && this.gpsApp.getCurrentLocationExtended() == null) {
                 toast.cancel();
@@ -169,23 +170,22 @@ public class TrackRecordManager {
                 toast.show();
                 return;
             }
-
-        } else {
-            toast.cancel();
-            toast = Toast.makeText(mLocalContext.get(), "?????", Toast.LENGTH_SHORT);
-            toast.show();
-            return;
         }
-        this.gpsApp.setQuickPlacemarkRequest(true);
+        // this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkDescription(placeMarkDesc);
-        EventBus.getDefault().post(EventBusMSG.ADD_PLACEMARK);
+        this.gpsApp.setQuickPlacemarkRequest(true);
+        this.gpsApp.setPlacemarkRequested(true);
+        this.gpsApp.setCurrentTrackName(parentTrackName);
+//        EventBus.getDefault().post(EventBusMSG.REQUEST_ADD_PLACEMARK);
     }
 
     /**
      * start Record Track when GPS provider is ENABLED
      */
-    public void startRecordTrack() {
+    public void startRecordTrack(final String trackName, final String trackDesc) {
         this.gpsApp.setRecording(true);
+        this.gpsApp.setCurrentTrackName(trackName);
+        this.gpsApp.setCurrentTrackDesc(trackDesc);
     }
 
     /**
@@ -206,6 +206,20 @@ public class TrackRecordManager {
 
                 Track currentTrack = this.gpsApp.getCurrentTrack();
                 if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
+                    // if it has same Track, remove them save new Track
+                    StringBuilder victimTrackName = new StringBuilder("\"").append(trackName).append("\"");
+                    LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(victimTrackName.toString()));
+                    if(!trackList.isEmpty()) {
+                        for(Track victim : trackList) {
+                            String deprecateTrackName = victim.getName();
+                            String deprecateTrackDesc = victim.getDescription();
+
+                            this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
+                            // long deprecateTrackId = victim.getId();
+                            // this.gpsApp.gpsDataBase.deleteTrackWithRelated(deprecateTrackId);
+                            // this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackId);
+                        }
+                    }
                     currentTrack.setName(trackName);
                     currentTrack.setDescription(trackDesc);
                     GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);

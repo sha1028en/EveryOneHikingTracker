@@ -25,15 +25,15 @@ package eu.basicairdata.graziano.gpslogger;
  * The messages that can be sent/received with EventBus by the components of the app.
  */
 public class EventBusMSG {
-    static final short APP_RESUME                       =   1;  // Sent to components on app resume
+    public static final short APP_RESUME                 =   1;  // Sent to components on app resume
     static final short APP_PAUSE                        =   2;  // Sent to components on app pause
-    static final short NEW_TRACK                        =   3;  // Request to create a new track
-    static final short UPDATE_FIX                       =   4;  // Notify that a new fix is available
-    static final short UPDATE_TRACK                     =   5;  // Notify that the current track stats are updated
+    public static final short NEW_TRACK                 =   3;  // Request to create a new track
+    public static final short UPDATE_FIX                =   4;  // Notify that a new fix is available
+    public static final short UPDATE_TRACK              =   5;  // Notify that the current track stats are updated
     static final short UPDATE_TRACKLIST                 =   6;  // Notify that the tracklist is changed
     static final short UPDATE_SETTINGS                  =   7;  // Tell that settings are changed
-    static final short REQUEST_ADD_PLACEMARK            =   8;  // The user ask to add a placemark
-    static final short ADD_PLACEMARK                    =   9;  // The placemark is available
+    public static final short REQUEST_ADD_PLACEMARK            =   8;  // The user ask to add a placemark
+    public static final short ADD_PLACEMARK             =   9;  // The placemark is available
     static final short APPLY_SETTINGS                   =  10;  // The new settings must be applied
     static final short TOAST_TRACK_EXPORTED             =  11;  // The exporter has finished to export the track, shows toast
     static final short UPDATE_JOB_PROGRESS              =  13;  // Update the progress of the current Job
