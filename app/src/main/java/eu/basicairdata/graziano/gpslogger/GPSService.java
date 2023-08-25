@@ -175,21 +175,13 @@ public class GPSService extends Service {
     private String composeContentText () {
         String notificationText = "";
         int gpsStatus = GPSApplication.getInstance().getGPSStatus();
+
         switch (gpsStatus) {
-            case GPSApplication.GPS_DISABLED:
-                notificationText = getString(R.string.gps_disabled);
-                break;
-            case GPSApplication.GPS_OUTOFSERVICE:
-                notificationText = getString(R.string.gps_out_of_service);
-                break;
-            case GPSApplication.GPS_TEMPORARYUNAVAILABLE:
-            case GPSApplication.GPS_SEARCHING:
-                notificationText = getString(R.string.gps_searching);
-                break;
-            case GPSApplication.GPS_STABILIZING:
-                notificationText = getString(R.string.gps_stabilizing);
-                break;
-            case GPSApplication.GPS_OK:
+            case GPSApplication.GPS_DISABLED -> notificationText = getString(R.string.gps_disabled);
+            case GPSApplication.GPS_OUTOFSERVICE -> notificationText = getString(R.string.gps_out_of_service);
+            case GPSApplication.GPS_TEMPORARYUNAVAILABLE, GPSApplication.GPS_SEARCHING -> notificationText = getString(R.string.gps_searching);
+            case GPSApplication.GPS_STABILIZING -> notificationText = getString(R.string.gps_stabilizing);
+            case GPSApplication.GPS_OK -> {
                 if (GPSApplication.getInstance().isRecording() && (GPSApplication.getInstance().getCurrentTrack() != null)) {
                     PhysicalDataFormatter phdformatter = new PhysicalDataFormatter();
                     PhysicalData phdDuration;
@@ -205,9 +197,11 @@ public class GPSService extends Service {
                     if (!phdDistance.value.isEmpty()) {
                         notificationText += " - " + getString(R.string.distance) + ": " + phdDistance.value + " " + phdDistance.um;
                     }
+
                 } else {
                     notificationText = getString(R.string.notification_contenttext);
                 }
+            }
         }
         return notificationText;
     }

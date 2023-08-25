@@ -80,6 +80,8 @@
     <!-- Track Status message -->
     <string name="track_empty">새 트랙</string>
     <string name="track_start_with_button_below">하단바 버튼으로\n방문지를 추가하세요.</string>
+    <string name="track_about_modify_placemark">지도위의 시설물을 더블 클릭하여 위치를\n이동할수 있습니다. (일정 줌레벨 이상일때만)</string>
+    <string name="track_about_verify_information">등록된 코스의 시설물들을 지도에서 확인해 보세요</string>
 
     <!-- Recording buttons (bottom side) -->
     <string name="record">기록</string>
@@ -138,6 +140,7 @@
     <string name="no">아니오</string>
     <string name="cancel">취소</string>
     <string name="export_unable_to_write_file">파일을 내보낼 수 없습니다.</string>
+    <string name="confirm">확인</string>
 
     <!-- Notification App killed messagebox -->
     <string name="dlg_app_killed">백그라운드 트랙킹 기록 중에 종료될 수 있습니다.</string>
@@ -238,5 +241,24 @@
     <string name="UM_nm">NM</string>
     <string name="UM_kn">kn</string>
     <string name="UM_s">s</string>
+
+    <!--Region of South Korea which record track    -->
+    <string name="track_region_seoul">서울</string>
+    <string name="track_region_incheon">인천</string>
+    <string name="track_region_gueonggi">경기</string>
+    <string name="track_region_gangwon">강원</string>
+    <string name="track_region_sejong">세종</string>
+    <string name="track_region_daejeon">대전</string>
+    <string name="track_region_south_chungcheong">충남</string>
+    <string name="track_region_north_chungcheong">충북</string>
+    <string name="track_region_daegu">대구</string>
+    <string name="track_region_north_gyeongsang">경북</string>
+    <string name="track_region_south_gyeongsang">경남</string>
+    <string name="track_region_ulsan">울산</string>
+    <string name="track_region_busan">부산</string>
+    <string name="track_region_north_jeolla">전북</string>
+    <string name="track_region_south_jeolla">전남</string>
+    <string name="track_region_gwangju">광주</string>
+    <string name="track_region_jeju">제주</string>
 
 </resources>

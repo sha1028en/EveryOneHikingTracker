@@ -770,7 +770,8 @@ class Exporter extends Thread {
 
                 for (int i = 0; i <= track.getNumberOfPlacemarks(); i += groupOfLocations) {
                     //Log.w("myApp", "[#] Exporter.java - " + (i + GroupOfLocations));
-                    placemarkList.addAll(gpsApp.gpsDataBase.getPlacemarksList(track.getId(), i, i + groupOfLocations - 1));
+//                    placemarkList.addAll(gpsApp.gpsDataBase.getPlacemarksList(track.getId(), i, i + groupOfLocations - 1));
+                    placemarkList.addAll(gpsApp.gpsDataBase.getPlacemarksList(track.getName()));
 
                     if (!placemarkList.isEmpty()) {
                         for (LocationExtended loc : placemarkList) {

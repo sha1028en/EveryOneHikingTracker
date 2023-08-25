@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chooseRegionRoot"
+    android:layout_width="400dp"
+    android:layout_height="wrap_content"
+    tools:context=".ChooseRegionListDialog">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chooseRegionLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/regionChooseConfirm">
+
+        <ToggleButton
+            android:id="@+id/chooseRegionSeoul"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/track_region_seoul"
+            android:textOn="@string/track_region_seoul"
+            android:textOff="@string/track_region_seoul"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionIncheon"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionGueonggi"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionGueonggi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_gueonggi"
+            android:textOff="@string/track_region_gueonggi"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionGangwon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionSeoul"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionIncheon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_incheon"
+            android:textOff="@string/track_region_incheon"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionSejong"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionGangwon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionSeoul" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionGangwon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_gangwon"
+            android:textOff="@string/track_region_gangwon"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionNorthChungchung"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionIncheon"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionGueonggi" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionSejong"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_sejong"
+            android:textOff="@string/track_region_sejong"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionDaejeon"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionNorthChungchung"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionIncheon" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionNorthChungchung"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOff="@string/track_region_north_chungcheong"
+            android:textOn="@string/track_region_north_chungcheong"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionSouthChungchung"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionSejong"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionGangwon" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionDaejeon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_daejeon"
+            android:textOff="@string/track_region_daejeon"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionDaegu"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionSouthChungchung"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionSejong" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionSouthChungchung"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_south_chungcheong"
+            android:textOff="@string/track_region_south_chungcheong"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionNorthGyeongsang"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionDaejeon"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionNorthChungchung" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionDaegu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_daegu"
+            android:textOff="@string/track_region_daegu"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionUlsan"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionNorthGyeongsang"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionDaejeon" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionNorthGyeongsang"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_north_gyeongsang"
+            android:textOff="@string/track_region_north_gyeongsang"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionSouthGyeongsang"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionDaegu"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionSouthChungchung" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionUlsan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_ulsan"
+            android:textOff="@string/track_region_ulsan"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionBusan"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionSouthGyeongsang"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionDaegu" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionSouthGyeongsang"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_south_gyeongsang"
+            android:textOff="@string/track_region_south_gyeongsang"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionNorthJeolla"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionUlsan"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionNorthGyeongsang" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionBusan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_busan"
+            android:textOff="@string/track_region_busan"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionGwangju"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionNorthJeolla"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionUlsan" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionNorthJeolla"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_north_jeolla"
+            android:textOff="@string/track_region_north_jeolla"
+            app:layout_constraintBottom_toTopOf="@+id/chooseRegionSouthJeolla"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionBusan"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionSouthGyeongsang" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionGwangju"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:textOn="@string/track_region_gwangju"
+            android:textOff="@string/track_region_gwangju"
+            app:layout_constraintBottom_toTopOf="@id/chooseRegionJeju"
+            app:layout_constraintEnd_toStartOf="@+id/chooseRegionSouthJeolla"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionBusan" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionSouthJeolla"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_south_jeolla"
+            android:textOff="@string/track_region_south_jeolla"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintBottom_toTopOf="@id/emptySpace"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionGwangju"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionNorthJeolla" />
+
+        <ToggleButton
+            android:id="@+id/chooseRegionJeju"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:textOn="@string/track_region_jeju"
+            android:textOff="@string/track_region_jeju"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/emptySpace"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionGwangju" />
+
+        <ToggleButton
+            android:id="@+id/emptySpace"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="4dp"
+            android:textOff=""
+            android:textOn=""
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chooseRegionJeju"
+            app:layout_constraintTop_toBottomOf="@+id/chooseRegionSouthJeolla"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/regionChooseConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/confirm"
+        app:layout_constraintTop_toBottomOf="@id/chooseRegionLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

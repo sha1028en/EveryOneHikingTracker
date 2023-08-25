@@ -24,8 +24,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:viewBindingIgnore="true">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,14 +37,13 @@
 
         <EditText
             android:id="@+id/course_name_description"
-            android:inputType="textCapSentences"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/dlg_enter_the_description" >
-
-            <requestFocus />
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="@string/dlg_enter_the_course_name"
+            android:inputType="textCapSentences">
+            <requestFocus/>
         </EditText>
     </LinearLayout>
 </RelativeLayout>

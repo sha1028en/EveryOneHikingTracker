@@ -132,11 +132,7 @@ public class FragmentGPSFix extends Fragment {
     ViewTreeObserver.OnGlobalLayoutListener viewTreeObserverOnGLL = new ViewTreeObserver.OnGlobalLayoutListener() {
         @Override
         public void onGlobalLayout() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                flGPSFix.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
-                flGPSFix.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
+            flGPSFix.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             //int width  = flGPSFix.getMeasuredWidth();
             //int height = flGPSFix.getMeasuredHeight();
             //Log.w("myApp", "[#] FragmentGPSFix MEASURED: " + width + " x " + height);
@@ -223,6 +219,7 @@ public class FragmentGPSFix extends Fragment {
                     Intent callGPSSettingIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                     try {
                         startActivityForResult(callGPSSettingIntent, 0);
+
                     } catch (Exception e) {
                         isAWarningClicked = false;
                         // Unable to open Intent
@@ -262,7 +259,7 @@ public class FragmentGPSFix extends Fragment {
         cvWarningBatteryOptimised.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isAWarningClicked && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)) {
+                if (!isAWarningClicked) {
                     isAWarningClicked = true;
                     // Go to Settings screen
                     Intent intent = new Intent();
@@ -270,6 +267,7 @@ public class FragmentGPSFix extends Fragment {
 
                     try {
                         getContext().startActivity(intent);
+
                     } catch (Exception e) {
                         isAWarningClicked = false;
                         // Unable to open Intent
@@ -315,11 +313,7 @@ public class FragmentGPSFix extends Fragment {
 
     @Override
     public void onPause() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            flGPSFix.getViewTreeObserver().removeGlobalOnLayoutListener(viewTreeObserverOnGLL);
-        } else {
-            flGPSFix.getViewTreeObserver().removeOnGlobalLayoutListener(viewTreeObserverOnGLL);
-        }
+        flGPSFix.getViewTreeObserver().removeOnGlobalLayoutListener(viewTreeObserverOnGLL);
 
         EventBus.getDefault().unregister(this);
         super.onPause();
@@ -397,6 +391,7 @@ public class FragmentGPSFix extends Fragment {
                 cvWarningBatteryOptimised.setVisibility(View.GONE);
                 cvWarningGPSDisabled.setVisibility(View.GONE);
                 cvWarningLocationDenied.setVisibility(View.GONE);
+
             } else {
                 tlCoordinates.setVisibility(View.INVISIBLE);
                 tlAltitude.setVisibility(View.INVISIBLE);
@@ -413,35 +408,37 @@ public class FragmentGPSFix extends Fragment {
 
                 tvGPSFixStatus.setVisibility(View.VISIBLE);
                 switch (GPSStatus) {
-                    case GPS_DISABLED:
+                    case GPS_DISABLED -> {
                         tvGPSFixStatus.setText(R.string.gps_disabled);
                         cvWarningGPSDisabled.setVisibility(View.VISIBLE);
-                        break;
-                    case GPS_OUTOFSERVICE:
+                    }
+
+                    case GPS_OUTOFSERVICE -> {
                         tvGPSFixStatus.setText(R.string.gps_out_of_service);
                         cvWarningGPSDisabled.setVisibility(View.GONE);
-                        break;
-                    case GPS_TEMPORARYUNAVAILABLE:
-                    case GPS_SEARCHING:
+                    }
+
+                    case GPS_TEMPORARYUNAVAILABLE, GPS_SEARCHING -> {
                         tvGPSFixStatus.setText(getString(R.string.gps_searching) + ssat);
                         cvWarningGPSDisabled.setVisibility(View.GONE);
-                        break;
-                    case GPS_STABILIZING:
+                    }
+
+                    case GPS_STABILIZING -> {
                         tvGPSFixStatus.setText(getString(R.string.gps_stabilizing) + ssat);
                         cvWarningGPSDisabled.setVisibility(View.GONE);
-                        break;
+                    }
                 }
 
                 if (isBackgroundActivityRestricted) {
                     cvWarningBackgroundRestricted.setVisibility(View.VISIBLE);
+
                 } else {
                     cvWarningBackgroundRestricted.setVisibility(View.GONE);
                 }
 
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        && !powerManager.isIgnoringBatteryOptimizations(gpsApp.getPackageName())
-                        && gpsApp.isBatteryOptimisedWarningVisible()) {
+                if (!powerManager.isIgnoringBatteryOptimizations(gpsApp.getPackageName()) && gpsApp.isBatteryOptimisedWarningVisible()) {
                     cvWarningBatteryOptimised.setVisibility(View.VISIBLE);
+
                 } else {
                     cvWarningBatteryOptimised.setVisibility(View.GONE);
                 }
@@ -449,6 +446,7 @@ public class FragmentGPSFix extends Fragment {
                 if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     tvGPSFixStatus.setText(R.string.gps_not_accessible);
                     cvWarningLocationDenied.setVisibility(View.VISIBLE);
+
                 } else {
                     cvWarningLocationDenied.setVisibility(View.GONE);
                 }

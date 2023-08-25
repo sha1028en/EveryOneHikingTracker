@@ -113,4 +113,24 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+    <string-array name="SouthKoreaRegions">
+        <item>@string/track_region_seoul</item>
+        <item>@string/track_region_incheon</item>
+        <item>@string/track_region_gueonggi</item>
+        <item>@string/track_region_gangwon</item>
+        <item>@string/track_region_sejong</item>
+        <item>@string/track_region_daejeon</item>
+        <item>@string/track_region_south_chungcheong</item>
+        <item>@string/track_region_north_chungcheong</item>
+        <item>@string/track_region_daegu</item>
+        <item>@string/track_region_south_gyeongsang</item>
+        <item>@string/track_region_north_gyeongsang</item>
+        <item>@string/track_region_ulsan</item>
+        <item>@string/track_region_south_jeolla</item>
+        <item>@string/track_region_north_jeolla</item>
+        <item>@string/track_region_gwangju</item>
+        <item>@string/track_region_jeju</item>
+    </string-array>
+
 </resources>

@@ -80,7 +80,9 @@
     <!-- Track Status message -->
     <string name="track_empty">New Track</string>
     <string name="track_start_with_button_below">Start recording Trackpoints\nor add an Annotation\nusing one of the buttons below</string>
-
+    <string name="track_about_modify_placemark">You can move the location by double-clicking\nthe facility on the map.\n(Only when over a certain zoom level)</string>
+    <string name="track_about_verify_information">Check the facilities of the registered course on the map</string>
+    
     <!-- Recording buttons (bottom side) -->
     <string name="record">Record</string>
     <string name="pause">Pause</string>
@@ -110,8 +112,10 @@
 
     <!-- Annotation Creation dialog -->
     <string name="dlg_add_annotation">Add annotation</string>
+    <string name="dlg_add_course">Add course</string>
     <string name="dlg_enter_the_description">Enter the description</string>
     <string name="dlg_button_add">Add</string>
+    <string name="dlg_enter_the_course_name">Enter the Course Name</string>
 
     <!-- Tracklist -->
     <string name="tracklist_empty">Tracklist Empty</string>
@@ -138,6 +142,7 @@
     <string name="no">No</string>
     <string name="cancel">Cancel</string>
     <string name="export_unable_to_write_file">Unable to write the file</string>
+    <string name="confirm">confirm</string>
 
     <!-- Notification App killed messagebox -->
     <string name="dlg_app_killed">The App has been killed during background recording.</string>
@@ -219,7 +224,7 @@
     <string name="about_ok">Close</string>
     <string name="about_rate_this_app">Rate this App</string>
     <string name="about_unable_to_rate">Unable to reach the Store</string>
-
+    
     <!-- Notification icon -->
     <string name="notification_contenttext">is active</string>
 
@@ -238,7 +243,24 @@
     <string name="UM_nm">NM</string>
     <string name="UM_kn">kn</string>
     <string name="UM_s">s</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--Region of South Korea which record track    -->
+    <string name="track_region_seoul">Seoul</string>
+    <string name="track_region_incheon">Incheon</string>
+    <string name="track_region_gueonggi">Gyeonggi</string>
+    <string name="track_region_gangwon">Gangwon</string>
+    <string name="track_region_sejong">Sejong</string>
+    <string name="track_region_daejeon">Daejeon</string>
+    <string name="track_region_south_chungcheong">Chungcheongnam-do</string>
+    <string name="track_region_north_chungcheong">Chungcheongbuk-do</string>
+    <string name="track_region_daegu">Daegu</string>
+    <string name="track_region_north_gyeongsang">Gyeongsangbuk-do</string>
+    <string name="track_region_south_gyeongsang">Gyeongsangnam-do</string>
+    <string name="track_region_ulsan">Ulsan</string>
+    <string name="track_region_busan">Busan</string>
+    <string name="track_region_north_jeolla">Jeollabuk-do</string>
+    <string name="track_region_south_jeolla">Jeollanam-do</string>
+    <string name="track_region_gwangju">Gwangju</string>
+    <string name="track_region_jeju">Jeju</string>
 
 </resources>

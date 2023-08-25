@@ -28,6 +28,7 @@ import java.util.Locale;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
+
 /**
  * Describes and manages a Track.
  */
@@ -47,6 +48,9 @@ public class Track {
     public static final int TRACK_TYPE_CAR      = 5;
     public static final int TRACK_TYPE_FLIGHT   = 6;
     public static final int TRACK_TYPE_ND       = NOT_AVAILABLE;
+
+    public static final String TRACK_COURSE_TYPE_WOOD_DECK = "wood_deck";
+    public static final String TRACK_COURSE_TYPE_DIRT = "dirt";
 
     public static final int[] ACTIVITY_DRAWABLE_RESOURCE = {    // The indexes must match the Track Types previously defined:
             R.drawable.ic_tracktype_place_24dp,                 // Track.TRACK_TYPE_STEADY   = 0;
@@ -130,6 +134,7 @@ public class Track {
     // 0 = Do not generate thumb (track crosses anti-meridian)
 
     private int     type                        = TRACK_TYPE_ND;    // Saved in DB
+    private String courseType                   = TRACK_COURSE_TYPE_WOOD_DECK;
 
     // True if the card view is selected
     private boolean isSelected = false;
@@ -151,6 +156,7 @@ public class Track {
             longitudeStart = location.getLocation().getLongitude();
             if (location.getLocation().hasAltitude()) {
                 altitudeStart = location.getLocation().getAltitude();
+
             } else {
                 altitudeStart = NOT_AVAILABLE;
             }
@@ -173,7 +179,7 @@ public class Track {
                 name = df2.format(timeStart);
             }
 
-            timeLastFix = timeStart;
+//            timeLastFix = timeStart;
             timeEnd = timeStart;
 
             durationMoving = 0;
@@ -187,6 +193,7 @@ public class Track {
         longitudeEnd = location.getLocation().getLongitude();
         if (location.getLocation().hasAltitude()) {
             altitudeEnd = location.getLocation().getAltitude();
+
         } else {
             altitudeEnd = NOT_AVAILABLE;
         }
@@ -302,15 +309,14 @@ public class Track {
     /**
      * Creates a void Track.
      */
-    public Track(){
-    }
+    public Track() {}
 
     /**
      * Creates a Track with the specified name.
      *
      * @param name The name of the Track
      */
-    public Track(String name){
+    public Track(String name) {
         this.name = name;
     }
 
@@ -374,7 +380,7 @@ public class Track {
                        long distanceLastAltitude, double altitudeUp, double altitudeDown,
                        double altitudeInProgress, float speedMax, float speedAverage,
                        float speedAverageMoving, long numberOfLocations, long numberOfPlacemarks,
-                       int validMap, int type, String description) {
+                       int validMap, int type, String description, String courseType) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -428,6 +434,7 @@ public class Track {
 
         this.validMap = validMap;
         this.type = type;
+        this.courseType = courseType;
 
         EGM96 egm96 = EGM96.getInstance();
         if (egm96 != null) {
@@ -648,6 +655,14 @@ public class Track {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    public String getCourseType() {
+        return this.courseType;
+    }
+
+    public void setCourseType(final String courseType) {
+        this.courseType = courseType;
     }
 
     // --------------------------------------------------------------------------------------------

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:animateLayoutChanges="true"
+    tools:context=".RecordingActivity">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/proof_req_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="take picture"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/proof_load_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="load img"
+            app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"
+            app:layout_constraintEnd_toStartOf="@+id/proof_req_camera"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />
+
+        <Button
+            android:id="@+id/proof_remove_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="remove img"
+            app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/proof_req_camera"
+            app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />
+
+        <ImageView
+            android:id="@+id/proof_load_img_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"
+            android:adjustViewBounds="true"
+            android:maxHeight="200dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <Button
+            android:id="@+id/proof_add_annotation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="add annotation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/proof_req_camera" />
+
+        <TextView
+            android:id="@+id/proof_satlite_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:text="disable"
+            app:layout_constraintEnd_toEndOf="@+id/proof_add_annotation"
+            app:layout_constraintStart_toStartOf="@+id/proof_add_annotation"
+            app:layout_constraintTop_toBottomOf="@+id/proof_add_annotation" />
+
+        <Button
+            android:id="@+id/proof_start_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="start record"
+            app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"
+            app:layout_constraintEnd_toStartOf="@+id/proof_add_annotation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />
+
+        <Button
+            android:id="@+id/proof_stop_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="stop record"
+            app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/proof_add_annotation"
+            app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/modify_placemark_type_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#aaaaaa"/>
+
+    <!--    Bottom Sheet    -->
+    <LinearLayout
+        android:id="@+id/modify_placemark_root"
+        android:layout_width="match_parent"
+        android:layout_height="700dp"
+        android:orientation="vertical"
+        android:background="@drawable/white_round_top_border_20"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="70dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/primary_round_border_8">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:layout_weight="1"
+                android:text="@string/track_about_verify_information"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="marquee"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="지도"/>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/modify_placemark_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
+            android:background="#343434"
+            app:layout_anchor="@+id/modify_placemark_root"
+            app:layout_anchorGravity="center">
+
+            <TextView
+                android:id="@+id/modify_placemark_information_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:text="@string/track_about_modify_placemark"
+                android:padding="16dp"
+                android:background="@drawable/deepgray_round_border_16"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:gravity="center"/>
+        </FrameLayout>
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

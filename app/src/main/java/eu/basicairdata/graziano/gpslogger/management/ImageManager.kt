@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.view.WindowManager
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -29,7 +30,7 @@ class ImageManager {
     companion object {
 
         /**
-         * get File PATH where EMPTY tmp Files
+         * get File PATH where created EMPTY tmp Files
          *
          * @param context Android Context
          * @param fileName to save Image File Name
@@ -51,6 +52,35 @@ class ImageManager {
 
             val imageResolver = localContext.get()!!.contentResolver
             return imageResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, value)
+        }
+
+        fun parseNameFromUri(context: Context, uri: Uri?): String {
+            if(uri == null) return ""
+            var fileName = ""
+            val localContext = WeakReference(context)
+
+            if(uri.scheme.equals("content")) {
+                try {
+                    val cursor = localContext.get()!!.contentResolver.query(uri, null, null, null, null)
+                    cursor.use {
+                        it!!.moveToFirst()
+                        val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        if(index > 0) {
+                            fileName = cursor!!.getString(index)
+                        }
+                    }
+
+                } catch (e: NullPointerException) {
+                    fileName = ""
+
+                } catch (e: IndexOutOfBoundsException) {
+                    fileName = ""
+
+                } finally {
+                    localContext.clear()
+                }
+            }
+            return fileName
         }
 
         /**
@@ -201,9 +231,17 @@ class ImageManager {
             return image as Bitmap
         }
 
-        @Throws(NullPointerException::class, IllegalArgumentException::class, IOException::class)
+        /**
+         * remove latest Image if File exists
+         *
+         * @param context Android Context
+         * @param fileName to remove Image File Name
+         *
+         * @throws IllegalArgumentException wrong params
+         */
+        @Throws(IllegalArgumentException::class)
         fun removeLastImage(context: Context, fileName: String): Boolean {
-            val hasRemove = false
+            var hasRemove = false
             val localContext = WeakReference(context)
             val projection = arrayOf(
                 MediaStore.MediaColumns._ID,
@@ -220,20 +258,26 @@ class ImageManager {
                 whereArg,
                 orderBy)
 
-            imageCursor.use {
-                it!!.moveToLast()
-                val index = it.getColumnIndex(MediaStore.Images.ImageColumns._ID)
-                if(index > -1) {
-                    val contentUri = ContentUris.withAppendedId(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        it.getLong(index))
-
-                    localContext.get()!!.contentResolver.delete(contentUri, null, null)
+            try {
+                imageCursor.use {
+                    it!!.moveToLast()
+                    val index = it.getColumnIndex(MediaStore.Images.ImageColumns._ID)
+                    if (index > -1) {
+                        val contentUri = ContentUris.withAppendedId(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            it.getLong(index)
+                        )
+                        hasRemove = localContext.get()!!.contentResolver.delete(contentUri, null, null) > 0
+                    }
                 }
-            }
-            imageCursor!!.close()
-            localContext.clear()
 
+            } catch (e: IndexOutOfBoundsException) {
+                e.printStackTrace()
+                hasRemove = false
+
+            } finally {
+                localContext.clear()
+            }
             return hasRemove
         }
 
@@ -291,6 +335,10 @@ class ImageManager {
 
         /**
          * Compress Bitmap
+         *
+         * @param context Android Context
+         * @param source to compress Bitmap
+         * @param compressPercent how many compress Bitmap?
          */
         private fun compressBitmap(context: Context, source: Bitmap, compressPercent: Int) : Bitmap?{
             val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay

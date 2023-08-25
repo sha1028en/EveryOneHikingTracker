@@ -391,22 +391,8 @@ public class GPSActivity extends AppCompatActivity {
                         Log.w("myApp", "[#] GPSActivity.java - INTERNET = PERMISSION_DENIED");
                     }
                 }
-                // TODO: Manage Android 4 storage permission
-//                    if (perms.containsKey(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-//                        if (perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//                            gpsApp.createFolders();
-//                            if (gpsApp.getJobsPending() > 0) gpsApp.executeJob();
-//                        } else {
-//                            Log.w("myApp", "[#] GPSActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_DENIED");
-//                            if (gpsApp.getJobsPending() > 0) {
-//                                // Shows toast "Unable to write the file"
-//                                showToastGrantStoragePermission = true;
-//                                EventBus.getDefault().post(EventBusMSG.TOAST_STORAGE_PERMISSION_REQUIRED);
-//                                gpsApp.setJobsPending(0);
-//                            }
-//                        }
-//                    }
             }
+
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
@@ -813,6 +799,5 @@ public class GPSActivity extends AppCompatActivity {
             toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
             toast.show();
         }
-        //Update();
     }
 }

@@ -65,7 +65,7 @@ public class FragmentTracklist extends Fragment {
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
     private TrackAdapter adapter;
-    private final List<Track> data = Collections.synchronizedList(new ArrayList<Track>());
+    private final List<Track> data = Collections.synchronizedList(new ArrayList<>());
     private View view;
     private TextView tvTracklistEmpty;
 
@@ -89,16 +89,14 @@ public class FragmentTracklist extends Fragment {
         recyclerView.getItemAnimator().setChangeDuration(0);
         adapter = new TrackAdapter(data);
         switch (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) {
-            case Configuration.UI_MODE_NIGHT_NO:
+            case Configuration.UI_MODE_NIGHT_NO ->
                 // Night mode is not active, we're in day time
-                adapter.isLightTheme = true;
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                // Night mode is active, we're at night!
-            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                    adapter.isLightTheme = true;
+
+            // Night mode is active, we're at night!
+            case Configuration.UI_MODE_NIGHT_YES, Configuration.UI_MODE_NIGHT_UNDEFINED ->
                 // We don't know what mode we're in, assume notnight
-                adapter.isLightTheme = false;
-                break;
+                    adapter.isLightTheme = false;
         }
         recyclerView.setAdapter(adapter);
         return view;
@@ -114,7 +112,6 @@ public class FragmentTracklist extends Fragment {
             //Log.w("myApp", "[#] FragmentTracklist.java - EventBus: FragmentTracklist already registered");
             EventBus.getDefault().unregister(this);
         }
-
         EventBus.getDefault().register(this);
         update();
     }
@@ -133,8 +130,7 @@ public class FragmentTracklist extends Fragment {
         int i = 0;
         boolean found = false;
         switch (msg.eventBusMSG) {
-            case EventBusMSG.TRACKLIST_SELECT:
-            case EventBusMSG.TRACKLIST_DESELECT:
+            case EventBusMSG.TRACKLIST_SELECT, EventBusMSG.TRACKLIST_DESELECT -> {
                 synchronized (data) {
                     do {
                         if (data.get(i).getId() == msg.trackID) {
@@ -144,8 +140,9 @@ public class FragmentTracklist extends Fragment {
                         i++;
                     } while ((i < data.size()) && !found);
                 }
-                break;
-            case EventBusMSG.TRACKLIST_RANGE_SELECTION:
+            }
+
+            case EventBusMSG.TRACKLIST_RANGE_SELECTION -> {
                 if (GPSApplication.getInstance().getLastClickId() != NOT_AVAILABLE) {
                     synchronized (data) {
                         do {
@@ -166,6 +163,7 @@ public class FragmentTracklist extends Fragment {
                     }
                     EventBus.getDefault().post(EventBusMSG.UPDATE_TRACKLIST);
                 }
+            }
         }
     }
 
@@ -177,17 +175,15 @@ public class FragmentTracklist extends Fragment {
         if (msg == EventBusMSG.UPDATE_TRACK) {
             if (!data.isEmpty() && GPSApplication.getInstance().isCurrentTrackVisible()) {
                 final Track trk = GPSApplication.getInstance().getCurrentTrack();
+
                 synchronized (data) {
                     if (data.get(0).getId() == trk.getId()) {
                         //data.set(0, trk);
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Update Current Track Card Statistics
-                                RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(0);
-                                if (holder != null) {
-                                    ((TrackAdapter.TrackHolder) holder).UpdateTrackStats(data.get(0));
-                                }
+                        getActivity().runOnUiThread(() -> {
+                            // Update Current Track Card Statistics
+                            RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(0);
+                            if (holder != null) {
+                                ((TrackAdapter.TrackHolder) holder).UpdateTrackStats(data.get(0));
                             }
                         });
                     }
@@ -197,31 +193,31 @@ public class FragmentTracklist extends Fragment {
         }
         if (msg == EventBusMSG.REFRESH_TRACKLIST) {
             try {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+                getActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+
             } catch (NullPointerException e) {
                 //Log.w("myApp", "[#] FragmentTracklist.java - Unable to manage UI");
             }
             return;
         }
+
         if (msg == EventBusMSG.NOTIFY_TRACKS_DELETED) {
             deleteSomeTracks();
             return;
         }
+
         if (msg == EventBusMSG.UPDATE_TRACKLIST) {
             update();
             return;
         }
+
         if (msg == EventBusMSG.ACTION_BULK_SHARE_TRACKS) {
             GPSApplication.getInstance().loadJob(GPSApplication.JOB_TYPE_SHARE);
             GPSApplication.getInstance().executeJob();
             GPSApplication.getInstance().deselectAllTracks();
             return;
         }
+
         if (msg == EventBusMSG.ACTION_EDIT_TRACK) {
             for (Track T : GPSApplication.getInstance().getTrackList()) {
                 if (T.isSelected()) {
@@ -235,6 +231,7 @@ public class FragmentTracklist extends Fragment {
                 }
             }
         }
+
         if (msg == EventBusMSG.ACTION_BULK_VIEW_TRACKS) {
             final ArrayList<ExternalViewer> evList = new ArrayList<>(GPSApplication.getInstance().getExternalViewerChecker().getExternalViewersList());
 
@@ -243,8 +240,8 @@ public class FragmentTracklist extends Fragment {
                     // 1 Viewer installed, let's use it
                     GPSApplication.getInstance().setTrackViewer(evList.get(0));
                     openTrack();
-                }
-                else {
+
+                } else {
                     // 2 or more viewers installed
                     // Search the Default Track Viewer selected on Preferences
 
@@ -257,6 +254,7 @@ public class FragmentTracklist extends Fragment {
                             foundDefault = true;
                         }
                     }
+
                     if (!foundDefault) {
                         // The default Track Viewer hasn't been found
                         final Dialog dialog = new Dialog(getActivity());
@@ -277,6 +275,7 @@ public class FragmentTracklist extends Fragment {
                         });
                         dialog.setContentView(view);
                         dialog.show();
+
                     } else {
                         // Default Track Viewer found! Let's use it.
                         openTrack();
@@ -285,6 +284,7 @@ public class FragmentTracklist extends Fragment {
             }
             return;
         }
+
         if (msg == EventBusMSG.ACTION_BULK_DELETE_TRACKS) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(getResources().getString(R.string.card_message_delete_confirmation));
@@ -305,6 +305,7 @@ public class FragmentTracklist extends Fragment {
             dialog.show();
             return;
         }
+
         if (msg == EventBusMSG.INTENT_SEND) {
             final List<ExportingTask> selectedTracks = GPSApplication.getInstance().getExportingTaskList(); // The list of shared tracks
             ArrayList<Uri> files = new ArrayList<>();                                               // The list of URI to be attached to intent
@@ -320,7 +321,6 @@ public class FragmentTracklist extends Fragment {
             intent.setType("text/xml");
 
             for (ExportingTask ET : selectedTracks) {
-
                 Track track = GPSApplication.getInstance().gpsDataBase.getTrack(ET.getId());
                 if (track == null) return;
 
@@ -352,6 +352,7 @@ public class FragmentTracklist extends Fragment {
                             + (track.getDescription().isEmpty() ? "\n" + track.getDescription() + "\n" : "")
                             + "\n" + track.getNumberOfLocations() + " " + getString(R.string.trackpoints)
                             + "\n" + track.getNumberOfPlacemarks() + " " + getString(R.string.annotations));
+
                 } else {
                     extraText.append(getString(R.string.app_name) + " - " + getString(R.string.tab_track) + " " + track.getName()
                             + (!track.getDescription().isEmpty() ? "\n" + track.getDescription() : "")
@@ -410,6 +411,7 @@ public class FragmentTracklist extends Fragment {
                 if ((intent.resolveActivity(getContext().getPackageManager()) != null) && (!files.isEmpty())) {
                     startActivity(chooser);
                 }
+
             } catch (NullPointerException e) {
                 //Log.w("myApp", "[#] FragmentTracklist.java - Unable to start the Activity");
             }
@@ -434,28 +436,30 @@ public class FragmentTracklist extends Fragment {
             final List<Track> TI = GPSApplication.getInstance().getTrackList();
             //Log.w("myApp", "[#] FragmentTracklist.java - The element 0 has id = " + TI.get(0).getId());
             synchronized(data) {
-                if (data != null) data.clear();
+                data.clear();
                 if (!TI.isEmpty()) {
                     data.addAll(TI);
+
                     if (data.get(0).getId() == GPSApplication.getInstance().getCurrentTrack().getId()) {
                         GPSApplication.getInstance().setCurrentTrackVisible(true);
                         //Log.w("myApp", "[#] FragmentTracklist.java - current track, VISIBLE into the tracklist ("
                         //    + GPSApplication.getInstance().getCurrentTrack().getId() + ")");
+
                     } else {
                         GPSApplication.getInstance().setCurrentTrackVisible(false);
                         //Log.w("myApp", "[#] FragmentTracklist.java - current track empty, NOT VISIBLE into the tracklist");
                     }
+
                 } else {
                     GPSApplication.getInstance().setCurrentTrackVisible(false);
                 }
+
                 try {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            tvTracklistEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
-                            adapter.notifyDataSetChanged();
-                        }
+                    getActivity().runOnUiThread(() -> {
+                        tvTracklistEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                        adapter.notifyDataSetChanged();
                     });
+
                 } catch (NullPointerException e) {
                     //Log.w("myApp", "[#] FragmentTracklist.java - Unable to manage UI");
                 }
@@ -469,21 +473,19 @@ public class FragmentTracklist extends Fragment {
      */
     public void deleteSomeTracks() {
         try {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    List<Track> TI = GPSApplication.getInstance().getTrackList();
-                    synchronized (data) {
-                        for (int i = data.size() - 1; i >= 0; i--) {
-                            if (!TI.contains(data.get(i))) {
-                                data.remove(i);
-                                adapter.notifyItemRemoved(i);
-                            }
+            getActivity().runOnUiThread(() -> {
+                List<Track> TI = GPSApplication.getInstance().getTrackList();
+                synchronized (data) {
+                    for (int i = data.size() - 1; i >= 0; i--) {
+                        if (!TI.contains(data.get(i))) {
+                            data.remove(i);
+                            adapter.notifyItemRemoved(i);
                         }
-                        tvTracklistEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                     }
+                    tvTracklistEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             });
+
         } catch (NullPointerException e) {
             //Log.w("myApp", "[#] FragmentTracklist.java - Unable to manage UI");
             update();

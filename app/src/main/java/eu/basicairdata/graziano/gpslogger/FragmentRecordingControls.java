@@ -77,16 +77,14 @@ public class FragmentRecordingControls extends Fragment {
         tvLockButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isAdded())
-                    ((GPSActivity) getActivity()).onToggleLock();
+                if (isAdded()) ((GPSActivity) getActivity()).onToggleLock();
             }
         });
         tvStopButton = view.findViewById(R.id.id_stop);
         tvStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isAdded())
-                    ((GPSActivity) getActivity()).onRequestStop(true, false);
+                if (isAdded()) ((GPSActivity) getActivity()).onRequestStop(true, false);
             }
         });
         tvAnnotateButton = view.findViewById(R.id.id_annotate);
@@ -94,18 +92,15 @@ public class FragmentRecordingControls extends Fragment {
             @Override
             public void onClick(View v) {
                 gpsApp.setQuickPlacemarkRequest(false);
-                if (isAdded())
-                    ((GPSActivity) getActivity()).onRequestAnnotation();
+                if (isAdded()) ((GPSActivity) getActivity()).onRequestAnnotation();
             }
         });
         tvAnnotateButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 if (isAdded()) {
-                    if (!gpsApp.isBottomBarLocked()) vibrator.vibrate(150);
-                    gpsApp.setQuickPlacemarkRequest(true);
-                    if (!gpsApp.isPlacemarkRequested())
-                        ((GPSActivity) getActivity()).onRequestAnnotation();
+                    if (!gpsApp.isBottomBarLocked()) vibrator.vibrate(150);gpsApp.setQuickPlacemarkRequest(true);
+                    if (!gpsApp.isPlacemarkRequested()) ((GPSActivity) getActivity()).onRequestAnnotation();
                 }
                 return true;
             }
@@ -238,25 +233,30 @@ public class FragmentRecordingControls extends Fragment {
             final boolean isAnnot = gpsApp.isPlacemarkRequested();
             final boolean isLck = gpsApp.isBottomBarLocked();
             if (track != null) {
-                if (tvGeoPointsNumber != null)            tvGeoPointsNumber.setText(track.getNumberOfLocations() == 0 ? "" : String.valueOf(track.getNumberOfLocations()));
-                if (tvPlacemarksNumber != null)           tvPlacemarksNumber.setText(String.valueOf(track.getNumberOfPlacemarks() == 0 ? "" : track.getNumberOfPlacemarks()));
+                if (tvGeoPointsNumber != null) tvGeoPointsNumber.setText(track.getNumberOfLocations() == 0 ? "" : String.valueOf(track.getNumberOfLocations()));
+                if (tvPlacemarksNumber != null) tvPlacemarksNumber.setText(String.valueOf(track.getNumberOfPlacemarks() == 0 ? "" : track.getNumberOfPlacemarks()));
+
                 if (tvRecordButton != null) {
                     if (isRec) setButtonToClickedState(tvRecordButton, R.drawable.ic_pause_24, R.string.pause);
                     else setButtonToNormalState(tvRecordButton, R.drawable.ic_record_24, R.string.record);
                 }
+
                 if (tvAnnotateButton != null) {
                     if (isAnnot) setButtonToClickedState(tvAnnotateButton, 0, 0);
                     else setButtonToNormalState(tvAnnotateButton, 0, 0);
                 }
+
                 if (tvLockButton != null) {
                     if (isLck) setButtonToClickedState(tvLockButton, R.drawable.ic_unlock_24, R.string.unlock);
                     else setButtonToNormalState(tvLockButton, R.drawable.ic_lock_24, R.string.lock);
                 }
+
                 if (tvStopButton != null) {
                     tvStopButton.setClickable(isRec || isAnnot || (track.getNumberOfLocations() + track.getNumberOfPlacemarks() > 0));
                     if (isRec || isAnnot || (track.getNumberOfLocations() + track.getNumberOfPlacemarks() > 0) || gpsApp.isStopButtonFlag()) {
                         if (gpsApp.isStopButtonFlag()) setButtonToClickedState(tvStopButton, 0, 0);
                         else setButtonToNormalState(tvStopButton, 0, 0);
+
                     } else {
                         setButtonToDisabledState(tvStopButton, 0, 0);
                     }

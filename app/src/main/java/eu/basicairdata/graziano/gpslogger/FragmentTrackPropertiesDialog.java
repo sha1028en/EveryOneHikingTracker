@@ -86,6 +86,7 @@ public class FragmentTrackPropertiesDialog extends DialogFragment {
             title = savedInstanceState.getInt(KEY_TITLE, 0);
             selectedTrackType = savedInstanceState.getInt(KEY_SELTRACKTYPE, NOT_AVAILABLE);
             finalizeTrackWithOk = savedInstanceState.getBoolean(KEY_ISFINALIZATION, false);
+
         } else {
             selectedTrackType = trackToEdit.getType();
         }
@@ -151,6 +152,7 @@ public class FragmentTrackPropertiesDialog extends DialogFragment {
                                 Toast toast = Toast.makeText(GPSApplication.getInstance().getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
                                 toast.setGravity(Gravity.BOTTOM, 0, TOAST_VERTICAL_OFFSET);
                                 toast.show();
+
                             } else {
                                 GPSApplication.getInstance().UpdateTrackList();
                                 EventBus.getDefault().post(EventBusMSG.UPDATE_TRACK);

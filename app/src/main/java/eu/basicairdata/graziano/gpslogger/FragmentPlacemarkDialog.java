@@ -56,16 +56,12 @@ public class FragmentPlacemarkDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.fragment_placemark_dialog, null);
 
-        etDescription = view.findViewById(R.id.placemark_description);
-        etDescription.postDelayed(new Runnable()
-        {
-            public void run()
-            {
-                if (isAdded()) {
-                    etDescription.requestFocus();
-                    InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputMethodManager.showSoftInput(etDescription, InputMethodManager.SHOW_IMPLICIT);
-                }
+        etDescription = view.findViewById(R.id.course_name_description);
+        etDescription.postDelayed(() -> {
+            if (isAdded()) {
+                etDescription.requestFocus();
+                InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager.showSoftInput(etDescription, InputMethodManager.SHOW_IMPLICIT);
             }
         }, 200);
 

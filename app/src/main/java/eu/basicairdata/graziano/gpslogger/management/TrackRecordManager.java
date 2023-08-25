@@ -39,6 +39,11 @@ public class TrackRecordManager {
     private int totalSatellitesCnt = 0;
     private int availableSatellitesCnt = 0;
 
+    private String courseName = "";
+    private String trackName = "";
+
+    private String poiName = "";
+
     private Toast toast;
 
     /**
@@ -183,9 +188,9 @@ public class TrackRecordManager {
      * start Record Track when GPS provider is ENABLED
      */
     public void startRecordTrack(final String trackName, final String trackDesc) {
-        this.gpsApp.setRecording(true);
         this.gpsApp.setCurrentTrackName(trackName);
         this.gpsApp.setCurrentTrackDesc(trackDesc);
+        this.gpsApp.setRecording(true);
     }
 
     /**
@@ -214,7 +219,9 @@ public class TrackRecordManager {
                             String deprecateTrackName = victim.getName();
                             String deprecateTrackDesc = victim.getDescription();
 
-                            this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
+                            if(trackName.equals(deprecateTrackName) && trackDesc.equals(deprecateTrackDesc)) {
+                                this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
+                            }
                             // long deprecateTrackId = victim.getId();
                             // this.gpsApp.gpsDataBase.deleteTrackWithRelated(deprecateTrackId);
                             // this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackId);

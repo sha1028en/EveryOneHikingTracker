@@ -31,6 +31,8 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
  */
 public class LocationExtended {
     private Location location;
+
+    private String name                     = "";
     private String description              = "";
     private double altitudeEGM96Correction  = NOT_AVAILABLE;
     private int numberOfSatellites          = NOT_AVAILABLE;
@@ -68,6 +70,10 @@ public class LocationExtended {
     public float getBearing() { return location.hasBearing() ? location.getBearing() : NOT_AVAILABLE; }
 
     public long getTime() { return location.getTime(); }
+
+    public String getName() { return this.name; }
+
+    public void setName(final String name) { this.name = name; }
 
     public String getDescription() {
         return description;

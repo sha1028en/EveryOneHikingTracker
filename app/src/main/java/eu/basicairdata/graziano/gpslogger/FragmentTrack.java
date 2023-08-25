@@ -104,11 +104,7 @@ public class FragmentTrack extends Fragment {
     ViewTreeObserver.OnGlobalLayoutListener viewTreeObserverOnGLL = new ViewTreeObserver.OnGlobalLayoutListener() {
         @Override
         public void onGlobalLayout() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                flTrack.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
-                flTrack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
+            flTrack.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             //int width  = flTrack.getMeasuredWidth();
             //int height = flTrack.getMeasuredHeight();
             //Log.w("myApp", "[#] FragmentTrack MEASURED: " + width + " x " + height);
@@ -197,11 +193,7 @@ public class FragmentTrack extends Fragment {
 
     @Override
     public void onPause() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            flTrack.getViewTreeObserver().removeGlobalOnLayoutListener(viewTreeObserverOnGLL);
-        } else {
-            flTrack.getViewTreeObserver().removeOnGlobalLayoutListener(viewTreeObserverOnGLL);
-        }
+        flTrack.getViewTreeObserver().removeOnGlobalLayoutListener(viewTreeObserverOnGLL);
         EventBus.getDefault().unregister(this);
         super.onPause();
     }

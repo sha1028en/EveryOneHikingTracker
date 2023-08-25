@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecordListActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/id_appbarlayout"
+        android:focusable="false"
+        android:descendantFocusability="blocksDescendants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppBarLayout">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/id_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextAppearance="@style/ToolbarTitle"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+
+            <Button
+                android:id="@+id/select_region"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/track_region_seoul"
+                android:layout_gravity="end">
+            </Button>
+
+        </androidx.appcompat.widget.Toolbar>
+
+<!--        <com.google.android.material.tabs.TabLayout-->
+<!--            android:id="@+id/id_tablayout"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:tabGravity="fill"-->
+<!--            app:tabMode="fixed"-->
+<!--            tools:ignore="SpeakableTextPresentCheck" />-->
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/track_list_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <Button
+        android:id="@+id/goto_record_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="track record"
+        android:layout_gravity="bottom|center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/satellite_cnt_txt"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="disable"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

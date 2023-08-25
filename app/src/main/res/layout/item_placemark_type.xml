@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/backgound_round_border_16">
+
+    <TextView
+        android:id="@+id/placemark_type_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="나눔길 입구"
+        android:textColor="@color/textColorPrimary"
+        android:textSize="@dimen/TextAppearanceLargeNumbersSize"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/placemark_pic0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/placemark_enabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="없음"
+        android:textColor="@color/textColorPrimary"
+        app:layout_constraintBottom_toBottomOf="@+id/placemark_type_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/placemark_type_title" />
+
+    <EditText
+        android:id="@+id/placemark_information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text="this unique imforamtion"
+        android:textColor="@color/textColorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/placemark_type_title"
+        app:layout_constraintTop_toBottomOf="@+id/placemark_pic0" />
+
+    <ImageView
+        android:id="@+id/placemark_pic0"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="50dp"
+        android:src="@drawable/baseline_add_24"
+        app:layout_constraintBottom_toTopOf="@+id/placemark_information"
+        app:layout_constraintEnd_toStartOf="@+id/placemark_pic1"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toStartOf="@+id/placemark_type_title"
+        app:layout_constraintTop_toBottomOf="@+id/placemark_type_title" />
+
+
+    <ImageView
+        android:id="@+id/placemark_pic1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="50dp"
+        android:src="@drawable/baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="@+id/placemark_pic0"
+        app:layout_constraintEnd_toStartOf="@+id/placemark_pic2"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toEndOf="@+id/placemark_pic0"
+        app:layout_constraintTop_toTopOf="@+id/placemark_pic0" />
+
+    <ImageView
+        android:id="@+id/placemark_pic2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="50dp"
+        android:src="@drawable/baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="@+id/placemark_pic1"
+        app:layout_constraintEnd_toEndOf="@+id/placemark_enabled"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toEndOf="@+id/placemark_pic1"
+        app:layout_constraintTop_toTopOf="@+id/placemark_pic1" />
+
+    <Button
+        android:id="@+id/placeamrk_add_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="+"
+        app:layout_constraintBottom_toBottomOf="@+id/placemark_information"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/placemark_information"
+        app:layout_constraintVertical_bias="1.0" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

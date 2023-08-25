@@ -148,6 +148,7 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
                 textViewTrackMaxSpeed.setText(phd.value + " " + phd.um);
                 phd = phdformatter.format(trk.getPrefSpeedAverage(),PhysicalDataFormatter.FORMAT_SPEED_AVG);
                 textViewTrackAverageSpeed.setText(phd.value + " " + phd.um);
+
             } else {
                 textViewTrackLength.setText("");
                 textViewTrackDuration.setText("");
@@ -171,6 +172,7 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
                     imageViewPulse.startAnimation(sunRise);
                     startAnimationTime = System.currentTimeMillis();
                 }
+
             } else {
                 imageViewPulse.setVisibility(View.INVISIBLE);
                 imageViewThumbnail.setImageBitmap(BMP_CURRENT_TRACK_PAUSED);
@@ -187,9 +189,10 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
             card.setSelected(track.isSelected());
             imageViewPulse.setVisibility(View.INVISIBLE);
             textViewTrackName.setText(track.getName());
-            if (track.getDescription().isEmpty())
-                textViewTrackDescription.setText(GPSApplication.getInstance().getString(R.string.track_id) + " " + track.getId());
+
+            if (track.getDescription().isEmpty()) textViewTrackDescription.setText(GPSApplication.getInstance().getString(R.string.track_id) + " " + track.getId());
             else textViewTrackDescription.setText(track.getDescription());
+
             if (trk.getNumberOfLocations() >= 1) {
                 phd = phdformatter.format(track.getEstimatedDistance(),PhysicalDataFormatter.FORMAT_DISTANCE);
                 textViewTrackLength.setText(phd.value + " " + phd.um);
@@ -201,6 +204,7 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
                 textViewTrackMaxSpeed.setText(phd.value + " " + phd.um);
                 phd = phdformatter.format(track.getPrefSpeedAverage(),PhysicalDataFormatter.FORMAT_SPEED_AVG);
                 textViewTrackAverageSpeed.setText(phd.value + " " + phd.um);
+
             } else {
                 textViewTrackLength.setText("");
                 textViewTrackDuration.setText("");
@@ -217,8 +221,8 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
 
             if (GPSApplication.getInstance().getCurrentTrack().getId() == track.getId()) {
                 imageViewThumbnail.setImageBitmap (GPSApplication.getInstance().isRecording() ? BMP_CURRENT_TRACK_RECORDING : BMP_CURRENT_TRACK_PAUSED);
-            }
-            else {
+
+            } else {
                 Glide.clear(imageViewThumbnail);
                 Glide
                         .with(GPSApplication.getInstance().getApplicationContext())
