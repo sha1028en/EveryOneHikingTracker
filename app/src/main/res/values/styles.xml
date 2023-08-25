@@ -22,7 +22,6 @@
 
 <resources>
 
-
     <!-- Overall Styles -->
     <style name="MyMaterialTheme" parent="MyMaterialTheme.Base">
     </style>
@@ -42,6 +41,7 @@
         <item name="windowActionModeOverlay">true</item>
         <!--  For Custom Action Mode Background Color/Drawable -->
         <item name="actionModeBackground">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/textColorPrimary</item>
     </style>
 
     <style name="AppBarLayout" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
@@ -134,6 +134,16 @@
         <item name="android:windowBackground">@drawable/launch_screen</item>
         <item name="colorPrimary">@android:color/black</item>
         <item name="colorPrimaryDark">@android:color/black</item>
+    </style>
+
+
+    <!-- Modify Placemark Bottom Sheet -->
+    <style name="ModifyPlacemarkBottomSheetDialogTheme" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/ModifyPlacemarkBottomSheetShapeTheme</item>
+    </style>
+
+    <style name="ModifyPlacemarkBottomSheetShapeTheme" parent="Widget.MaterialComponents.BottomSheet">
+        <item name="android:background">@drawable/white_round_top_border_20</item>
     </style>
 
 </resources>

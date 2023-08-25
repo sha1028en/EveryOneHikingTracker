@@ -24,14 +24,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ======[ DARK THEME ]================================================================== -->
-
-    <color name="colorPrimary">#880000</color>
-    <color name="colorPrimaryDark">#550000</color>
-    <color name="colorPrimaryLight">#ca1818</color>
-    <color name="textColorPrimary">#ffffff</color>
-    <color name="textColorCardTitle">#d7d7d7</color>
-    <color name="textColorSecondary">#888888</color>
-    <color name="colorBackground">#111111</color>
+    <color name="colorPrimary">#0078d7</color>
+    <color name="colorPrimaryDark">#10558b</color>
+    <color name="colorPrimaryLight">#0099d7</color>
+    <color name="textColorPrimary">#111111</color>
+    <color name="textColorCardTitle">#272727</color>
+    <color name="textColorSecondary">#666666</color>
+<!--    <color name="textColorPrimary">#ffffff</color>-->
+<!--    <color name="textColorCardTitle">#d7d7d7</color>-->
+<!--    <color name="textColorSecondary">#888888</color>-->
+    <color name="colorBackground">#E9E9E9</color>
 
     <color name="colorRecControlBackground">#2b2b2b</color>
     <color name="textColorRecControlPrimary">#ffffff</color>
@@ -49,11 +51,10 @@
     <color name="colorCardBackground_Selected">#42ff4f4f</color>
 
     <color name="colorAccent">#ffffff</color>
-    <color name="preference_accent">#ca1818</color>
-    <color name="preference_fallback_accent_color" tools:override="true">#ca1818</color>
+    <color name="preference_accent">#0078d7</color>
+    <color name="preference_fallback_accent_color" tools:override="true">#0078d7</color>
 
     <color name="colorRoundedCornerBottom">#161616</color>
     <color name="colorRoundedCornerTop">#202020</color>
     <color name="colorRoundedCornerBorder">#707070</color>
-
 </resources>
