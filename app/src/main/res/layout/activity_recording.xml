@@ -8,103 +8,198 @@
     android:animateLayoutChanges="true"
     tools:context=".RecordingActivity">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/proof_req_camera"
-            android:layout_width="wrap_content"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/record_control_toolbar"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="take picture"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/proof_load_img"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="load img"
-            app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"
-            app:layout_constraintEnd_toStartOf="@+id/proof_req_camera"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="noScroll">
 
-        <Button
-            android:id="@+id/proof_remove_img"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="remove img"
-            app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/proof_req_camera"
-            app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/record_control_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorBackground"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/proof_load_img_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
-            android:adjustViewBounds="true"
-            android:maxHeight="200dp"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/record_course_list"
+                        android:layout_width="0dp"
+                        android:layout_height="100dp"
+                        android:layout_marginStart="16dp"
+                        app:layout_constraintBottom_toTopOf="@id/record_course_control_layout"
+                        app:layout_constraintEnd_toStartOf="@id/course_modify_layout"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+                    </androidx.recyclerview.widget.RecyclerView>
+
+                    <LinearLayout
+                        android:id="@+id/record_course_control_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="@id/course_modify_layout"
+                        app:layout_constraintStart_toStartOf="@+id/record_course_list"
+                        app:layout_constraintTop_toBottomOf="@id/record_course_list">
+
+                        <Button
+                            android:id="@+id/start_record_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="종료"/>
+
+                        <Button
+                            android:id="@+id/pause_record_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="일시 정지" />
+
+                        <CheckBox
+                            android:id="@+id/check_deck_checkbox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="16dp"
+                            android:checked="true"
+                            android:text="데크 바닥"
+                            android:textColor="@color/textColorPrimary"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/course_modify_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="16dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/record_course_control_layout"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/record_course_list">
+
+                        <Button
+                            android:id="@+id/course_add_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="구간추가+"/>
+
+                        <Button
+                            android:id="@+id/course_remove_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="구간삭제X"/>
+                    </LinearLayout>
+                    <!--                    <Button-->
+<!--                        android:id="@+id/proof_req_camera"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="32dp"-->
+<!--                        android:text="take picture"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:layout_constraintStart_toStartOf="parent"-->
+<!--                        app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--                    <Button-->
+<!--                        android:id="@+id/proof_load_img"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginEnd="16dp"-->
+<!--                        android:text="load img"-->
+<!--                        app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"-->
+<!--                        app:layout_constraintEnd_toStartOf="@+id/proof_req_camera"-->
+<!--                        app:layout_constraintStart_toStartOf="parent"-->
+<!--                        app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />-->
+
+<!--                    <Button-->
+<!--                        android:id="@+id/proof_remove_img"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginStart="16dp"-->
+<!--                        android:text="remove img"-->
+<!--                        app:layout_constraintBottom_toBottomOf="@+id/proof_req_camera"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:layout_constraintStart_toEndOf="@+id/proof_req_camera"-->
+<!--                        app:layout_constraintTop_toTopOf="@+id/proof_req_camera" />-->
+
+<!--                    <ImageView-->
+<!--                        android:id="@+id/proof_load_img_view"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginBottom="50dp"-->
+<!--                        android:adjustViewBounds="true"-->
+<!--                        android:maxHeight="200dp"-->
+<!--                        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:layout_constraintStart_toStartOf="parent"-->
+<!--                        tools:srcCompat="@tools:sample/avatars" />-->
+
+<!--                    <Button-->
+<!--                        android:id="@+id/proof_add_annotation"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="32dp"-->
+<!--                        android:text="add annotation"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:layout_constraintStart_toStartOf="parent"-->
+<!--                        app:layout_constraintTop_toBottomOf="@+id/proof_req_camera" />-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/proof_satlite_txt"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="64dp"-->
+<!--                        android:text="disable"-->
+<!--                        app:layout_constraintEnd_toEndOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintStart_toStartOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintTop_toBottomOf="@+id/proof_add_annotation" />-->
+
+<!--                    <Button-->
+<!--                        android:id="@+id/proof_start_record"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginEnd="16dp"-->
+<!--                        android:text="start record"-->
+<!--                        app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintEnd_toStartOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintStart_toStartOf="parent"-->
+<!--                        app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />-->
+
+<!--                    <Button-->
+<!--                        android:id="@+id/proof_stop_record"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginStart="16dp"-->
+<!--                        android:text="stop record"-->
+<!--                        app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintEnd_toEndOf="parent"-->
+<!--                        app:layout_constraintStart_toEndOf="@+id/proof_add_annotation"-->
+<!--                        app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />-->
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/modify_placemark_type_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/record_control_toolbar"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:srcCompat="@tools:sample/avatars" />
-
-        <Button
-            android:id="@+id/proof_add_annotation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="add annotation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/proof_req_camera" />
-
-        <TextView
-            android:id="@+id/proof_satlite_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="64dp"
-            android:text="disable"
-            app:layout_constraintEnd_toEndOf="@+id/proof_add_annotation"
-            app:layout_constraintStart_toStartOf="@+id/proof_add_annotation"
-            app:layout_constraintTop_toBottomOf="@+id/proof_add_annotation" />
-
-        <Button
-            android:id="@+id/proof_start_record"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="start record"
-            app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"
-            app:layout_constraintEnd_toStartOf="@+id/proof_add_annotation"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />
-
-        <Button
-            android:id="@+id/proof_stop_record"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="stop record"
-            app:layout_constraintBottom_toBottomOf="@+id/proof_add_annotation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/proof_add_annotation"
-            app:layout_constraintTop_toTopOf="@+id/proof_add_annotation" />
+            app:layout_constraintEnd_toEndOf="parent">
+        </androidx.recyclerview.widget.RecyclerView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/modify_placemark_type_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#aaaaaa"/>
 
     <!--    Bottom Sheet    -->
     <LinearLayout

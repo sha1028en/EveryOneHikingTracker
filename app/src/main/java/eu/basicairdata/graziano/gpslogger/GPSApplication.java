@@ -85,6 +85,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class GPSApplication extends Application implements LocationListener {
 
     //private static final float M_TO_FT = 3.280839895f;
+    public static final String ATX_EXTRA_TRACK_TITLE = "TRACK_NAME";
+
     public static final int NOT_AVAILABLE = -100000;
 
     private static final int STABILIZER_TIME = 3000;                // The application discards fixes for 3000 ms (minimum)

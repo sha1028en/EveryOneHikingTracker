@@ -93,7 +93,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_LOCATION_NUMBEROFSATELLITESUSEDINFIX = "number_of_satellites_used_in_fix";
 
     // ---------------------------------------------------------------------------- Placemarks adds
-
     private static final String KEY_PLACEMARK_DESC = "description";
     private static final String KEY_PLACEMARK_ROOT_TRACK = "track_name";
 

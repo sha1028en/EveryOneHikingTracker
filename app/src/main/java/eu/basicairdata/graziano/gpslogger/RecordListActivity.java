@@ -26,12 +26,13 @@ public class RecordListActivity extends AppCompatActivity {
 
         this.mBind = ActivityRecordListBinding.inflate(this.getLayoutInflater());
         setContentView(this.mBind.getRoot());
-       this.recordManager = TrackRecordManager.createInstance(this);
+        this.recordManager = TrackRecordManager.createInstance(this);
 
         this.initViewListener();
 
         this.mBind.gotoRecordBtn.setOnClickListener(v -> {
             Intent intent = new Intent(this, RecordingActivity.class);
+            intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, "서울시 대모산 무장애 나눔길");
             this.startActivity(intent);
         });
 
