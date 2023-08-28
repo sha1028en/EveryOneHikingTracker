@@ -575,7 +575,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         LinkedList<LocationExtended> placemarkList = new LinkedList<>(this.getPlacemarksList(placemark.getName()));
 
         if(placemarkList.size() > 0) {
-
             boolean alreadyHas = false;
             for(LocationExtended item : placemarkList) {
                 if (item.getDescription().equals(placemark.getDescription())) {
@@ -587,7 +586,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             if(alreadyHas) {
                 try { // UPDATE
                     db.beginTransaction();
-                    db.update(TABLE_PLACEMARKS, locvalues, KEY_PLACEMARK_ROOT_TRACK + " LIKE ?", new String[] { placemark.getName() } );
+                    db.update(TABLE_PLACEMARKS, locvalues, KEY_PLACEMARK_ROOT_TRACK + " LIKE ? AND " + KEY_PLACEMARK_DESC + " LIKE ?", new String[] { placemark.getName(), placemark.getDescription() } );
                     db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getId()) });            // Update the corresponding Track
                     db.setTransactionSuccessful();
 
@@ -1151,7 +1150,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
      * Delete the Track with ths ID
      * NOT delete Placemarks
      *
+     * @deprecated will not use, not far feature
      * @param trackId to delete track ID
+     *
      */
     public void deleteTrack(long trackId) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -1490,8 +1491,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public List<Track> getTrackListByName(@NonNull final String trackName) {
         final List<Track> trackList = new ArrayList<>();
+        final String convertTrackName = "\"" + trackName + "\"";
         final String selectQuery = "SELECT  * FROM " + TABLE_TRACKS + " WHERE "
-                + KEY_TRACK_NAME + " LIKE " + trackName
+                + KEY_TRACK_NAME + " LIKE " + convertTrackName
                 + " ORDER BY " + KEY_ID + " DESC";
 
         SQLiteDatabase db = this.getWritableDatabase();

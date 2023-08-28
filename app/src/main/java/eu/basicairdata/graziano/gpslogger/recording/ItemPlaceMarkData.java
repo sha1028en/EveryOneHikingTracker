@@ -1,9 +1,12 @@
-package eu.basicairdata.graziano.gpslogger;
+package eu.basicairdata.graziano.gpslogger.recording;
 
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
+
 
 public class ItemPlaceMarkData {
+    private String trackName;
     private String placeMarkTitle;
     private String placeMarkType;
 
@@ -17,11 +20,20 @@ public class ItemPlaceMarkData {
     private Bitmap placeMarkImg1 = null;
     private Bitmap placeMarkImg2 = null;
 
-    public ItemPlaceMarkData(String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
+    public ItemPlaceMarkData(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
+        this.trackName = trackName;
         this.placeMarkTitle = placeMarkTitle;
         this.placeMarkType = placeMarkType;
         this.placeMarkDesc = placeMarkDesc;
         this.isPlaceMarkEnable = isPlaceMarkEnable;
+    }
+
+    public String getTrackName() {
+        return this.trackName;
+    }
+
+    public void setTrackName(String trackName) {
+        this.trackName = trackName;
     }
 
     public String getPlaceMarkTitle() {
@@ -70,6 +82,14 @@ public class ItemPlaceMarkData {
 
     public void setPlaceMarkLng(float placeMarkLng) {
         this.placeMarkLng = placeMarkLng;
+    }
+
+    public void setPlaceMarkImg(@NonNull Bitmap img, final int index) {
+        switch (index) {
+            case 0 -> this.setPlaceMarkImg0(img);
+            case 1 -> this.setPlaceMarkImg1(img);
+            case 2 -> this.setPlaceMarkImg2(img);
+        }
     }
 
     public Bitmap getPlaceMarkImg0() {

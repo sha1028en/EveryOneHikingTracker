@@ -200,8 +200,9 @@ public class TrackRecordManager {
      * @param forceStop stop record track Forcefully???
      * @param trackName to save track Name
      * @param trackDesc to save track Description
+     * @param isWoodDeck to save track Type ( Wooden or Dirty )
      */
-    public void stopRecordTrack(final boolean forceStop, final String trackName, final String trackDesc) {
+    public void stopRecordTrack(final boolean forceStop, final String trackName, final String trackDesc, boolean isWoodDeck) {
         if (!gpsApp.isBottomBarLocked() || forceStop) {
             if (!gpsApp.isStopButtonFlag()) {
                 gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -211,9 +212,7 @@ public class TrackRecordManager {
 
                 Track currentTrack = this.gpsApp.getCurrentTrack();
                 if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
-                    // if it has same Track, remove them save new Track
-                    StringBuilder victimTrackName = new StringBuilder("\"").append(trackName).append("\"");
-                    LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(victimTrackName.toString()));
+                    LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
                     if(!trackList.isEmpty()) {
                         for(Track victim : trackList) {
                             String deprecateTrackName = victim.getName();
@@ -222,13 +221,11 @@ public class TrackRecordManager {
                             if(trackName.equals(deprecateTrackName) && trackDesc.equals(deprecateTrackDesc)) {
                                 this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
                             }
-                            // long deprecateTrackId = victim.getId();
-                            // this.gpsApp.gpsDataBase.deleteTrackWithRelated(deprecateTrackId);
-                            // this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackId);
                         }
                     }
                     currentTrack.setName(trackName);
                     currentTrack.setDescription(trackDesc);
+                    currentTrack.setCourseType(isWoodDeck? "wood_deck": "dirty");
                     GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
 
                     EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
@@ -249,6 +246,44 @@ public class TrackRecordManager {
             toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
             toast.show();
+        }
+    }
+
+    public static String typeToTitle(@NonNull String type) {
+        final String title;
+
+        switch (PlaceMarkType.valueOf(type)) {
+            case ENTRANCE -> title = "나눔길 입구";
+            case PARKING ->  title = "주차장";
+            case TOILET -> title = "화장실";
+            case REST ->  title = "휴계 공간";
+            case BUS_STOP -> title = "버스 정류장";
+            case OBSERVATION_DECK -> title = "전망 데크";
+            default -> title = "기타 시설물";
+        }
+        return title;
+    }
+
+    public LinkedList<Track> getCourseListByTrackName(@NonNull final String trackName) {
+        LinkedList<Track> courseList = new LinkedList<>();
+        if(this.gpsApp != null) {
+            courseList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
+        }
+        return courseList;
+    }
+
+    public LinkedList<LocationExtended> getPlaceMarkByTrackName(@NonNull final String trackName) {
+        LinkedList<LocationExtended> placeMarkList = new LinkedList<>();
+
+        if(this.gpsApp != null) {
+            placeMarkList = new LinkedList<>(this.gpsApp.gpsDataBase.getPlacemarksList(trackName));
+        }
+        return placeMarkList;
+    }
+
+    public void removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
+        if(this.gpsApp != null) {
+            this.gpsApp.gpsDataBase.deleteTrack(trackName, courseName);
         }
     }
 }

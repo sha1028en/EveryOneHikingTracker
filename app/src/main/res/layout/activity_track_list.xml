@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RecordListActivity">
+    tools:context=".tracklist.TrackListActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/id_appbarlayout"
@@ -41,7 +41,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/track_list_recyclerview"
+        android:id="@+id/track_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

@@ -22,7 +22,7 @@ public class AddCourseNameDialog  extends DialogFragment {
     private DialogAddCourseBinding bind;
     private MessageReceiveListener callBackMessagelistener;
 
-    interface MessageReceiveListener {
+    public interface MessageReceiveListener {
         void onReceiveMessage(final String receiveMessage);
     }
 

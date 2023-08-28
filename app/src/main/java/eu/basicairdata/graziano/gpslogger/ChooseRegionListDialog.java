@@ -15,11 +15,11 @@ public class ChooseRegionListDialog extends Dialog implements CompoundButton.OnC
     private DialogChooseRegionListBinding binding;
     private onItemChooseListener chooseListener;
 
-    interface onItemChooseListener {
+    public interface onItemChooseListener {
         void onItemChoose(String msg, boolean isChecked);
     }
 
-    protected ChooseRegionListDialog(@NonNull Context context, @NonNull onItemChooseListener listener) {
+    public ChooseRegionListDialog(@NonNull Context context, @NonNull onItemChooseListener listener) {
         super(context);
         this.chooseListener = listener;
     }

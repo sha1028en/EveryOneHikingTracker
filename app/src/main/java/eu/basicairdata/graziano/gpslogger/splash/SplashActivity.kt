@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger
+package eu.basicairdata.graziano.gpslogger.splash
 
 
 import android.Manifest
@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import eu.basicairdata.graziano.gpslogger.GPSApplication
+import eu.basicairdata.graziano.gpslogger.R
+import eu.basicairdata.graziano.gpslogger.tracklist.TrackListActivity
 
 class SplashActivity : AppCompatActivity() {
 
@@ -80,7 +83,7 @@ class SplashActivity : AppCompatActivity() {
                 }
 
                 if(allGrantPerm) {
-                    val intent = Intent(this, RecordListActivity::class.java)
+                    val intent = Intent(this, TrackListActivity::class.java)
                     this.startActivity(intent)
                     this.finish()
                 }
@@ -100,7 +103,7 @@ class SplashActivity : AppCompatActivity() {
             // Permission Granted
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-                    val intent = Intent(this, RecordListActivity::class.java)
+                    val intent = Intent(this, TrackListActivity::class.java)
                     this.startActivity(intent)
                     this.finish()
 
@@ -111,7 +114,7 @@ class SplashActivity : AppCompatActivity() {
                     return
                 }
             }
-            val intent = Intent(this, RecordListActivity::class.java)
+            val intent = Intent(this, TrackListActivity::class.java)
             this.startActivity(intent)
             this.finish()
 

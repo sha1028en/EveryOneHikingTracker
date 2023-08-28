@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -173,6 +174,46 @@ class ImageManager {
             return imageList
         }
 
+        @Throws(FileNotFoundException::class)
+        fun loadImageUriList(context: Context, fileName: String, filePath: String): LinkedList<Uri?> {
+            val localContext = WeakReference(context)
+            var uriBuffer: Uri?
+            val imageUriList = LinkedList<Uri?>()
+
+            val projection = arrayOf(
+                MediaStore.MediaColumns._ID,
+                MediaStore.MediaColumns.TITLE)
+            val path = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).path}/$filePath"
+
+            val where = "${MediaStore.Images.Media.DATA} LIKE ? AND ${MediaStore.MediaColumns.TITLE} LIKE ?"
+            val whereArg = arrayOf("$path%", "$fileName%")
+            val orderBy = "${MediaStore.Images.Media.TITLE} ASC"
+
+            val imageCursor = localContext.get()!!.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                where,
+                whereArg,
+                orderBy)
+
+            imageCursor.use {
+                while (it?.moveToNext() == true) {
+                    val index = it.getColumnIndex(MediaStore.Images.ImageColumns._ID)
+                    uriBuffer = if(index > -1) {
+                        ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it.getLong(index))
+
+                    } else {
+                        null
+                    }
+                    imageUriList.add(uriBuffer)
+                }
+            }
+            localContext.clear()
+
+            if(imageUriList.size < 1) throw FileNotFoundException("cant load File from $path")
+            return imageUriList
+        }
+
         /**
          * load image which image file exists
          *
@@ -333,46 +374,74 @@ class ImageManager {
             return stream.toByteArray()
         }
 
+        @Throws(IllegalArgumentException::class)
+        fun compressBitmap(source: Bitmap, compressPercent: Int) : Bitmap {
+            if(compressPercent < 1 || compressPercent > 100) throw IllegalArgumentException("ImageManager.bitmapToByteArray() wrong param \"compressPercent\"")
+            val stream = ByteArrayOutputStream()
+
+            source.compress(Bitmap.CompressFormat.PNG, compressPercent, stream)
+            val compressRawData = stream.toByteArray()
+
+            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size);
+            source.recycle()
+
+            return compressedBitmap
+        }
+
+
+        @Throws(IllegalArgumentException::class)
+        fun compressBitmapAggressive(source: Bitmap, compressPercent: Int, width: Int, height: Int): Bitmap {
+            if(compressPercent < 1 || compressPercent > 100) throw IllegalArgumentException("ImageManager.bitmapToByteArray() wrong param \"compressPercent\"")
+
+            val bitmapOption = BitmapFactory.Options()
+            bitmapOption.inJustDecodeBounds = true;
+            bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
+            val stream = ByteArrayOutputStream()
+
+            source.compress(Bitmap.CompressFormat.PNG, compressPercent, stream)
+            val compressRawData = stream.toByteArray()
+            bitmapOption.inJustDecodeBounds = false;
+
+            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size, bitmapOption);
+            source.recycle()
+
+            return compressedBitmap
+        }
+
+        @Throws(FileNotFoundException::class)
+        fun loadBitmapWithCompressAggressive(context: Context, sourceUri: Uri, width: Int, height: Int) : Bitmap? {
+            val localContext = WeakReference(context)
+            val bitmapOption = BitmapFactory.Options()
+            bitmapOption.inJustDecodeBounds = true;
+            bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
+
+            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, bitmapOption)
+            localContext.clear()
+
+            return compressedBitmap
+        }
+
+
         /**
-         * Compress Bitmap
-         *
-         * @param context Android Context
-         * @param source to compress Bitmap
-         * @param compressPercent how many compress Bitmap?
+         * calc to bitmap scale
          */
-        private fun compressBitmap(context: Context, source: Bitmap, compressPercent: Int) : Bitmap?{
-            val display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-            val displayWidth = display.width
-            val displayHeight = display.height
+        private fun calculateInImageScale(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+            // Raw height and width of image
+            val (height: Int, width: Int) = options.run { outHeight to outWidth }
+            var inSampleSize = 1
 
-            val options = BitmapFactory.Options()
-            options.inPreferredConfig = Bitmap.Config.RGB_565
-            options.inJustDecodeBounds = true
+            if (height > reqHeight || width > reqWidth) {
 
-            val widthScale = (options.outWidth / displayWidth).toFloat()
-            val heightScale = (options.outHeight / displayHeight).toFloat()
-            val scale = if (widthScale > heightScale) widthScale else heightScale
+                val halfHeight: Int = height / 2
+                val halfWidth: Int = width / 2
 
-            if (scale >= 8) {
-                options.inSampleSize = 8
-
-            } else if (scale >= 6) {
-                options.inSampleSize = 6
-
-            } else if (scale >= 4) {
-                options.inSampleSize = 4
-
-//            } else if (scale >= 2) {
-//                options.inSampleSize = 2
-
-            } else {
-                options.inSampleSize = 2 // 1
+                // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+                // height and width larger than the requested height and width.
+                while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                    inSampleSize *= 2
+                }
             }
-            options.inJustDecodeBounds = false
-
-            val imageByteArray = this.bitmapToByteArray(source, compressPercent)
-
-            return BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray!!.size,  options)
+            return inSampleSize
         }
     }
 }

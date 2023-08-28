@@ -1,0 +1,55 @@
+package eu.basicairdata.graziano.gpslogger.recording;
+
+public class ItemCourseData {
+    private final String trackName;
+    private String courseName;
+    private int courseDistance;
+    private boolean isWoodDeck;
+
+    private boolean isClicked;
+
+    public ItemCourseData(final String trackName, String courseName, int distance, boolean isWoodDeck) {
+        this.trackName = trackName;
+        this.courseName = courseName;
+        this.courseDistance = distance;
+        this.isWoodDeck = isWoodDeck;
+        this.isClicked = false;
+    }
+
+    public String getTrackName() {
+        return trackName;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public int getCourseDistance() {
+        return courseDistance;
+    }
+    public void setCourseDistance(int courseDistance) {
+        this.courseDistance = courseDistance;
+    }
+
+    public boolean isWoodDeck() {
+        return isWoodDeck;
+    }
+
+    public void setWoodDeck(boolean woodDeck) {
+        isWoodDeck = woodDeck;
+    }
+
+    public void setClicked(final boolean isClicked) {
+        this.isClicked = isClicked;
+    }
+    public void toggleClicked() {
+        this.isClicked = !this.isClicked;
+    }
+
+    public boolean getIsClicked() {
+        return this.isClicked;
+    }
+}

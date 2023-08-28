@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger;
+package eu.basicairdata.graziano.gpslogger.tracklist;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,11 +11,16 @@ import androidx.appcompat.app.AppCompatDelegate;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordListBinding;
+import eu.basicairdata.graziano.gpslogger.ChooseRegionListDialog;
+import eu.basicairdata.graziano.gpslogger.EventBusMSG;
+import eu.basicairdata.graziano.gpslogger.GPSApplication;
+import eu.basicairdata.graziano.gpslogger.R;
+import eu.basicairdata.graziano.gpslogger.databinding.ActivityTrackListBinding;
+import eu.basicairdata.graziano.gpslogger.recording.RecordingActivity;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
-public class RecordListActivity extends AppCompatActivity {
-    private ActivityRecordListBinding mBind;
+public class TrackListActivity extends AppCompatActivity {
+    private ActivityTrackListBinding mBind;
     private TrackRecordManager recordManager;
 
    @Override
@@ -24,7 +29,7 @@ public class RecordListActivity extends AppCompatActivity {
         setTheme(R.style.MyMaterialTheme);
         super.onCreate(savedInstanceState);
 
-        this.mBind = ActivityRecordListBinding.inflate(this.getLayoutInflater());
+        this.mBind = ActivityTrackListBinding.inflate(this.getLayoutInflater());
         setContentView(this.mBind.getRoot());
         this.recordManager = TrackRecordManager.createInstance(this);
 
