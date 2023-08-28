@@ -44,9 +44,7 @@ public class RecordingActivity extends AppCompatActivity {
     private TrackRecordManager recordManager = TrackRecordManager.getInstance();
     private Uri tmpFile;
 
-    // private String currentCourseName = "";
     private String currentTrackName = "";
-
     private String currentPoiType = "";
 
     private ItemPlaceMarkData currentSelectedPlaceMarkItem;
@@ -86,8 +84,6 @@ public class RecordingActivity extends AppCompatActivity {
                                 currentSelectedPlaceMarkItem.setPlaceMarkImg(compressedImg.get(0), currentPoiPosition);
                                 placeMarkListAdapter.updatePlaceMark(currentSelectedPlaceMarkItem);
                             });
-                            // Bitmap compressedImg = ImageManager.Companion.compressBitmap(img, 70);
-                            // img = null;
 
                         } catch (FileNotFoundException e) {
                             throw new RuntimeException(e);
@@ -128,8 +124,6 @@ public class RecordingActivity extends AppCompatActivity {
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
         LinkedList<LocationExtended> rawPlaceMarkList = recordManager.getPlaceMarkByTrackName(this.currentTrackName);
 
-
-        // LinkedList<ItemCourseData> courseList = new LinkedList<>();
         for(Track item : rawCourseList) {
             final String trackName = item.getName();
             final String courseName = item.getDescription();
@@ -149,13 +143,11 @@ public class RecordingActivity extends AppCompatActivity {
 
 
             LinkedList<Uri> placeMarkImgList = null;
-//            LinkedList<Bitmap> placeMarkImgList = null;
             try {
                 placeMarkImgList = ImageManager.Companion.loadImageUriList(this.bind.getRoot().getContext(), placeMarkDesc, "Trekking/" + this.currentTrackName + "/" + placeMarkType);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                // throw new RuntimeException(e);
             }
             placeMarkListAdapter.updatePlaceMark(placeMark);
 
@@ -176,79 +168,6 @@ public class RecordingActivity extends AppCompatActivity {
             }
         }
         initViewEvent();
-
-//        this.currentTrackName = "TEST TITLE";
-//        this.mBind.proofReqCamera.setOnClickListener(v -> {
-//            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//            intent.putExtra(MediaStore.EXTRA_OUTPUT, ImageManager.Companion.createTmpFile(this.mBind.getRoot().getContext(), "Parking", "Trekking/서울 강남구 대모산 무장애 나눔길"));
-//
-//            this.requestCamera.launch(intent);
-//        });
-//
-//        this.mBind.proofLoadImg.setOnClickListener(v -> {
-//            AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
-//            inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
-//                @Override
-//                public void onReceiveMessage(String receiveMessage) {
-//                    if(receiveMessage != null && !receiveMessage.isBlank()) {
-//                        Bitmap image;
-//                        LinkedList<Bitmap> imageList;
-//                        try {
-//                            imageList = ImageManager.Companion.loadImageList(mBind.getRoot().getContext(), receiveMessage, "Trekking/서울 강남구 대모산 무장애 나눔길/" + receiveMessage);
-//                            image = imageList.getLast();
-//
-//                        } catch (FileNotFoundException | NullPointerException | IndexOutOfBoundsException e) {
-//                            e.printStackTrace();
-//                            image = null;
-//                        }
-//
-//                        if(image != null) {
-//                            mBind.proofLoadImgView.setImageBitmap(image);
-//                        }
-//                    }
-//                }
-//            });
-//            inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input to load POI image Dialog");
-//        });
-//
-//        this.mBind.proofRemoveImg.setOnClickListener( v -> {
-//            Toast.makeText(this.mBind.getRoot().getContext(), "NOT YET IMPL", Toast.LENGTH_SHORT).show();
-//        });
-//
-//        this.mBind.proofAddAnnotation.setOnClickListener(v -> {
-//            AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
-//            inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
-//                @Override
-//                public void onReceiveMessage(String receiveMessage) {
-//                    if(receiveMessage != null && !receiveMessage.isBlank()) {
-//                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                        tmpFile = ImageManager.Companion.createTmpFile(mBind.getRoot().getContext(), receiveMessage, "Trekking/서울 강남구 대모산 무장애 나눔길/" + receiveMessage);
-//                        intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpFile);
-//
-//                        requestCamera.launch(intent);
-//                    }
-//                }
-//            });
-//            inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input POI Type Dialog");
-//        });
-//
-//        this.mBind.proofStartRecord.setOnClickListener( v -> {
-//            AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
-//            inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
-//                @Override
-//                public void onReceiveMessage(String receiveMessage) {
-//                    if(receiveMessage != null) {
-//                        currentCourseName = receiveMessage;
-//                        recordManager.startRecordTrack("서울 강남구 대모산 무장애 나눔길", currentCourseName);
-//                    }
-//                }
-//            });
-//            inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input CourseName Dialog");
-//        });
-//
-//        this.mBind.proofStopRecord.setOnClickListener(v -> {
-//            this.recordManager.stopRecordTrack(true, "서울시 대모산 무장애 나눔길", currentCourseName);
-//        });
     }
 
     private interface OnCompressImageListener {
@@ -270,7 +189,7 @@ public class RecordingActivity extends AppCompatActivity {
             protected Object doInBackground(Object[] objects) {
                 try {
                     for (Uri sourceUri : sourceImages) {
-                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 100, 200);
+                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 200, 100);
                         compressedImgList.add(compressedImg);
 //                        if(!source.isRecycled()) source.recycle();
 //                        source = null;
@@ -356,7 +275,7 @@ public class RecordingActivity extends AppCompatActivity {
             inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
                 @Override
                 public void onReceiveMessage(String receiveMessage) {
-                    if(receiveMessage.isBlank()) return; // currentCourseName = receiveMessage;
+                    if(receiveMessage.isBlank()) return;
                     LinkedList<ItemCourseData> courseList = courseRecyclerAdapter.getCloneCourseList();
 
                     boolean alreadyHas = false;
@@ -371,7 +290,6 @@ public class RecordingActivity extends AppCompatActivity {
                         Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다", Toast.LENGTH_SHORT).show();
 
                     } else {
-                        // currentCourseName = receiveMessage;
                         courseRecyclerAdapter.addCourseItem(new ItemCourseData(currentTrackName, receiveMessage, 0, true));
                     }
                 }

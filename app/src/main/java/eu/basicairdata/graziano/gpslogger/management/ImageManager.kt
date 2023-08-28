@@ -411,11 +411,30 @@ class ImageManager {
         @Throws(FileNotFoundException::class)
         fun loadBitmapWithCompressAggressive(context: Context, sourceUri: Uri, width: Int, height: Int) : Bitmap? {
             val localContext = WeakReference(context)
-            val bitmapOption = BitmapFactory.Options()
-            bitmapOption.inJustDecodeBounds = false
-            bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
+//            val bitmapOption = BitmapFactory.Options()
+//            bitmapOption.inJustDecodeBounds = false
+//            bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
+//
+//            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, bitmapOption)
+//            localContext.clear()
+//
+//            return compressedBitmap
 
-            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, bitmapOption)
+            // 이미지 사이즈 디코딩
+            var imageOption = BitmapFactory.Options();
+            imageOption.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption);
+
+            // 이미지가 클경우에는, 스케일 사이즈를 대략 적으로만 계산
+            var scale = 1;
+            if (imageOption.outWidth > width) {
+                scale = imageOption.outWidth / width
+            }
+            // 샘플 사이즈로 디코딩
+            imageOption = BitmapFactory.Options()
+            imageOption.inSampleSize = scale
+
+            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption);
             localContext.clear()
 
             return compressedBitmap
