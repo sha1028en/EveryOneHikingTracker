@@ -146,9 +146,12 @@ public class RecordingActivity extends AppCompatActivity {
             final String placeMarkDesc = "";
             final boolean placeMarkEnable = true;
             ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, TrackRecordManager.typeToTitle(placeMarkType), placeMarkType, placeMarkDesc, placeMarkEnable);
-            LinkedList<Bitmap> placeMarkImgList = null;
+
+
+            LinkedList<Uri> placeMarkImgList = null;
+//            LinkedList<Bitmap> placeMarkImgList = null;
             try {
-                placeMarkImgList = ImageManager.Companion.loadImageList(this.bind.getRoot().getContext(), placeMarkDesc, "Trekking/" + this.currentTrackName + "/" + placeMarkType);
+                placeMarkImgList = ImageManager.Companion.loadImageUriList(this.bind.getRoot().getContext(), placeMarkDesc, "Trekking/" + this.currentTrackName + "/" + placeMarkType);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -157,7 +160,7 @@ public class RecordingActivity extends AppCompatActivity {
             placeMarkListAdapter.updatePlaceMark(placeMark);
 
             if(placeMarkImgList != null) {
-                this.imageLoadTask(placeMarkImgList, 90, new OnCompressImageListener() {
+                this.imageLoadTask(placeMarkImgList, new OnCompressImageListener() {
                     @Override
                     public void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess) {
                         int index = 0;
@@ -251,6 +254,50 @@ public class RecordingActivity extends AppCompatActivity {
     private interface OnCompressImageListener {
         void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess);
     }
+
+    private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final OnCompressImageListener listener) {
+        AsyncTask imgLoadTask = new AsyncTask() {
+            LinkedList<Bitmap> compressedImgList;
+            boolean isSuccess = true;
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                compressedImgList = new LinkedList<>();
+            }
+
+            @Override
+            protected Object doInBackground(Object[] objects) {
+                try {
+                    for (Uri sourceUri : sourceImages) {
+                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 100, 200);
+                        compressedImgList.add(compressedImg);
+//                        if(!source.isRecycled()) source.recycle();
+//                        source = null;
+                    }
+
+                } catch (IllegalArgumentException | FileNotFoundException e) {
+                    e.printStackTrace();
+                    isSuccess = false;
+                }
+                sourceImages.clear();
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
+            }
+
+            @Override
+            protected void onCancelled() {
+                super.onCancelled();
+                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
+            }
+        };
+        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
+    }
+
 
     private void imageLoadTask(@NonNull LinkedList<Bitmap> sourceImages, final int compressPercent, @NonNull final OnCompressImageListener listener) {
         AsyncTask imgLoadTask = new AsyncTask() {

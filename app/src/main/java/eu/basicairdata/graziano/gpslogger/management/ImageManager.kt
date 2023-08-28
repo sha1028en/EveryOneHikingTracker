@@ -412,7 +412,7 @@ class ImageManager {
         fun loadBitmapWithCompressAggressive(context: Context, sourceUri: Uri, width: Int, height: Int) : Bitmap? {
             val localContext = WeakReference(context)
             val bitmapOption = BitmapFactory.Options()
-            bitmapOption.inJustDecodeBounds = true;
+            bitmapOption.inJustDecodeBounds = false
             bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
 
             val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, bitmapOption)
