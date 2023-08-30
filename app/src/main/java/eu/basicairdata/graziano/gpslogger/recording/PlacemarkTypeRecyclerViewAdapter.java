@@ -20,31 +20,30 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
     private PlacemarkTypeRecyclerViewAdapter(final String trackName) {
         this.placeMarkDataList = new LinkedList<>();
 
-        ItemPlaceMarkData tmpData = new ItemPlaceMarkData(trackName, "나눔길 입구", PlaceMarkType.ENTRANCE.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName, "주차장", PlaceMarkType.PARKING.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName, "화장실 1", PlaceMarkType.TOILET.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName, "휴계공간 1", PlaceMarkType.REST.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName, "버스정류장", PlaceMarkType.BUS_STOP.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName,"전망데크 1", PlaceMarkType.OBSERVATION_DECK.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
-
-        tmpData = new ItemPlaceMarkData(trackName,"기타 시설물 1", PlaceMarkType.ETC.name(), "", true);
-        this.placeMarkDataList.add(tmpData);
+//        ItemPlaceMarkData tmpData = new ItemPlaceMarkData(trackName, "나눔길 입구", PlaceMarkType.ENTRANCE.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName, "주차장", PlaceMarkType.PARKING.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName, "화장실 1", PlaceMarkType.TOILET.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName, "휴계공간 1", PlaceMarkType.REST.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName, "버스정류장", PlaceMarkType.BUS_STOP.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName,"전망데크 1", PlaceMarkType.OBSERVATION_DECK.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
+//
+//        tmpData = new ItemPlaceMarkData(trackName,"기타 시설물 1", PlaceMarkType.ETC.name(), "", true);
+//        this.placeMarkDataList.add(tmpData);
     }
 
     public PlacemarkTypeRecyclerViewAdapter(@NonNull final String trackName, @NonNull final PlacemarkTypeViewHolder.OnImageSelectedListener listener) {
         this(trackName);
-
         this.imgSelectedListener = listener;
     }
 
@@ -70,6 +69,13 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
     @Override
     public int getItemCount() {
         return this.placeMarkDataList.size();
+    }
+
+    public void addPlaceMark(@NonNull final ItemPlaceMarkData item) {
+        if(this.placeMarkDataList == null) return;
+
+        this.placeMarkDataList.add(item);
+        this.notifyItemInserted(this.placeMarkDataList.size());
     }
 
     public void updatePlaceMark(@NonNull final ItemPlaceMarkData item) {

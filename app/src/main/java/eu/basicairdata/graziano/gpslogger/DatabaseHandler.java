@@ -863,13 +863,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     LocationExtended extdloc = new LocationExtended(lc);
                     extdloc.setNumberOfSatellites(cursor.getInt(10));
                     extdloc.setNumberOfSatellitesUsedInFix(cursor.getInt(12));
-
                     locationList.add(extdloc); // Add Location to list
+
                 } while (cursor.moveToNext());
             }
             cursor.close();
         }
-
         return locationList;
     }
 
@@ -954,11 +953,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public List<LocationExtended> getPlacemarksList(@NonNull final String rootTrackName) {
         LinkedList<LocationExtended> placemarkList = new LinkedList<>();
 
-        StringBuilder rootTrackNameWrapper = new StringBuilder("\"").append(rootTrackName).append("\"");
-        
-        String selectQuery = "SELECT * FROM " + TABLE_PLACEMARKS + " WHERE " + KEY_PLACEMARK_ROOT_TRACK + " LIKE " + rootTrackNameWrapper;
+        String selectQuery = "SELECT * FROM " + TABLE_PLACEMARKS + " WHERE " + KEY_PLACEMARK_ROOT_TRACK + " LIKE ?";
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { rootTrackName });
         double lcdata_double;
         float lcdata_float;
 
@@ -1572,6 +1569,80 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             cursor.close();
         }
         return trackList;
+    }
+
+    public Track getTrack(@NonNull final String trackName, @NonNull final String trackDesc) {
+        Track track = null;
+        final String selectQuery = "SELECT  * FROM " + TABLE_TRACKS + " WHERE "
+                + KEY_TRACK_NAME + " LIKE ? AND "
+                + KEY_TRACK_DESCRIPTION + " LIKE ?";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { trackName, trackDesc });
+
+        if (cursor != null) {
+            // looping through all rows and adding to list
+            if (cursor.moveToLast()) {
+                track= new Track();
+                track.fromDB(cursor.getLong(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+
+                        cursor.getDouble(4),
+                        cursor.getDouble(5),
+                        cursor.getDouble(6),
+                        cursor.getFloat(7),
+                        cursor.getFloat(8),
+                        cursor.getLong(9),
+
+                        cursor.getLong(10),
+
+                        cursor.getDouble(11),
+                        cursor.getDouble(12),
+                        cursor.getDouble(13),
+                        cursor.getFloat(14),
+                        cursor.getFloat(15),
+                        cursor.getLong(16),
+
+                        cursor.getDouble(17),
+                        cursor.getDouble(18),
+                        cursor.getFloat(19),
+
+                        cursor.getDouble(20),
+                        cursor.getFloat(21),
+
+                        cursor.getDouble(22),
+                        cursor.getDouble(23),
+                        cursor.getDouble(24),
+                        cursor.getDouble(25),
+
+                        cursor.getLong(26),
+                        cursor.getLong(27),
+
+                        cursor.getFloat(28),
+                        cursor.getFloat(29),
+                        cursor.getLong(30),
+
+                        cursor.getDouble(31),
+                        cursor.getDouble(32),
+                        cursor.getDouble(33),
+
+                        cursor.getFloat(34),
+                        cursor.getFloat(35),
+                        cursor.getFloat(36),
+
+                        cursor.getLong(37),
+                        cursor.getLong(38),
+
+                        cursor.getInt(39),
+                        cursor.getInt(40),
+                        cursor.getString(41),
+                        cursor.getString(42));
+            }
+            cursor.close();
+        }
+        return track;
     }
 
     public List<Track> getTrackListByName(@NonNull final String trackName) {

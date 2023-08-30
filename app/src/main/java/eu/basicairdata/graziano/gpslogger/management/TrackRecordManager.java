@@ -4,6 +4,7 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_DISABLED;
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_OK;
 
 import android.content.Context;
+import android.location.Location;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -321,5 +322,59 @@ public class TrackRecordManager {
             final String courseType = isWoodDeck? "wood_deck": "dirty";
             this.gpsApp.gpsDataBase.updateCourseType(trackName, courseName, courseType);
         }
+    }
+
+    public boolean createBlankTables(@NonNull final String trackName, @NonNull final String trackDesc) {
+        if(this.gpsApp == null) return false;
+
+        // create EMPTY track
+        Track emptyTrack = new Track();
+        emptyTrack.setName(trackName);
+        emptyTrack.setDescription(trackDesc);
+        emptyTrack.setCourseType("wood_deck");
+        this.gpsApp.gpsDataBase.addTrack(emptyTrack);
+
+        // then create EMPTY placemarks into track
+        LocationExtended emptyRow;
+        Location emptyLocation = new Location("DB");
+        emptyLocation.setLatitude(0.0f);
+        emptyLocation.setLongitude(0.0f);
+        emptyLocation.setAltitude(0.0f);
+        emptyLocation.setSpeed(0.0f);
+        emptyLocation.setAccuracy(0.0f);
+        emptyLocation.setBearing(0.0f);
+        emptyLocation.setTime(0L);
+
+        emptyTrack = this.gpsApp.gpsDataBase.getTrack(trackName, trackDesc);
+        if(emptyTrack == null) return false;
+
+        for(PlaceMarkType placeMarkType : PlaceMarkType.values()) {
+            emptyRow = new LocationExtended(emptyLocation);
+            emptyRow.setNumberOfSatellites(0);
+            emptyRow.setNumberOfSatellitesUsedInFix(0);
+
+            emptyRow.setType(placeMarkType.name());
+            emptyRow.setTrackName(trackName);
+            emptyRow.setName(this.getNameByPlacemarkType(placeMarkType));
+            emptyRow.setEnable(true);
+            this.gpsApp.gpsDataBase.addPlacemarkToTrack(emptyRow, emptyTrack);
+        }
+        return true;
+    }
+
+    private String getNameByPlacemarkType(PlaceMarkType type) {
+        String placemarkType = "기타 시설물 1";
+
+        switch (type) {
+            case ENTRANCE -> placemarkType = "나눔길 입구";
+            case PARKING -> placemarkType = "주차장";
+            case TOILET -> placemarkType = "화장실 1";
+            case REST -> placemarkType = "휴계 공간 1";
+            case BUS_STOP -> placemarkType = "버스 정류장";
+            case OBSERVATION_DECK -> placemarkType = "전망 데크 1";
+            case ETC -> placemarkType = "기타 시설물 1";
+//            default -> placemarkType = "기타 시설물 1";
+        }
+        return placemarkType;
     }
 }
