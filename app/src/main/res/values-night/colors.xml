@@ -27,9 +27,9 @@
     <color name="colorPrimary">#0078d7</color>
     <color name="colorPrimaryDark">#10558b</color>
     <color name="colorPrimaryLight">#0099d7</color>
-    <color name="textColorPrimary">#111111</color>
+    <color name="textColorPrimary">#eeeeee</color>
     <color name="textColorCardTitle">#272727</color>
-    <color name="textColorSecondary">#666666</color>
+    <color name="textColorSecondary">#111111</color>
 <!--    <color name="textColorPrimary">#ffffff</color>-->
 <!--    <color name="textColorCardTitle">#d7d7d7</color>-->
 <!--    <color name="textColorSecondary">#888888</color>-->
@@ -42,6 +42,7 @@
     <color name="textColorRecControlPrimary_Active">#ffffff</color>
     <color name="textColorRecControlSecondary_Active">#cccccc</color>
 
+    <color name="disable">#888888</color>
     <color name="colorIconDisabledOnDialog">#707070</color>
 
     <color name="colorCardBackground_Title">#3d3d3d</color>

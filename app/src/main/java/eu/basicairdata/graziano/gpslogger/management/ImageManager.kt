@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Environment.DIRECTORY_DCIM
+import android.provider.ContactsContract.Directory
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.view.WindowManager
@@ -53,6 +55,23 @@ class ImageManager {
 
             val imageResolver = localContext.get()!!.contentResolver
             return imageResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, value)
+        }
+
+        fun createEmptyDirectory(directoryPath: String, directoryName: String): String {
+            var dir: File
+            // = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName)
+            // if(!dir.exists()) {
+            //     dir.mkdirs()
+            //     return dir.absolutePath
+            // }
+            for (i in 0..2) {
+                dir = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName + i.toString())
+                if (!dir.exists()) {
+                    dir.mkdirs()
+                    return directoryName + i.toString()
+                }
+            }
+            return ""
         }
 
         fun parseNameFromUri(context: Context, uri: Uri?): String {

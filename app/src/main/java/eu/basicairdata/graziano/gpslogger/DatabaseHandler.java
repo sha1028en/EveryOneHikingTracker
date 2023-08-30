@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.stream.Stream;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
@@ -388,6 +389,22 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.endTransaction();
         }
         //Log.w("myApp", "[#] DatabaseHandler.java - addLocation: Location " + track.getNumberOfLocations() + " added into track " + track.getID());
+    }
+
+    public void updateCourseType(@NonNull final String trackName, @NonNull final String courseName, @NonNull final String courseType) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues trkValues = new ContentValues();
+        trkValues.put(KEY_TRACK_COURSE_TYPE, courseType);
+        try {
+            db.beginTransaction();
+            db.update(TABLE_TRACKS, trkValues, KEY_TRACK_NAME + " LIKE ? AND " +
+                    KEY_TRACK_DESCRIPTION + " LIKE ?",
+                    new String[] { trackName, courseName });                // Update the corresponding Track
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
     }
 
     /**

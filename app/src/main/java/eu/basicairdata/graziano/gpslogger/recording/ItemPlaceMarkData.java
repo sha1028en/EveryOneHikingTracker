@@ -6,19 +6,21 @@ import androidx.annotation.NonNull;
 
 
 public class ItemPlaceMarkData {
-    private String trackName;
-    private String placeMarkTitle;
-    private String placeMarkType;
+    private String trackName;               // this placemark's Parent Track Name
+    private String placeMarkTitle;          // this placemark Name by placemark type
+    private String placeMarkType;           // this placemark type ( REST, ETC... )
+    private String placeMarkDesc;           // this placemark desc
 
-    private String placeMarkDesc;
-    private Boolean isPlaceMarkEnable;
 
-    private float placeMarkLat = 0.0f;
-    private float placeMarkLng = 0.0f;
+    private boolean isPlaceMarkEnable;      // it is not collectable placemark
+    private boolean isPlaceMarkHidden;      // when it hide from Window
 
-    private Bitmap placeMarkImg0 = null;
-    private Bitmap placeMarkImg1 = null;
-    private Bitmap placeMarkImg2 = null;
+    private double placeMarkLat = 0.0f;      // this placeamrk lat
+    private double placeMarkLng = 0.0f;      // this placemark lng
+
+    private Bitmap placeMarkImg0 = null;    // this placemark Image
+    private Bitmap placeMarkImg1 = null;    // this placemark Image
+    private Bitmap placeMarkImg2 = null;    // this placemark Image
 
     public ItemPlaceMarkData(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
         this.trackName = trackName;
@@ -26,6 +28,7 @@ public class ItemPlaceMarkData {
         this.placeMarkType = placeMarkType;
         this.placeMarkDesc = placeMarkDesc;
         this.isPlaceMarkEnable = isPlaceMarkEnable;
+        this.isPlaceMarkHidden = false;
     }
 
     public String getTrackName() {
@@ -60,7 +63,8 @@ public class ItemPlaceMarkData {
         this.placeMarkDesc = placeMarkDesc;
     }
 
-    public Boolean getPlaceMarkEnable() {
+
+    public boolean getPlaceMarkEnable() {
         return isPlaceMarkEnable;
     }
 
@@ -68,19 +72,35 @@ public class ItemPlaceMarkData {
         isPlaceMarkEnable = placeMarkEnable;
     }
 
-    public float getPlaceMarkLat() {
+    public boolean isPlaceMarkEnable() {
+        return isPlaceMarkEnable;
+    }
+
+    public void setPlaceMarkEnable(boolean placeMarkEnable) {
+        isPlaceMarkEnable = placeMarkEnable;
+    }
+
+    public boolean isPlaceMarkHidden() {
+        return isPlaceMarkHidden;
+    }
+
+    public void setPlaceMarkHidden(boolean placeMarkHidden) {
+        isPlaceMarkHidden = placeMarkHidden;
+    }
+
+    public double getPlaceMarkLat() {
         return placeMarkLat;
     }
 
-    public void setPlaceMarkLat(float placeMarkLat) {
+    public void setPlaceMarkLat(double placeMarkLat) {
         this.placeMarkLat = placeMarkLat;
     }
 
-    public float getPlaceMarkLng() {
+    public double getPlaceMarkLng() {
         return placeMarkLng;
     }
 
-    public void setPlaceMarkLng(float placeMarkLng) {
+    public void setPlaceMarkLng(double placeMarkLng) {
         this.placeMarkLng = placeMarkLng;
     }
 

@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger;
+package eu.basicairdata.graziano.gpslogger.recording;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 
+import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.DialogAddCourseBinding;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 

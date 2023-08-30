@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import eu.basicairdata.graziano.gpslogger.ChooseRegionListDialog;
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.R;
@@ -72,12 +71,14 @@ public class TrackListActivity extends AppCompatActivity {
    @Subscribe
    public void onEvent(Short msg) {
         if (msg == EventBusMSG.UPDATE_FIX) {
-//            updateUI();
-            Log.w("dspark", "record_list: UPDATE_FIX");
+            updateUI();
+//            Log.w("dspark", "record_list: UPDATE_FIX");
         }
    }
 
-//    private void updateUI() {
-//        this.mBind.satelliteCntTxt.setText(String.format("%d/%d %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
-//    }
+    private void updateUI() {
+        // this.mBind.satelliteCntTxt.setText(String.format("%d/%d %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
+        if(this.mBind == null || this.recordManager == null) return;
+
+   }
 }

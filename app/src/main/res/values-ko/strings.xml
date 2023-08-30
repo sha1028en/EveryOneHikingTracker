@@ -84,7 +84,7 @@
     <string name="track_about_verify_information">등록된 코스의 시설물들을 지도에서 확인해 보세요</string>
 
     <!-- Recording buttons (bottom side) -->
-    <string name="record">기록</string>
+    <string name="record">기록 시작</string>
     <string name="pause">일시정지</string>
     <string name="annotate">방문지 추가</string>
     <string name="stop">기록 종료</string>

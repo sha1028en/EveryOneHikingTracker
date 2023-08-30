@@ -958,7 +958,7 @@ public class GPSApplication extends Application implements LocationListener {
         EventBus.builder().addIndex(new EventBusIndex()).installDefaultEventBus();
         EventBus.getDefault().register(this);
 
-        TOAST_VERTICAL_OFFSET = (int)(75 * getResources().getDisplayMetrics().density);
+        TOAST_VERTICAL_OFFSET = (int) (75 * getResources().getDisplayMetrics().density);
 
         DIRECTORY_TEMP = getApplicationContext().getCacheDir() + "/Tracks";
         DIRECTORY_FILESDIR_TRACKS = getApplicationContext().getFilesDir() + "/URI";

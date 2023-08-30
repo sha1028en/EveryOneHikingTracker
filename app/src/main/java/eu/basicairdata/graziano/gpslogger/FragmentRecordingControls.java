@@ -109,8 +109,7 @@ public class FragmentRecordingControls extends Fragment {
         tvRecordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isAdded())
-                    ((GPSActivity) getActivity()).onToggleRecord();
+                if (isAdded()) ((GPSActivity) getActivity()).onToggleRecord();
             }
         });
         tvGeoPointsNumber = view.findViewById(R.id.id_textView_GeoPoints);

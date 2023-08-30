@@ -5,7 +5,7 @@
     android:id="@+id/chooseRegionRoot"
     android:layout_width="400dp"
     android:layout_height="wrap_content"
-    tools:context=".ChooseRegionListDialog">
+    tools:context=".tracklist.ChooseRegionListDialog">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chooseRegionLayout"

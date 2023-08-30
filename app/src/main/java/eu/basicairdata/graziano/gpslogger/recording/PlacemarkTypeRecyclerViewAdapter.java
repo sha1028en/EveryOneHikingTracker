@@ -86,6 +86,14 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         this.notifyItemChanged(index);
     }
 
+    public void setPlaceMarksIsHidden(boolean isHide) {
+        if(this.bind == null || this.placeMarkDataList == null) return;
+        for(ItemPlaceMarkData item : this.placeMarkDataList) {
+            item.setPlaceMarkHidden(isHide);
+        }
+        this.notifyDataSetChanged();
+    }
+
     public void release() {
         if(this.placeMarkDataList != null) {
             for(ItemPlaceMarkData victim : this.placeMarkDataList) {
@@ -108,12 +116,38 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             void onSelected(ItemPlaceMarkData placeMarkData, int pos);
         }
 
+        public void setViewEnableEvent(final boolean isEnableEvent, final boolean alsoSwitchEventChange) {
+            this.bind.placemarkDisabledLayout.setVisibility(isEnableEvent? View.GONE: View.VISIBLE);
+
+            this.bind.placeamrkAddMore.setEnabled(isEnableEvent);
+            this.bind.placeamrkAddMore.setFocusable(isEnableEvent);
+            this.bind.placeamrkAddMore.setClickable(isEnableEvent);
+
+            this.bind.placemarkPic0.setEnabled(isEnableEvent);
+            this.bind.placemarkPic0.setFocusable(isEnableEvent);
+            this.bind.placemarkPic0.setClickable(isEnableEvent);
+
+            this.bind.placemarkPic1.setEnabled(isEnableEvent);
+            this.bind.placemarkPic1.setFocusable(isEnableEvent);
+            this.bind.placemarkPic1.setClickable(isEnableEvent);
+
+            this.bind.placemarkPic2.setEnabled(isEnableEvent);
+            this.bind.placemarkPic2.setFocusable(isEnableEvent);
+            this.bind.placemarkPic2.setClickable(isEnableEvent);
+
+            if(alsoSwitchEventChange) {
+                this.bind.placemarkEnabled.setEnabled(isEnableEvent);
+                this.bind.placemarkEnabled.setFocusable(isEnableEvent);
+                this.bind.placemarkEnabled.setClickable(isEnableEvent);
+            }
+        }
+
         public PlacemarkTypeViewHolder(@NonNull View itemView) {
             super(itemView);
             this.bind = ItemPlacemarkTypeBinding.bind(itemView);
 
             this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
+                this.setViewEnableEvent(isChecked, false);
             });
 
             this.bind.placeamrkAddMore.setOnClickListener(v -> {
@@ -125,12 +159,19 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             this.placeMarkData = item;
             this.bind.placemarkTypeTitle.setText(this.placeMarkData.getPlaceMarkTitle());
             this.bind.placemarkEnabled.setChecked(this.placeMarkData.getPlaceMarkEnable());
-            this.bind.placemarkInformation.setText(this.placeMarkData.getPlaceMarkDesc());
+//            this.bind.placemarkInformation.setText(this.placeMarkData.getPlaceMarkDesc());
 
             if(this.placeMarkData.getPlaceMarkImg0() != null) this.bind.placemarkPic0.setImageBitmap(this.placeMarkData.getPlaceMarkImg0());
             if(this.placeMarkData.getPlaceMarkImg1() != null) this.bind.placemarkPic1.setImageBitmap(this.placeMarkData.getPlaceMarkImg1());
             if(this.placeMarkData.getPlaceMarkImg2() != null) this.bind.placemarkPic2.setImageBitmap(this.placeMarkData.getPlaceMarkImg2());
 
+            // when it hide by bottom sheet, DONT ACTIVE CLICK EVENT
+            if(item.isPlaceMarkHidden()) {
+                this.setViewEnableEvent(false, true);
+
+            } else {
+                this.setViewEnableEvent(item.isPlaceMarkEnable(), true);
+            }
             this.imgSelectedListener = listener;
 
             this.bind.placemarkPic0.setOnClickListener(v -> {

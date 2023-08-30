@@ -188,6 +188,8 @@ public class TrackRecordManager {
      * start Record Track when GPS provider is ENABLED
      */
     public void startRecordTrack(final String trackName, final String trackDesc) {
+        this.gpsApp.gpsDataBase.deleteLocation(trackName, trackDesc);
+
         this.gpsApp.setCurrentTrackName(trackName);
         this.gpsApp.setCurrentTrackDesc(trackDesc);
         this.gpsApp.setRecording(true);
@@ -284,6 +286,21 @@ public class TrackRecordManager {
     public void removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         if(this.gpsApp != null) {
             this.gpsApp.gpsDataBase.deleteTrack(trackName, courseName);
+        }
+    }
+
+    public boolean isRecordingCourse() {
+        boolean isRecording = false;
+        if(this.gpsApp != null) {
+            isRecording = this.gpsApp.isRecording();
+        }
+        return isRecording;
+    }
+
+    public void updateCourseType(@NonNull final String trackName, @NonNull final String courseName, boolean isWoodDeck) {
+        if(this.gpsApp != null) {
+            final String courseType = isWoodDeck? "wood_deck": "dirty";
+            this.gpsApp.gpsDataBase.updateCourseType(trackName, courseName, courseType);
         }
     }
 }

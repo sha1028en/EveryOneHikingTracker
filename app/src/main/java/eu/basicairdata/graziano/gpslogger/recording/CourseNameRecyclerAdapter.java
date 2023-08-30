@@ -18,14 +18,17 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     private String selectedCourseName;
     private ItemCourseData selectCourse;
 
-    public CourseNameRecyclerAdapter() {
+    // when checkBox state changed, notify others
+    interface OnItemSelectListener {
+        void onItemSelected(boolean isDeck, ItemCourseData item);
+    }
+    private OnItemSelectListener listener;
+
+    public CourseNameRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
         this.courseList = new LinkedList<>();
         this.selectedCourseName = "";
-    }
+        this.listener = listener;
 
-    public CourseNameRecyclerAdapter(@NonNull final LinkedList<ItemCourseData> courseList) {
-        this.courseList = courseList;
-        this.selectedCourseName = "";
     }
 
     @NonNull @Override
@@ -37,6 +40,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
             this.selectCourse = this.courseList.get(holder.getBindingAdapterPosition());
             this.selectedCourseName = this.selectCourse.getCourseName();
             this.updateItemSelect(holder.getBindingAdapterPosition());
+            if(this.listener != null) listener.onItemSelected(this.selectCourse.isWoodDeck(), this.selectCourse);
         });
         return holder;
     }
@@ -83,6 +87,8 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
             this.courseList = null;
         }
         this.selectedCourseName = null;
+        this.selectCourse = null;
+        this.listener = null;
         this.bind = null;
     }
 
@@ -94,8 +100,25 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         if(this.selectCourse != null) return selectCourse;
         else return null;
     }
-    public void updateCourse() {
 
+    public void updateCourse(@NonNull final ItemCourseData course) {
+        int i = 0;
+        boolean isUpdate = false;
+
+        if(this.courseList != null) {
+            for(ItemCourseData item : this.courseList) {
+                if(item.getCourseName().equals(course.getCourseName()) && item.getTrackName().equals(course.getTrackName())) {
+                    isUpdate = true;
+                    break;
+                }
+                ++i;
+            }
+
+            if(isUpdate) {
+                this.selectCourse = course;
+                this.courseList.set(i, course);
+            }
+        }
     }
 
     public boolean removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
@@ -145,8 +168,5 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                 }
             }
         }
-        // public void release() {
-        //     this.bind = null;
-        // }
     }
 }

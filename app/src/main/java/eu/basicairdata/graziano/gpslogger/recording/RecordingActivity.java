@@ -1,11 +1,20 @@
 package eu.basicairdata.graziano.gpslogger.recording;
 
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HALF_EXPANDED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -15,8 +24,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -25,7 +37,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
-import eu.basicairdata.graziano.gpslogger.AddCourseNameDialog;
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.LocationExtended;
@@ -33,6 +44,7 @@ import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
+import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class RecordingActivity extends AppCompatActivity {
@@ -59,33 +71,41 @@ public class RecordingActivity extends AppCompatActivity {
         this.bind = ActivityRecordingBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
 
+        // FINAL VALUE, NEVER MODIFY VALUE!
         this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
 
+        // register GPS Event
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
 
+        String path = ImageManager.Companion.createEmptyDirectory("Trekking/" + this.currentTrackName + "/" + PlaceMarkType.PARKING.name() + "/", PlaceMarkType.PARKING.name());
+
+        // Camera Action
+        // when Placemark list clicked, took Picture
+        // and register Placemark with taken Picture
         this.requestCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<>() {
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(bind == null || placeMarkListAdapter == null || recordManager == null) return;
-
                 if (result.getResultCode() == RESULT_OK) {
                     String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                     if (!fileName.isBlank()) {
                         recordManager.addPlaceMark(currentPoiType, currentTrackName);
                         try {
-                            Bitmap img = ImageManager.Companion.loadImage(bind.getRoot().getContext(), fileName.replaceAll(".png", ""), "Trekking/" + currentTrackName + "/" + currentPoiType, "png");
-                            LinkedList<Bitmap> toCompressImgList  = new LinkedList<>();
-                            toCompressImgList.add(img);
+                            LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(bind.getRoot().getContext(), fileName.replaceAll(".png", ""), "Trekking/" + currentTrackName + "/" + currentPoiType);
+                            LinkedList<Uri> imgUri = new LinkedList<>();
+                            imgUri.add(imgUriList.getLast());
+                            imgUriList.clear();
+                            imgUriList = null;
 
-                            imageLoadTask(toCompressImgList, 90, (compressedImg, isSuccess) -> {
+                            imageLoadTask(imgUri, (compressedImg, isSuccess) -> {
                                 currentSelectedPlaceMarkItem.setPlaceMarkImg(compressedImg.get(0), currentPoiPosition);
                                 placeMarkListAdapter.updatePlaceMark(currentSelectedPlaceMarkItem);
                             });
 
-                        } catch (FileNotFoundException e) {
+                        } catch (FileNotFoundException | IndexOutOfBoundsException e) {
                             throw new RuntimeException(e);
                         }
 
@@ -99,6 +119,7 @@ public class RecordingActivity extends AppCompatActivity {
             }
         });
 
+        // init Placemark List
         LinearLayoutManager placeMarkLayoutManager = new LinearLayoutManager(this);
         this.bind.modifyPlacemarkTypeList.setLayoutManager(placeMarkLayoutManager);
 
@@ -114,11 +135,19 @@ public class RecordingActivity extends AppCompatActivity {
         });
         this.bind.modifyPlacemarkTypeList.setAdapter(this.placeMarkListAdapter);
 
+        // init course list
         LinearLayoutManager courseRecyclerLayoutManager = new LinearLayoutManager(this);
         courseRecyclerLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
         this.bind.recordCourseList.setLayoutManager(courseRecyclerLayoutManager);
 
-        this.courseRecyclerAdapter = new CourseNameRecyclerAdapter();
+        // set data into course list
+        this.courseRecyclerAdapter = new CourseNameRecyclerAdapter(new CourseNameRecyclerAdapter.OnItemSelectListener() {
+            @Override
+            public void onItemSelected(boolean isDeck, ItemCourseData item) {
+                // when course select, Check Box state has change
+                bind.checkDeckCheckbox.setChecked(isDeck);
+            }
+        });
         this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
 
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
@@ -134,15 +163,20 @@ public class RecordingActivity extends AppCompatActivity {
             this.courseRecyclerAdapter.addCourseItem(course);
         }
 
+        // set data into placemark list
         for(LocationExtended buffer : rawPlaceMarkList) {
             final String trackName = buffer.getName();
             final String placeMarkType = buffer.getDescription();
             final String placeMarkDesc = "";
             final boolean placeMarkEnable = true;
+            final double lat = buffer.getLatitude();
+            final double lng = buffer.getLongitude();
+
             ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, TrackRecordManager.typeToTitle(placeMarkType), placeMarkType, placeMarkDesc, placeMarkEnable);
-
-
+            placeMark.setPlaceMarkLat(lat);
+            placeMark.setPlaceMarkLng(lng);
             LinkedList<Uri> placeMarkImgList = null;
+
             try {
                 placeMarkImgList = ImageManager.Companion.loadImageUriList(this.bind.getRoot().getContext(), placeMarkDesc, "Trekking/" + this.currentTrackName + "/" + placeMarkType);
 
@@ -159,7 +193,6 @@ public class RecordingActivity extends AppCompatActivity {
                         for(Bitmap img : compressedImg) {
                             placeMark.setPlaceMarkImg(img, index);
                             ++index;
-
                             if(index > 2) break;
                         }
                         placeMarkListAdapter.updatePlaceMark(placeMark);
@@ -167,13 +200,15 @@ public class RecordingActivity extends AppCompatActivity {
                 });
             }
         }
-        initViewEvent();
+        this.initViewEvent();
+        this.initModifyTrackBottomSheet();
     }
 
     private interface OnCompressImageListener {
         void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess);
     }
 
+    // Load image TASK
     private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final OnCompressImageListener listener) {
         AsyncTask imgLoadTask = new AsyncTask() {
             LinkedList<Bitmap> compressedImgList;
@@ -262,10 +297,17 @@ public class RecordingActivity extends AppCompatActivity {
         imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe (threadMode = ThreadMode.MAIN)
     public void onEvent(Short msg) {
-        if(msg == EventBusMSG.UPDATE_FIX) {
+        if(msg == EventBusMSG.UPDATE_FIX) { // GPS SIGNAL RECEIVE
+            Log.d("dspark", "Recording: UPDATE_FIX");
             this.updateUI();
+
+        } else if (msg == EventBusMSG.UPDATE_TRACK) { // RECORDING COURSE
+            Log.d("dspark", "Recording: UPDATE_TRACK");
+
+        } else if (msg == EventBusMSG.NEW_TRACK) { // MIGHT BE CREATE NEW TRACK?
+            Log.d("dspark", "Recording: NEW_TRACK");
         }
     }
 
@@ -303,7 +345,7 @@ public class RecordingActivity extends AppCompatActivity {
             this.courseRecyclerAdapter.removeCourse(this.currentTrackName, toRemoveCourseName);
         });
 
-        this.bind.startRecordBtn.setOnClickListener(view -> {
+        this.bind.recordControlBtn.setOnClickListener(view -> {
             if(this.bind == null || this.courseRecyclerAdapter == null) return;
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
@@ -315,7 +357,7 @@ public class RecordingActivity extends AppCompatActivity {
             }
         });
 
-        this.bind.pauseRecordBtn.setOnClickListener(v -> {
+        this.bind.stopRecordBtn.setOnClickListener(v -> {
             if(this.bind == null || this.courseRecyclerAdapter == null) return;
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
@@ -323,11 +365,74 @@ public class RecordingActivity extends AppCompatActivity {
                 this.recordManager.stopRecordTrack(true, this.currentTrackName, selectedCourseName, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
             }
         });
+
+        this.bind.checkDeckCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            ItemCourseData toUpdateCourse = this.courseRecyclerAdapter.getSelectCourse();
+            if(toUpdateCourse != null) {
+                toUpdateCourse.setWoodDeck(isChecked);
+                this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
+                this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.isWoodDeck());
+            }
+        });
+    }
+
+    private void initModifyTrackBottomSheet() {
+        BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
+        modifyTrackSheet.setGestureInsetBottomIgnored(true);
+
+        modifyTrackSheet.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case STATE_EXPANDED -> {
+                        bind.rootDisableLayout.bringToFront();
+                        bind.rootDisableLayout.setVisibility(View.VISIBLE);
+                        placeMarkListAdapter.setPlaceMarksIsHidden(true);
+                        bind.getRoot().setFocusable(false);
+                        bind.getRoot().setClickable(false);
+                        bind.getRoot().setEnabled(false);
+                    }
+
+                    case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED -> {
+                        bind.rootDisableLayout.setVisibility(View.GONE);
+                        placeMarkListAdapter.setPlaceMarksIsHidden(false);
+                        bind.getRoot().setFocusable(true);
+                        bind.getRoot().setClickable(true);
+                        bind.getRoot().setEnabled(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
+        });
     }
 
     private void updateUI() {
+        if(this.bind == null || this.recordManager == null) return;
 //        this.mBind.proofSatliteTxt.setText(String.format("%d/%d : %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
+
+        boolean isRecording = this.recordManager.isRecordingCourse();
+        this.bind.stopRecordBtn.setFocusable(isRecording);
+        this.bind.stopRecordBtn.setClickable(isRecording);
+        this.bind.stopRecordBtn.setEnabled(isRecording);
+        this.bind.stopRecordBtn.setText(isRecording? "종료": "            ");
+        this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording? R.drawable.ic_stop_24: 0, 0 ,0 ,0);
+
+        if(isRecording) {
+            this.setButtonState(this.bind.recordControlBtn, R.drawable.red_round_border_32, R.drawable.ic_pause_24, R.string.pause);
+
+        } else {
+            this.setButtonState(this.bind.recordControlBtn, R.drawable.blue_round_border_32, R.drawable.ic_play_24, R.string.record);
+        }
     }
+
+    private void setButtonState(final TextView button, final int backgroundId, final int iconId, final int stringId) {
+        if(stringId != 0) button.setText(stringId);
+        if(backgroundId != 0) button.setBackground(AppCompatResources.getDrawable(this.bind.getRoot().getContext(), backgroundId));
+        if(iconId != 0) button.setCompoundDrawablesWithIntrinsicBounds(iconId, 0, 0, 0);
+    }
+
 
     @Override
     protected void onDestroy() {

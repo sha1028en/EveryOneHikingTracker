@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger;
+package eu.basicairdata.graziano.gpslogger.tracklist;
 
 import androidx.annotation.NonNull;
 
