@@ -15,8 +15,8 @@ import eu.basicairdata.graziano.gpslogger.databinding.ItemCourseBinding;
 public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRecyclerAdapter.CourseNameViewHolder> {
     private ItemCourseBinding bind;
     private LinkedList<ItemCourseData> courseList;
-    private String selectedCourseName;
-    private ItemCourseData selectCourse;
+    private String selectedCourseName; // Cursor
+    private ItemCourseData selectCourse; // Cursor
 
     // when checkBox state changed, notify others
     interface OnItemSelectListener {
@@ -28,7 +28,6 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         this.courseList = new LinkedList<>();
         this.selectedCourseName = "";
         this.listener = listener;
-
     }
 
     @NonNull @Override
@@ -132,6 +131,13 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                 }
             }
             isRemove = this.removeCourse(toRemoveCourse);
+
+            // remove course, before select them
+            // if course removed, selected course has been remove together ( update Cursor )
+            if(isRemove) {
+                this.selectCourse = null;
+                this.selectedCourseName = "";
+            }
         }
         return isRemove;
     }

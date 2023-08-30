@@ -300,7 +300,7 @@ class Exporter extends Thread {
                     dfdtGPX.format(loc.getLocation().getTime()));
             writeStream.write("</time>");
             writeStream.write("<name>");     // Name
-            writeStream.write(stringToXML(loc.getDescription()));
+            writeStream.write(stringToXML(loc.getType()));
             writeStream.write("</name>");
             if (loc.getNumberOfSatellitesUsedInFix() > 0) {     // Satellites used in fix
                 writeStream.write("<sat>");
@@ -787,7 +787,7 @@ class Exporter extends Thread {
                             if (exportKML) {
                                 kmlBW.write("  <Placemark id=\"" + placemark_id + "\">" + newLine);
                                 kmlBW.write("   <name>");
-                                kmlBW.write(stringToXML(loc.getDescription()));
+                                kmlBW.write(stringToXML(loc.getType()));
                                 kmlBW.write("</name>" + newLine);
                                 kmlBW.write("   <styleUrl>#PlacemarkStyle</styleUrl>" + newLine);
                                 kmlBW.write("   <Point>" + newLine);
@@ -861,7 +861,7 @@ class Exporter extends Thread {
                                 txtBW.write(",");
                                 // Name is an empty field
                                 txtBW.write(",");
-                                txtBW.write(loc.getDescription().replace(",","_"));
+                                txtBW.write(loc.getType().replace(",","_"));
                                 txtBW.write(newLine);
                             }
 

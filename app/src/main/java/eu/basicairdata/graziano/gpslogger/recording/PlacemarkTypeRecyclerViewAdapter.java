@@ -26,19 +26,19 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         tmpData = new ItemPlaceMarkData(trackName, "주차장", PlaceMarkType.PARKING.name(), "", true);
         this.placeMarkDataList.add(tmpData);
 
-        tmpData = new ItemPlaceMarkData(trackName, "화장실", PlaceMarkType.TOILET.name(), "", true);
+        tmpData = new ItemPlaceMarkData(trackName, "화장실 1", PlaceMarkType.TOILET.name(), "", true);
         this.placeMarkDataList.add(tmpData);
 
-        tmpData = new ItemPlaceMarkData(trackName, "휴계공간", PlaceMarkType.REST.name(), "", true);
+        tmpData = new ItemPlaceMarkData(trackName, "휴계공간 1", PlaceMarkType.REST.name(), "", true);
         this.placeMarkDataList.add(tmpData);
 
         tmpData = new ItemPlaceMarkData(trackName, "버스정류장", PlaceMarkType.BUS_STOP.name(), "", true);
         this.placeMarkDataList.add(tmpData);
 
-        tmpData = new ItemPlaceMarkData(trackName,"전망데크", PlaceMarkType.OBSERVATION_DECK.name(), "", true);
+        tmpData = new ItemPlaceMarkData(trackName,"전망데크 1", PlaceMarkType.OBSERVATION_DECK.name(), "", true);
         this.placeMarkDataList.add(tmpData);
 
-        tmpData = new ItemPlaceMarkData(trackName,"기타 시설물", PlaceMarkType.ETC.name(), "", true);
+        tmpData = new ItemPlaceMarkData(trackName,"기타 시설물 1", PlaceMarkType.ETC.name(), "", true);
         this.placeMarkDataList.add(tmpData);
     }
 
@@ -164,6 +164,11 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             if(this.placeMarkData.getPlaceMarkImg0() != null) this.bind.placemarkPic0.setImageBitmap(this.placeMarkData.getPlaceMarkImg0());
             if(this.placeMarkData.getPlaceMarkImg1() != null) this.bind.placemarkPic1.setImageBitmap(this.placeMarkData.getPlaceMarkImg1());
             if(this.placeMarkData.getPlaceMarkImg2() != null) this.bind.placemarkPic2.setImageBitmap(this.placeMarkData.getPlaceMarkImg2());
+            if(this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.ENTRANCE.name()) ||
+                    this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.PARKING.name()) ||
+                    this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.BUS_STOP.name())) {
+                this.bind.placeamrkAddMore.setVisibility(View.GONE);
+            }
 
             // when it hide by bottom sheet, DONT ACTIVE CLICK EVENT
             if(item.isPlaceMarkHidden()) {

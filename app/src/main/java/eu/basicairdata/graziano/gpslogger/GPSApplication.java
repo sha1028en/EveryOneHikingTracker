@@ -192,9 +192,12 @@ public class GPSApplication extends Application implements LocationListener {
     public DatabaseHandler gpsDataBase;                                 // The handler for the GPSLogger Database of Tracks
 
     private String currentTrackName = "";
-
     private String currentTrackDesc = "";
-    private String placemarkDescription = "";                    // The description of the Placemark (annotation) set by PlacemarkDialog
+
+    private String placemarkType = "";                    // The description of the Placemark (annotation) set by PlacemarkDialog
+    private String placemarkName = "";
+    private boolean placemarkEnable = true;
+
     private boolean isPlacemarkRequested;                        // True if the user requested to add a placemark (Annotation)
     private boolean isQuickPlacemarkRequest;                     // True if the user requested to add a placemark in a quick way (no annotation dialog)
     private boolean isRecording;                                 // True if the recording is active
@@ -613,8 +616,24 @@ public class GPSApplication extends Application implements LocationListener {
         return currentLocationExtended;
     }
 
-    public void setPlacemarkDescription(String Description) {
-        this.placemarkDescription = Description;
+    public void setPlacemarkType(String type) {
+        this.placemarkType = type;
+    }
+
+    public String getPlacemarkName() {
+        return placemarkName;
+    }
+
+    public void setPlacemarkName(String placemarkName) {
+        this.placemarkName = placemarkName;
+    }
+
+    public boolean isPlacemarkEnable() {
+        return placemarkEnable;
+    }
+
+    public void setPlacemarkEnable(boolean placemarkEnable) {
+        this.placemarkEnable = placemarkEnable;
     }
 
     public void setCurrentTrackName(final String currentTrackName) {
@@ -1118,8 +1137,8 @@ public class GPSApplication extends Application implements LocationListener {
                 prevRecordedFix = eloc;
                 ast.taskType = TASK_ADDLOCATION;
                 ast.location = eloc;
-                ast.location.setName(this.currentTrackName);
-                ast.location.setDescription(this.currentTrackDesc);
+                ast.location.setTrackName(this.currentTrackName);
+                ast.location.setType(this.currentTrackDesc);
                 asyncTODOQueue.add(ast);
                 isPrevFixRecorded = true;
 
@@ -1210,8 +1229,10 @@ public class GPSApplication extends Application implements LocationListener {
             ast.location = currentPlacemark;
 
             if(currentPlacemark != null) {
-                currentPlacemark.setDescription(placemarkDescription);
-                currentPlacemark.setName(this.currentTrackName);
+                currentPlacemark.setName(this.placemarkName);
+                currentPlacemark.setType(this.placemarkType);
+                currentPlacemark.setTrackName(this.currentTrackName);
+                currentPlacemark.setEnable(this.placemarkEnable);
                 asyncTODOQueue.add(ast);
             }
             return;
@@ -1219,9 +1240,9 @@ public class GPSApplication extends Application implements LocationListener {
 
         if (msg == EventBusMSG.APP_PAUSE) {
             disableLocationUpdatesHandler.postDelayed(disableLocationUpdatesRunnable, getHandlerTime());  // Starts the switch-off handler (delayed by HandlerTimer)
-            if ((currentTrack.getNumberOfLocations() == 0) && (currentTrack.getNumberOfPlacemarks() == 0)
-                && (!isRecording) && (!isPlacemarkRequested)) stopAndUnbindGPSService();
-            System.gc();                                // Clear mem from released objects with Garbage Collector
+            if ((currentTrack.getNumberOfLocations() == 0) && (currentTrack.getNumberOfPlacemarks() == 0) && (!isRecording) && (!isPlacemarkRequested))
+                stopAndUnbindGPSService();
+            System.gc(); // Clear mem from released objects with Garbage Collector
             return;
         }
 
@@ -1998,8 +2019,8 @@ public class GPSApplication extends Application implements LocationListener {
                 // Task: Add location to current track
                 if (asyncTODO.taskType.equals(TASK_ADDLOCATION)) {
                     locationExtended = new LocationExtended(asyncTODO.location.getLocation());
-                    locationExtended.setName(asyncTODO.location.getName());
-                    locationExtended.setDescription(asyncTODO.location.getDescription());
+                    locationExtended.setTrackName(asyncTODO.location.getTrackName());
+                    locationExtended.setType(asyncTODO.location.getType());
                     locationExtended.setNumberOfSatellites(asyncTODO.location.getNumberOfSatellites());
                     locationExtended.setNumberOfSatellitesUsedInFix(asyncTODO.location.getNumberOfSatellitesUsedInFix());
                     currentLocationExtended = locationExtended;
@@ -2015,8 +2036,10 @@ public class GPSApplication extends Application implements LocationListener {
                 // Task: Add a placemark to current track
                 if (asyncTODO.taskType.equals(TASK_ADDPLACEMARK)) {
                     locationExtended = new LocationExtended(asyncTODO.location.getLocation());
+                    locationExtended.setType(asyncTODO.location.getType());
                     locationExtended.setName(asyncTODO.location.getName());
-                    locationExtended.setDescription(asyncTODO.location.getDescription());
+                    locationExtended.setTrackName(asyncTODO.location.getTrackName());
+                    locationExtended.setEnable(asyncTODO.location.isEnable());
                     locationExtended.setNumberOfSatellites(asyncTODO.location.getNumberOfSatellites());
                     locationExtended.setNumberOfSatellitesUsedInFix(asyncTODO.location.getNumberOfSatellitesUsedInFix());
                     track.addPlacemark(locationExtended);

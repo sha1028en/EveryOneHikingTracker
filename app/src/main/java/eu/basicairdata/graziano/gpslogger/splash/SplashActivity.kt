@@ -71,14 +71,38 @@ class SplashActivity : AppCompatActivity() {
                     }
                 }
 
-                // TO READ MEDIA_IMG, AUDIO, VIDEO
+                // TO READ IMAGES
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && perms.containsKey(Manifest.permission.READ_MEDIA_IMAGES)) {
-                    if(perms[Manifest.permission.CAMERA] == PackageManager.PERMISSION_GRANTED) {
+                    if(perms[Manifest.permission.READ_MEDIA_IMAGES] == PackageManager.PERMISSION_GRANTED) {
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_GRANTED")
 
                     } else {
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_DENIED")
                         allGrantPerm = false
+                    }
+
+                // TO READ EXTERNAL STORAGE IMAGES
+                // UNDER ANDROID OS VERSION : TIRAMISU, 33
+                } else {
+                    if(perms[Manifest.permission.READ_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED) {
+                        Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_GRANTED")
+
+                    } else {
+                        Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_DENIED")
+                        allGrantPerm = false;
+                    }
+                }
+
+                // TO WRITE EXTERNAL STORAGE IMAGES
+                // UNDER ANDROID OS VERSION : OREO, 28
+                // UPPER VERSION IS NOT NEED TO REQ THIS PERM
+                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
+                    if(perms[Manifest.permission.WRITE_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED) {
+                        Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_GRANTED")
+
+                    } else {
+                        Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_DENIED")
+                        allGrantPerm = false;
                     }
                 }
 

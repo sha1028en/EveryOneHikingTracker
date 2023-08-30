@@ -4,6 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
     android:background="@drawable/backgound_round_border_16">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -35,8 +39,6 @@
         android:id="@+id/placemark_type_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
         android:text="나눔길 입구"
         android:textColor="@color/textColorCardTitle"
         android:textSize="@dimen/TextAppearanceLargeNumbersSize"
@@ -48,12 +50,11 @@
         android:id="@+id/placemark_enabled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        app:switchMinWidth="60dp"
-        app:track="@drawable/switch_track_selector"
         app:layout_constraintBottom_toBottomOf="@+id/placemark_type_title"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/placemark_type_title" />
+        app:layout_constraintTop_toTopOf="@+id/placemark_type_title"
+        app:switchMinWidth="60dp"
+        app:track="@drawable/switch_track_selector" />
 
     <ImageView
         android:id="@+id/placemark_pic0"
@@ -104,10 +105,19 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"
         android:adjustViewBounds="true"
         android:src="@drawable/ic_plus_blue_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/placemark_pic2"
         app:layout_constraintTop_toBottomOf="@id/placemark_pic2" />
+
+    <!--    DIVIDER    -->
+<!--    <View-->
+<!--        android:id="@+id/view"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="@color/disable"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="@id/placemark_pic2"-->
+<!--        app:layout_constraintStart_toStartOf="@id/placemark_pic0" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

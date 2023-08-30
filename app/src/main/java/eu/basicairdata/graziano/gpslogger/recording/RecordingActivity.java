@@ -46,7 +46,6 @@ import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
-import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class RecordingActivity extends AppCompatActivity {
@@ -60,6 +59,8 @@ public class RecordingActivity extends AppCompatActivity {
 
     private String currentTrackName = "";
     private String currentPoiType = "";
+    private String currentPoiName = "";
+    private boolean currentPoiEnable = true;
 
     private ItemPlaceMarkData currentSelectedPlaceMarkItem;
     private Toast toast;
@@ -84,7 +85,7 @@ public class RecordingActivity extends AppCompatActivity {
         }
         EventBus.getDefault().register(this);
 
-        String path = ImageManager.Companion.createEmptyDirectory("Trekking/" + this.currentTrackName + "/" + PlaceMarkType.PARKING.name() + "/", PlaceMarkType.PARKING.name());
+//        String path = ImageManager.Companion.createEmptyDirectory("Trekking/" + this.currentTrackName + "/" + PlaceMarkType.PARKING.name() + "/", PlaceMarkType.PARKING.name());
 
         // Camera Action
         // when Placemark list clicked, took Picture
@@ -96,9 +97,14 @@ public class RecordingActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK) {
                     String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                     if (!fileName.isBlank()) {
-                        recordManager.addPlaceMark(currentPoiType, currentTrackName);
+//                        recordManager.addPlaceMark(currentPoiType, currentTrackName);
+                        recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackName, currentPoiEnable);
                         try {
-                            LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(bind.getRoot().getContext(), fileName.replaceAll(".png", ""), "Trekking/" + currentTrackName + "/" + currentPoiType);
+                            LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
+                                    bind.getRoot().getContext(),
+                                    fileName.replaceAll(".png", ""),
+                                    "Trekking/" + currentTrackName + "/" + currentPoiType + "/" + currentPoiName);
+
                             LinkedList<Uri> imgUri = new LinkedList<>();
                             imgUri.add(imgUriList.getLast());
                             imgUriList.clear();
@@ -129,9 +135,14 @@ public class RecordingActivity extends AppCompatActivity {
 
         this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter(this.currentTrackName, (placeMarkData, pos) -> {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            tmpFile = ImageManager.Companion.createTmpFile(bind.getRoot().getContext(), placeMarkData.getPlaceMarkType(), "Trekking/" + this.currentTrackName + "/" + placeMarkData.getPlaceMarkType());
+            tmpFile = ImageManager.Companion.createTmpFile(
+                    bind.getRoot().getContext(),
+                    placeMarkData.getPlaceMarkType(),
+                    "Trekking/" + this.currentTrackName + "/" + placeMarkData.getPlaceMarkType() + "/" + placeMarkData.getPlaceMarkTitle());
             intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpFile);
+            this.currentPoiName = placeMarkData.getPlaceMarkTitle();
             this.currentPoiType = placeMarkData.getPlaceMarkType();
+            this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
             this.currentPoiPosition = pos;
             this.currentSelectedPlaceMarkItem = placeMarkData;
 
@@ -169,20 +180,23 @@ public class RecordingActivity extends AppCompatActivity {
 
         // set data into placemark list
         for(LocationExtended buffer : rawPlaceMarkList) {
-            final String trackName = buffer.getName();
-            final String placeMarkType = buffer.getDescription();
+            final String trackName = buffer.getTrackName();
+            final String placeMarkType = buffer.getType();
+            final String placeMarkName = buffer.getName();
             final String placeMarkDesc = "";
             final boolean placeMarkEnable = true;
             final double lat = buffer.getLatitude();
             final double lng = buffer.getLongitude();
 
-            ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, TrackRecordManager.typeToTitle(placeMarkType), placeMarkType, placeMarkDesc, placeMarkEnable);
+            ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
             placeMark.setPlaceMarkLat(lat);
             placeMark.setPlaceMarkLng(lng);
             LinkedList<Uri> placeMarkImgList = null;
 
             try {
-                placeMarkImgList = ImageManager.Companion.loadImageUriList(this.bind.getRoot().getContext(), placeMarkDesc, "Trekking/" + this.currentTrackName + "/" + placeMarkType);
+                placeMarkImgList = ImageManager.Companion.loadImageUriList(
+                        this.bind.getRoot().getContext(),
+                        "", "Trekking/" + this.currentTrackName + "/" + placeMarkType + "/" + placeMarkName);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -208,6 +222,7 @@ public class RecordingActivity extends AppCompatActivity {
         this.initModifyTrackBottomSheet();
     }
 
+    // when Compressed Images Ready to show, notify
     private interface OnCompressImageListener {
         void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess);
     }
@@ -255,51 +270,6 @@ public class RecordingActivity extends AppCompatActivity {
         };
         imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
     }
-
-
-//    private void imageLoadTask(@NonNull LinkedList<Bitmap> sourceImages, final int compressPercent, @NonNull final OnCompressImageListener listener) {
-//        AsyncTask imgLoadTask = new AsyncTask() {
-//            LinkedList<Bitmap> compressedImgList;
-//            boolean isSuccess = true;
-//
-//            @Override
-//            protected void onPreExecute() {
-//                super.onPreExecute();
-//                compressedImgList = new LinkedList<>();
-//            }
-//
-//            @Override
-//            protected Object doInBackground(Object[] objects) {
-//                try {
-//                    for (Bitmap source : sourceImages) {
-//                        Bitmap compressedImg = ImageManager.Companion.compressBitmapAggressive(source, compressPercent, 100, 200);
-//                        compressedImgList.add(compressedImg);
-//
-//                        if(!source.isRecycled()) source.recycle();
-//                        source = null;
-//                    }
-//
-//                } catch (IllegalArgumentException e) {
-//                    e.printStackTrace();
-//                    isSuccess = false;
-//                }
-//                sourceImages.clear();
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Object o) {
-//                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
-//            }
-//
-//            @Override
-//            protected void onCancelled() {
-//                super.onCancelled();
-//                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
-//            }
-//        };
-//        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
-//    }
 
     @Subscribe (threadMode = ThreadMode.MAIN)
     public void onEvent(Short msg) {

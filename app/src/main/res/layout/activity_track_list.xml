@@ -51,14 +51,21 @@
         android:id="@+id/goto_record_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="track record"
         android:layout_gravity="bottom|center"
+        android:layout_marginTop="24dp"
+        android:text="서울시 대모산 무장애 나눔길"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-<!--    <TextView-->
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="곡성 치유의숲 무장애 나눔길" />
+
+    <!--    <TextView-->
 <!--        android:id="@+id/satellite_cnt_txt"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->

@@ -40,11 +40,16 @@ public class TrackListActivity extends AppCompatActivity {
             this.startActivity(intent);
         });
 
+        this.mBind.button.setOnClickListener(v -> {
+            Intent intent = new Intent(this, RecordingActivity.class);
+            intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, "곡성 치유의숲 무장애 나눔길");
+            this.startActivity(intent);
+        });
+
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
-
    }
 
    private void initViewListener() {
@@ -71,14 +76,14 @@ public class TrackListActivity extends AppCompatActivity {
    @Subscribe
    public void onEvent(Short msg) {
         if (msg == EventBusMSG.UPDATE_FIX) {
-            updateUI();
+//            updateUI();
 //            Log.w("dspark", "record_list: UPDATE_FIX");
         }
    }
 
-    private void updateUI() {
-        // this.mBind.satelliteCntTxt.setText(String.format("%d/%d %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
-        if(this.mBind == null || this.recordManager == null) return;
-
-   }
+//    private void updateUI() {
+//         this.mBind.satelliteCntTxt.setText(String.format("%d/%d %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
+//        if(this.mBind == null || this.recordManager == null) return;
+//
+//   }
 }

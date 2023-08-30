@@ -32,11 +32,14 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 public class LocationExtended {
     private Location location;
 
-    private String name                     = "";
-    private String description              = "";
+    private String trackName = "";
+    private String type = "";
+    private String name = "";
     private double altitudeEGM96Correction  = NOT_AVAILABLE;
     private int numberOfSatellites          = NOT_AVAILABLE;
     private int numberOfSatellitesUsedInFix = NOT_AVAILABLE;
+    private boolean isEnable = true;
+
 
     /**
      * The constructor.
@@ -71,16 +74,32 @@ public class LocationExtended {
 
     public long getTime() { return location.getTime(); }
 
-    public String getName() { return this.name; }
-
-    public void setName(final String name) { this.name = name; }
-
-    public String getDescription() {
-        return description;
+    public String getName() {
+        return name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTrackName() { return this.trackName; }
+
+    public void setTrackName(final String trackName) { this.trackName = trackName; }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public boolean isEnable() {
+        return isEnable;
+    }
+
+    public void setEnable(boolean enable) {
+        isEnable = enable;
     }
 
     public void setNumberOfSatellites(int numberOfSatellites) {

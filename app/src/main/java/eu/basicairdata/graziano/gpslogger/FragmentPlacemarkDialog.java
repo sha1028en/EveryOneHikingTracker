@@ -73,7 +73,7 @@ public class FragmentPlacemarkDialog extends DialogFragment {
                         if (isAdded()) {
                             String placemarkDescription = etDescription.getText().toString();
                             final GPSApplication gpsApp = GPSApplication.getInstance();
-                            gpsApp.setPlacemarkDescription(placemarkDescription.trim());
+                            gpsApp.setPlacemarkType(placemarkDescription.trim());
                             EventBus.getDefault().post(EventBusMSG.ADD_PLACEMARK);
                             //Log.w("myApp", "[#] FragmentPlacemarkDialog.java - posted ADD_PLACEMARK: " + placemarkDescription);
                         }

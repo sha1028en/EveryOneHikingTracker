@@ -159,6 +159,7 @@ public class TrackRecordManager {
 
     /**
      * record PlaceMarker when GPS provider ENABLED
+     * @deprecated internal struct has been changed. still work successfully
      *
      * @param placeMarkDesc placemarker desc
      * @param parentTrackName placemarker's parent Track Name
@@ -176,12 +177,30 @@ public class TrackRecordManager {
                 return;
             }
         }
-        // this.gpsApp.setQuickPlacemarkRequest(true);
-        this.gpsApp.setPlacemarkDescription(placeMarkDesc);
+        this.gpsApp.setPlacemarkType(placeMarkDesc);
+        this.gpsApp.setCurrentTrackName(parentTrackName);
         this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkRequested(true);
+        //        EventBus.getDefault().post(EventBusMSG.REQUEST_ADD_PLACEMARK);
+    }
+
+    public void addPlaceMark(@NonNull final String placeMarkName, @NonNull final String placeMarkType, @NonNull final String parentTrackName, final boolean isEnablePlaceMark) {
+        if (!gpsApp.isStopButtonFlag() || this.gpsApp.getGPSStatus() != GPS_OK) {
+            if (!gpsApp.isFirstFixFound() && this.gpsApp.getCurrentLocationExtended() == null) {
+                toast.cancel();
+                toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_annotate_when_gps_found, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+                toast.show();
+                return;
+            }
+        }
+        // this.gpsApp.setQuickPlacemarkRequest(true);
+        this.gpsApp.setPlacemarkName(placeMarkName);
+        this.gpsApp.setPlacemarkType(placeMarkType);
         this.gpsApp.setCurrentTrackName(parentTrackName);
-//        EventBus.getDefault().post(EventBusMSG.REQUEST_ADD_PLACEMARK);
+        this.gpsApp.setPlacemarkEnable(isEnablePlaceMark);
+        this.gpsApp.setQuickPlacemarkRequest(true);
+        this.gpsApp.setPlacemarkRequested(true);
     }
 
     /**
