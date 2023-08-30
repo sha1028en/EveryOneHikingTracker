@@ -1,9 +1,11 @@
 package eu.basicairdata.graziano.gpslogger.recording;
 
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HALF_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -60,6 +62,7 @@ public class RecordingActivity extends AppCompatActivity {
     private String currentPoiType = "";
 
     private ItemPlaceMarkData currentSelectedPlaceMarkItem;
+    private Toast toast;
     private int currentPoiPosition = 0;
 
     @Override
@@ -71,6 +74,7 @@ public class RecordingActivity extends AppCompatActivity {
         this.bind = ActivityRecordingBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
 
+        toast = new Toast(this.bind.getRoot().getContext());
         // FINAL VALUE, NEVER MODIFY VALUE!
         this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
 
@@ -210,7 +214,7 @@ public class RecordingActivity extends AppCompatActivity {
 
     // Load image TASK
     private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final OnCompressImageListener listener) {
-        AsyncTask imgLoadTask = new AsyncTask() {
+        AsyncTask<Object, Integer, Object> imgLoadTask = new AsyncTask<>() {
             LinkedList<Bitmap> compressedImgList;
             boolean isSuccess = true;
 
@@ -253,49 +257,49 @@ public class RecordingActivity extends AppCompatActivity {
     }
 
 
-    private void imageLoadTask(@NonNull LinkedList<Bitmap> sourceImages, final int compressPercent, @NonNull final OnCompressImageListener listener) {
-        AsyncTask imgLoadTask = new AsyncTask() {
-            LinkedList<Bitmap> compressedImgList;
-            boolean isSuccess = true;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                compressedImgList = new LinkedList<>();
-            }
-
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                try {
-                    for (Bitmap source : sourceImages) {
-                        Bitmap compressedImg = ImageManager.Companion.compressBitmapAggressive(source, compressPercent, 100, 200);
-                        compressedImgList.add(compressedImg);
-
-                        if(!source.isRecycled()) source.recycle();
-                        source = null;
-                    }
-
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    isSuccess = false;
-                }
-                sourceImages.clear();
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
-            }
-
-            @Override
-            protected void onCancelled() {
-                super.onCancelled();
-                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
-            }
-        };
-        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
-    }
+//    private void imageLoadTask(@NonNull LinkedList<Bitmap> sourceImages, final int compressPercent, @NonNull final OnCompressImageListener listener) {
+//        AsyncTask imgLoadTask = new AsyncTask() {
+//            LinkedList<Bitmap> compressedImgList;
+//            boolean isSuccess = true;
+//
+//            @Override
+//            protected void onPreExecute() {
+//                super.onPreExecute();
+//                compressedImgList = new LinkedList<>();
+//            }
+//
+//            @Override
+//            protected Object doInBackground(Object[] objects) {
+//                try {
+//                    for (Bitmap source : sourceImages) {
+//                        Bitmap compressedImg = ImageManager.Companion.compressBitmapAggressive(source, compressPercent, 100, 200);
+//                        compressedImgList.add(compressedImg);
+//
+//                        if(!source.isRecycled()) source.recycle();
+//                        source = null;
+//                    }
+//
+//                } catch (IllegalArgumentException e) {
+//                    e.printStackTrace();
+//                    isSuccess = false;
+//                }
+//                sourceImages.clear();
+//                return null;
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Object o) {
+//                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
+//            }
+//
+//            @Override
+//            protected void onCancelled() {
+//                super.onCancelled();
+//                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
+//            }
+//        };
+//        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
+//    }
 
     @Subscribe (threadMode = ThreadMode.MAIN)
     public void onEvent(Short msg) {
@@ -384,7 +388,7 @@ public class RecordingActivity extends AppCompatActivity {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
-                    case STATE_EXPANDED -> {
+                    case STATE_EXPANDED -> { // when BottomSheet Complete Appeared
                         bind.rootDisableLayout.bringToFront();
                         bind.rootDisableLayout.setVisibility(View.VISIBLE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(true);
@@ -400,6 +404,7 @@ public class RecordingActivity extends AppCompatActivity {
                         bind.getRoot().setClickable(true);
                         bind.getRoot().setEnabled(true);
                     }
+                    case STATE_SETTLING, STATE_DRAGGING -> {}
                 }
             }
 
@@ -433,6 +438,23 @@ public class RecordingActivity extends AppCompatActivity {
         if(iconId != 0) button.setCompoundDrawablesWithIntrinsicBounds(iconId, 0, 0, 0);
     }
 
+    @Override
+    public void onBackPressed() {
+        if(this.bind == null || this.recordManager == null || toast == null) {
+            super.onBackPressed();
+        }
+
+        // when recording course, CANT run away.
+        // press "stop record" to stop recording, you can back to previous activity
+        if(this.recordManager.isRecordingCourse()) {
+            toast.cancel();
+            toast = Toast.makeText(this.bind.getRoot().getContext(), "", Toast.LENGTH_SHORT);
+            toast.show();
+
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -446,6 +468,12 @@ public class RecordingActivity extends AppCompatActivity {
             this.placeMarkListAdapter.release();
             this.placeMarkListAdapter = null;
         }
+
+        if(toast != null) {
+            this.toast.cancel();
+            this.toast = null;
+        }
+
         this.bind = null;
         EventBus.getDefault().unregister(this);
 
