@@ -58,20 +58,23 @@
 
         <activity
             android:name=".tracklist.TrackListActivity"
+            android:launchMode="singleTask"
             android:exported="false" />
+
         <activity
             android:name=".splash.SplashActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
             android:name=".recording.RecordingActivity"
+            android:launchMode="singleTask"
             android:exported="false" />
+
         <activity
             android:name=".GPSActivity"
             android:exported="true"

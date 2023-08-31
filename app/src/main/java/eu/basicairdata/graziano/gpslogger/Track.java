@@ -28,6 +28,8 @@ import java.util.Locale;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
+import eu.basicairdata.graziano.gpslogger.management.TrackRegionType;
+
 
 /**
  * Describes and manages a Track.
@@ -135,6 +137,7 @@ public class Track {
 
     private int     type                        = TRACK_TYPE_ND;    // Saved in DB
     private String courseType                   = TRACK_COURSE_TYPE_WOOD_DECK;
+    private String trackRegion                  = "";
 
     // True if the card view is selected
     private boolean isSelected = false;
@@ -186,7 +189,6 @@ public class Track {
             duration = 0;
             distance = 0;
         }
-
         timeLastFix = timeEnd;
 
         latitudeEnd = location.getLocation().getLatitude();
@@ -380,7 +382,7 @@ public class Track {
                        long distanceLastAltitude, double altitudeUp, double altitudeDown,
                        double altitudeInProgress, float speedMax, float speedAverage,
                        float speedAverageMoving, long numberOfLocations, long numberOfPlacemarks,
-                       int validMap, int type, String description, String courseType) {
+                       int validMap, int type, String description, String courseType, String trackRegion) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -435,6 +437,7 @@ public class Track {
         this.validMap = validMap;
         this.type = type;
         this.courseType = courseType;
+        this.trackRegion = trackRegion;
 
         EGM96 egm96 = EGM96.getInstance();
         if (egm96 != null) {
@@ -663,6 +666,14 @@ public class Track {
 
     public void setCourseType(final String courseType) {
         this.courseType = courseType;
+    }
+
+    public String getTrackRegion() {
+        return trackRegion;
+    }
+
+    public void setTrackRegion(String trackRegion) {
+        this.trackRegion = trackRegion;
     }
 
     // --------------------------------------------------------------------------------------------

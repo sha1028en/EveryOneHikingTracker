@@ -1,5 +1,11 @@
 package eu.basicairdata.graziano.gpslogger.recording;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.LinkedList;
 
+import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkTypeBinding;
 
@@ -17,11 +24,11 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
     private ItemPlacemarkTypeBinding bind;
     private PlacemarkTypeViewHolder.OnImageSelectedListener imgSelectedListener;
 
-    private PlacemarkTypeRecyclerViewAdapter(final String trackName) {
+    private PlacemarkTypeRecyclerViewAdapter() {
         this.placeMarkDataList = new LinkedList<>();
 
-//        ItemPlaceMarkData tmpData = new ItemPlaceMarkData(trackName, "나눔길 입구", PlaceMarkType.ENTRANCE.name(), "", true);
-//        this.placeMarkDataList.add(tmpData);
+        ItemPlaceMarkData tmpData = new ItemPlaceMarkData("label", "label", PlaceMarkType.ETC.name(), "label", false);
+        this.placeMarkDataList.add(tmpData);
 //
 //        tmpData = new ItemPlaceMarkData(trackName, "주차장", PlaceMarkType.PARKING.name(), "", true);
 //        this.placeMarkDataList.add(tmpData);
@@ -42,8 +49,8 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 //        this.placeMarkDataList.add(tmpData);
     }
 
-    public PlacemarkTypeRecyclerViewAdapter(@NonNull final String trackName, @NonNull final PlacemarkTypeViewHolder.OnImageSelectedListener listener) {
-        this(trackName);
+    public PlacemarkTypeRecyclerViewAdapter(@NonNull final PlacemarkTypeViewHolder.OnImageSelectedListener listener) {
+        this();
         this.imgSelectedListener = listener;
     }
 
@@ -58,7 +65,12 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 
     @Override
     public void onBindViewHolder(@NonNull PlacemarkTypeViewHolder holder, int position) {
-        holder.onBind(this.placeMarkDataList.get(position), this.imgSelectedListener);
+        if(position != 0) {
+            holder.onBind(this.placeMarkDataList.get(position), this.imgSelectedListener);
+
+        } else {
+            holder.onAddPlaceMarkInfoBind();
+        }
     }
 
     @Override
@@ -69,6 +81,14 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
     @Override
     public int getItemCount() {
         return this.placeMarkDataList.size();
+    }
+
+    // if this method isnt overriding, sometimes detached view replaced other correct view
+    // so this list might be corrupt
+    // i didnt know what happened, but... problem resolved to override this method
+    @Override
+    public int getItemViewType(int position) {
+        return position; // super.getItemViewType(position);
     }
 
     public void addPlaceMark(@NonNull final ItemPlaceMarkData item) {
@@ -114,8 +134,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 
     public static class PlacemarkTypeViewHolder extends RecyclerView.ViewHolder {
         private ItemPlaceMarkData placeMarkData = null;
-        private ItemPlacemarkTypeBinding bind;
-
+        private final ItemPlacemarkTypeBinding bind;
         private OnImageSelectedListener imgSelectedListener = null;
 
         public interface OnImageSelectedListener {
@@ -161,6 +180,17 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             });
         }
 
+        public void onAddPlaceMarkInfoBind() {
+            this.bind.placemarkAddInfoLayout.setVisibility(View.VISIBLE);
+            this.bind.placemarkLayout.setVisibility(View.GONE);
+
+            final String information = this.bind.placemarkAddInfo.getText().toString();
+            SpannableString emphaticInformation = new SpannableString(information);
+            emphaticInformation.setSpan(new ForegroundColorSpan(Color.parseColor("#880000")), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            emphaticInformation.setSpan(new StyleSpan(Typeface.BOLD), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            this.bind.placemarkAddInfo.setText(emphaticInformation);
+        }
+
         public void onBind(@NonNull final ItemPlaceMarkData item, OnImageSelectedListener listener) {
             this.placeMarkData = item;
             this.bind.placemarkTypeTitle.setText(this.placeMarkData.getPlaceMarkTitle());
@@ -202,10 +232,6 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
                     this.imgSelectedListener.onSelected(this.placeMarkData, 2);
                 }
             });
-        }
-
-        public void release() {
-            this.bind = null;
         }
     }
 }

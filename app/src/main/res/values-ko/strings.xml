@@ -22,7 +22,7 @@
   -->
 
 <resources>
-    <string name="app_name" translatable="false">GPS Logger</string>
+    <string name="app_name" translatable="false">GPX Traker</string>
 
     <!-- Tabs -->
     <string name="tab_gpsfix">보정 GPS</string>

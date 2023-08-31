@@ -13,10 +13,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import eu.basicairdata.graziano.gpslogger.GPSApplication
 import eu.basicairdata.graziano.gpslogger.R
+import eu.basicairdata.graziano.gpslogger.databinding.ActivitySplashBinding
 import eu.basicairdata.graziano.gpslogger.tracklist.TrackListActivity
 
 class SplashActivity : AppCompatActivity() {
 
+    private val bind by lazy { ActivitySplashBinding.inflate(this.layoutInflater) }
     private val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
     private val gpsApp = GPSApplication.getInstance()
 
@@ -24,9 +26,13 @@ class SplashActivity : AppCompatActivity() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         setTheme(R.style.MyMaterialTheme)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        setContentView(this.bind.root)
 
-        this.checkLocationPermission()
+        // show this layout during 2 sec
+        this.bind.root.postDelayed({
+            this.checkLocationPermission()
+
+        }, 2000L)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -139,6 +145,8 @@ class SplashActivity : AppCompatActivity() {
                 }
             }
             val intent = Intent(this, TrackListActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             this.startActivity(intent)
             this.finish()
 

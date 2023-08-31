@@ -2,6 +2,8 @@ package eu.basicairdata.graziano.gpslogger.management;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_DISABLED;
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_OK;
+import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_DIRT;
+import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_WOOD_DECK;
 
 import android.content.Context;
 import android.location.Location;
@@ -185,7 +187,7 @@ public class TrackRecordManager {
         //        EventBus.getDefault().post(EventBusMSG.REQUEST_ADD_PLACEMARK);
     }
 
-    public void addPlaceMark(@NonNull final String placeMarkName, @NonNull final String placeMarkType, @NonNull final String parentTrackName, final boolean isEnablePlaceMark) {
+    public void addPlaceMark(@NonNull final String placeMarkName, @NonNull final String placeMarkType, @NonNull final String parentTrackRegion, @NonNull final String parentTrackName, final boolean isEnablePlaceMark) {
         if (!gpsApp.isStopButtonFlag() || this.gpsApp.getGPSStatus() != GPS_OK) {
             if (!gpsApp.isFirstFixFound() && this.gpsApp.getCurrentLocationExtended() == null) {
                 toast.cancel();
@@ -199,6 +201,7 @@ public class TrackRecordManager {
         this.gpsApp.setPlacemarkName(placeMarkName);
         this.gpsApp.setPlacemarkType(placeMarkType);
         this.gpsApp.setCurrentTrackName(parentTrackName);
+        this.gpsApp.setCurrentTrackRegion(parentTrackRegion);
         this.gpsApp.setPlacemarkEnable(isEnablePlaceMark);
         this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkRequested(true);
@@ -207,11 +210,12 @@ public class TrackRecordManager {
     /**
      * start Record Track when GPS provider is ENABLED
      */
-    public void startRecordTrack(final String trackName, final String trackDesc) {
+    public void startRecordTrack(final String trackName, final String trackDesc, @NonNull final String trackRegion) {
         this.gpsApp.gpsDataBase.deleteLocation(trackName, trackDesc);
 
         this.gpsApp.setCurrentTrackName(trackName);
         this.gpsApp.setCurrentTrackDesc(trackDesc);
+        this.gpsApp.setCurrentTrackRegion(trackRegion);
         this.gpsApp.setRecording(true);
     }
 
@@ -224,7 +228,7 @@ public class TrackRecordManager {
      * @param trackDesc to save track Description
      * @param isWoodDeck to save track Type ( Wooden or Dirty )
      */
-    public void stopRecordTrack(final boolean forceStop, final String trackName, final String trackDesc, boolean isWoodDeck) {
+    public void stopRecordTrack(final boolean forceStop, @NonNull final String trackName, @NonNull final String trackRegion, @NonNull final String trackDesc, boolean isWoodDeck) {
         if (!gpsApp.isBottomBarLocked() || forceStop) {
             if (!gpsApp.isStopButtonFlag()) {
                 gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -245,9 +249,10 @@ public class TrackRecordManager {
                             }
                         }
                     }
+                    currentTrack.setTrackRegion(trackRegion);
                     currentTrack.setName(trackName);
                     currentTrack.setDescription(trackDesc);
-                    currentTrack.setCourseType(isWoodDeck? "wood_deck": "dirty");
+                    currentTrack.setCourseType(isWoodDeck? TRACK_COURSE_TYPE_WOOD_DECK: TRACK_COURSE_TYPE_DIRT);
                     GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
 
                     EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
@@ -271,19 +276,14 @@ public class TrackRecordManager {
         }
     }
 
-    public static String typeToTitle(@NonNull String type) {
-        final String title;
+    public void pauseRecordTrack() {
+        if(this.gpsApp == null || !this.gpsApp.isRecording()) return;
+        this.gpsApp.setRecording(false);
+    }
 
-        switch (PlaceMarkType.valueOf(type)) {
-            case ENTRANCE -> title = "나눔길 입구";
-            case PARKING ->  title = "주차장";
-            case TOILET -> title = "화장실";
-            case REST ->  title = "휴계 공간";
-            case BUS_STOP -> title = "버스 정류장";
-            case OBSERVATION_DECK -> title = "전망 데크";
-            default -> title = "기타 시설물";
-        }
-        return title;
+    public void resumeRecordTrack() {
+        if(this.gpsApp == null || this.gpsApp.isRecording()) return;
+        this.gpsApp.setRecording(true);
     }
 
     public LinkedList<Track> getCourseListByTrackName(@NonNull final String trackName) {
@@ -324,14 +324,15 @@ public class TrackRecordManager {
         }
     }
 
-    public boolean createBlankTables(@NonNull final String trackName, @NonNull final String trackDesc) {
+    public boolean createBlankTables(@NonNull final String trackName, @NonNull final String trackDesc, @NonNull final String trackRegion) {
         if(this.gpsApp == null) return false;
 
         // create EMPTY track
         Track emptyTrack = new Track();
         emptyTrack.setName(trackName);
         emptyTrack.setDescription(trackDesc);
-        emptyTrack.setCourseType("wood_deck");
+        emptyTrack.setCourseType(TRACK_COURSE_TYPE_WOOD_DECK);
+        emptyTrack.setTrackRegion(trackRegion);
         this.gpsApp.gpsDataBase.addTrack(emptyTrack);
 
         // then create EMPTY placemarks into track

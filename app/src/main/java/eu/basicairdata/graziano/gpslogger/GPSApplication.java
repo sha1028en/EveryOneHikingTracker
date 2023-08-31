@@ -86,8 +86,9 @@ public class GPSApplication extends Application implements LocationListener {
 
     //private static final float M_TO_FT = 3.280839895f;
     public static final String ATX_EXTRA_TRACK_TITLE = "TRACK_NAME";
+    public static final String ATV_EXTRA_TRACK_REGION = "TRACK REGION";
 
-    public static final int NOT_AVAILABLE = -100000;
+    public static final int NOT_AVAILABLE = 0;
 
     private static final int STABILIZER_TIME = 3000;                // The application discards fixes for 3000 ms (minimum)
     private static final int DEFAULT_SWITCHOFF_HANDLER_TIME = 5000; // Default time for turning off GPS on exit
@@ -115,7 +116,7 @@ public class GPSApplication extends Application implements LocationListener {
     private static final String TASK_ADDPLACEMARK   = "TASK_ADDPLACEMARK";  // The AsyncTodo Type to create a new placemark into DB
     private static final String TASK_UPDATEFIX      = "TASK_UPDATEFIX";     // The AsyncTodo Type to update the current FIX
     private static final String TASK_DELETETRACKS   = "TASK_DELETETRACKS";  // The AsyncTodo Type to delete some tracks
-    private static final String TASK_DELETEPLCACEMARK = "TASK_DELETEPLACEMARK"; // The AsyncTodo Type to delete some placemark
+//    private static final String TASK_DELETEPLCACEMARK = "TASK_DELETEPLACEMARK"; // The AsyncTodo Type to delete some placemark
 
     public static final String FLAG_RECORDING       = "flagRecording";      // The persistent Flag is set when the app is recording, in order to detect Background Crashes
     public static final String FILETYPE_KML         = ".kml";
@@ -193,6 +194,7 @@ public class GPSApplication extends Application implements LocationListener {
 
     private String currentTrackName = "";
     private String currentTrackDesc = "";
+    private String currentTrackRegion = "";
 
     private String placemarkType = "";                    // The description of the Placemark (annotation) set by PlacemarkDialog
     private String placemarkName = "";
@@ -642,6 +644,14 @@ public class GPSApplication extends Application implements LocationListener {
 
     public void setCurrentTrackDesc(final String currentTrackDesc) {
         this.currentTrackDesc = currentTrackDesc;
+    }
+
+    public String getCurrentTrackRegion() {
+        return currentTrackRegion;
+    }
+
+    public void setCurrentTrackRegion(String currentTrackRegion) {
+        this.currentTrackRegion = currentTrackRegion;
     }
 
     public Track getCurrentTrack() {
@@ -1138,6 +1148,7 @@ public class GPSApplication extends Application implements LocationListener {
                 ast.taskType = TASK_ADDLOCATION;
                 ast.location = eloc;
                 ast.location.setTrackName(this.currentTrackName);
+                ast.location.setTrackRegion(this.currentTrackRegion);
                 ast.location.setType(this.currentTrackDesc);
                 asyncTODOQueue.add(ast);
                 isPrevFixRecorded = true;
@@ -1232,6 +1243,7 @@ public class GPSApplication extends Application implements LocationListener {
                 currentPlacemark.setName(this.placemarkName);
                 currentPlacemark.setType(this.placemarkType);
                 currentPlacemark.setTrackName(this.currentTrackName);
+                currentPlacemark.setTrackRegion(this.currentTrackRegion);
                 currentPlacemark.setEnable(this.placemarkEnable);
                 asyncTODOQueue.add(ast);
             }
@@ -2021,6 +2033,7 @@ public class GPSApplication extends Application implements LocationListener {
                     locationExtended = new LocationExtended(asyncTODO.location.getLocation());
                     locationExtended.setTrackName(asyncTODO.location.getTrackName());
                     locationExtended.setType(asyncTODO.location.getType());
+                    locationExtended.setTrackRegion(asyncTODO.location.getTrackRegion());
                     locationExtended.setNumberOfSatellites(asyncTODO.location.getNumberOfSatellites());
                     locationExtended.setNumberOfSatellitesUsedInFix(asyncTODO.location.getNumberOfSatellitesUsedInFix());
                     currentLocationExtended = locationExtended;
@@ -2039,6 +2052,7 @@ public class GPSApplication extends Application implements LocationListener {
                     locationExtended.setType(asyncTODO.location.getType());
                     locationExtended.setName(asyncTODO.location.getName());
                     locationExtended.setTrackName(asyncTODO.location.getTrackName());
+                    locationExtended.setTrackRegion(asyncTODO.location.getTrackRegion());
                     locationExtended.setEnable(asyncTODO.location.isEnable());
                     locationExtended.setNumberOfSatellites(asyncTODO.location.getNumberOfSatellites());
                     locationExtended.setNumberOfSatellitesUsedInFix(asyncTODO.location.getNumberOfSatellitesUsedInFix());

@@ -9,7 +9,6 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -39,7 +38,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
-import java.util.Locale;
 
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
@@ -49,24 +47,29 @@ import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
+import eu.basicairdata.graziano.gpslogger.management.TrackRegionType;
 
 public class RecordingActivity extends AppCompatActivity {
-    private ActivityRecordingBinding bind;
-    private PlacemarkTypeRecyclerViewAdapter placeMarkListAdapter;
-    private CourseNameRecyclerAdapter courseRecyclerAdapter;
+    private ActivityRecordingBinding bind; // this View's Instance
+    private PlacemarkTypeRecyclerViewAdapter placeMarkListAdapter; // POI list
+    private CourseNameRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
-    private ActivityResultLauncher<Intent> requestCamera;
-    private TrackRecordManager recordManager = TrackRecordManager.getInstance();
-    private Uri tmpFile;
+    private ActivityResultLauncher<Intent> requestCamera; // Camera
+    private Uri tmpFile; // taken a Picture's File Instance
 
-    private String currentTrackName = "";
-    private String currentPoiType = "";
-    private String currentPoiName = "";
-    private boolean currentPoiEnable = true;
+    private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
+    private boolean courseRecordButtonState = false;
 
-    private ItemPlaceMarkData currentSelectedPlaceMarkItem;
-    private Toast toast;
+    private String currentTrackName = ""; // this course's Parents Track Name
+    private String currentTrackRegion;
+    private String currentPoiType = ""; // selected POI Type
+    private String currentPoiName = ""; // selected POI Name
+    private boolean currentPoiEnable = true; // is POI enabled( POI's checkbox )
     private int currentPoiPosition = 0;
+    private ItemPlaceMarkData currentSelectedPlaceMarkItem; // selected POI's DataClass
+
+    private Toast toast;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,7 @@ public class RecordingActivity extends AppCompatActivity {
         toast = new Toast(this.bind.getRoot().getContext());
         // FINAL VALUE, NEVER MODIFY THIS
         this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
+        this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
 
         // register GPS Event
         if (EventBus.getDefault().isRegistered(this)) {
@@ -99,7 +103,7 @@ public class RecordingActivity extends AppCompatActivity {
                     String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                     if (!fileName.isBlank()) {
 //                        recordManager.addPlaceMark(currentPoiType, currentTrackName);
-                        recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackName, currentPoiEnable);
+                        recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackRegion, currentTrackName, currentPoiEnable);
                         try {
                             LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
                                     bind.getRoot().getContext(),
@@ -141,7 +145,7 @@ public class RecordingActivity extends AppCompatActivity {
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
 
         if(rawCourseList.isEmpty()) {
-            this.recordManager.createBlankTables(currentTrackName, "코스 1");
+            this.recordManager.createBlankTables(this.currentTrackName, "코스 1", this.currentTrackRegion);
             rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
         }
 
@@ -176,13 +180,15 @@ public class RecordingActivity extends AppCompatActivity {
         // init Placemark List
         LinearLayoutManager placeMarkLayoutManager = new LinearLayoutManager(this);
         this.bind.modifyPlacemarkTypeList.setLayoutManager(placeMarkLayoutManager);
-        this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter(this.currentTrackName, (placeMarkData, pos) -> {
+        this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter((placeMarkData, pos) -> {
+
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             this.tmpFile = ImageManager.Companion.createTmpFile(
                     this.bind.getRoot().getContext(),
                     placeMarkData.getPlaceMarkType(),
                     "Trekking/" + this.currentTrackName + "/" + placeMarkData.getPlaceMarkType() + "/" + placeMarkData.getPlaceMarkTitle());
             intent.putExtra(MediaStore.EXTRA_OUTPUT, this.tmpFile);
+
             this.currentPoiName = placeMarkData.getPlaceMarkTitle();
             this.currentPoiType = placeMarkData.getPlaceMarkType();
             this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
@@ -303,6 +309,7 @@ public class RecordingActivity extends AppCompatActivity {
     }
 
     private void initViewEvent() {
+        // upside "Add Course+" btn
         this.bind.courseAddBtn.setOnClickListener(view -> {
             AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
             inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
@@ -330,6 +337,7 @@ public class RecordingActivity extends AppCompatActivity {
             inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input POI Type Dialog");
         });
 
+        // upside "Remove CourseX" btn
         this.bind.courseRemoveBtn.setOnClickListener(view -> {
             if(this.courseRecyclerAdapter.getItemCount() > 1) {
                 final String toRemoveCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
@@ -343,27 +351,42 @@ public class RecordingActivity extends AppCompatActivity {
             }
         });
 
+        // upside "Start Record / Pause Record" btn
         this.bind.recordControlBtn.setOnClickListener(view -> {
             if(this.bind == null || this.courseRecyclerAdapter == null) return;
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
+            // start Record Course
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.startRecordTrack(currentTrackName, selectedCourseName);
+                this.recordManager.startRecordTrack(currentTrackName, selectedCourseName, currentTrackRegion);
+                this.courseRecordButtonState = !this.courseRecordButtonState;
 
             } else {
                 Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
             }
+
+            // TODO IMPL
+//            if(this.courseRecordButtonState) {
+//
+//            } else {
+//                // pause Record Course
+//                this.recordManager.stopRecordTrack();
+//                this.courseRecordButtonState = !this.courseRecordButtonState;
+//            }
         });
 
+        // upside "Stop Record" btn
         this.bind.stopRecordBtn.setOnClickListener(v -> {
             if(this.bind == null || this.courseRecyclerAdapter == null) return;
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(true, this.currentTrackName, selectedCourseName, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
+                this.recordManager.stopRecordTrack(true, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
+                this.courseRecordButtonState = false;
             }
         });
 
+        // upside "is Deck" checkBox
         this.bind.checkDeckCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             ItemCourseData toUpdateCourse = this.courseRecyclerAdapter.getSelectCourse();
             if(toUpdateCourse != null) {

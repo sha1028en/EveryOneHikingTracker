@@ -33,6 +33,7 @@ public class LocationExtended {
     private Location location;
 
     private String trackName = "";
+    private String trackRegion = "";
     private String type = "";
     private String name = "";
     private double altitudeEGM96Correction  = NOT_AVAILABLE;
@@ -85,6 +86,14 @@ public class LocationExtended {
     public String getTrackName() { return this.trackName; }
 
     public void setTrackName(final String trackName) { this.trackName = trackName; }
+
+    public String getTrackRegion() {
+        return trackRegion;
+    }
+
+    public void setTrackRegion(String trackRegion) {
+        this.trackRegion = trackRegion;
+    }
 
     public String getType() {
         return type;

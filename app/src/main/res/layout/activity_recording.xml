@@ -16,7 +16,7 @@
             android:id="@+id/root_disable_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -45,7 +45,6 @@
                     android:layout_gravity="bottom"/>
             </androidx.appcompat.widget.Toolbar>
 
-
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -55,17 +54,19 @@
                     android:id="@+id/record_control_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/colorBackground"
+                    android:background="@color/colorItemBackground"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/record_course_list"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
                         android:layout_width="0dp"
                         android:layout_height="100dp"
-                        android:layout_marginStart="16dp"
-                        android:foregroundGravity="center"
                         app:layout_constraintBottom_toTopOf="@id/record_course_control_layout"
                         app:layout_constraintEnd_toStartOf="@id/course_modify_layout"
                         app:layout_constraintStart_toStartOf="parent"
@@ -157,11 +158,12 @@
             android:id="@+id/modify_placemark_type_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:paddingBottom="56dp"
+            android:paddingBottom="80dp"
             app:layout_constraintTop_toBottomOf="@id/record_control_toolbar"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@color/colorBackground">
         </androidx.recyclerview.widget.RecyclerView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -180,7 +182,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_margin="8dp"
             android:background="@drawable/primary_round_border_8">
 
             <TextView

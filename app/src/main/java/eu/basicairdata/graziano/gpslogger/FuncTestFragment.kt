@@ -75,11 +75,11 @@ class FuncTestFragment : Fragment() {
         }
 
         this.mBinding!!.funcTestStartRecord.setOnClickListener {
-            this.recordManager.startRecordTrack("서울 강남구 대모산 무장애 나눔길", "코스 1");
+            this.recordManager.startRecordTrack("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL");
         }
 
         this.mBinding!!.funcTestStopRecord.setOnClickListener {
-            this.recordManager.stopRecordTrack(true, "서울 강남구 대모산 무장애 나눔길", "코스 1", false)
+            this.recordManager.stopRecordTrack(true, "서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL", false)
         }
         return this.mBinding!!.root
     }

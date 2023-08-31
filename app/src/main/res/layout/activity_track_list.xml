@@ -1,78 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".tracklist.TrackListActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/id_appbarlayout"
-        android:focusable="false"
-        android:descendantFocusability="blocksDescendants"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/id_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppBarLayout">
+        android:layout_height="?attr/actionBarSize"
+        app:titleTextAppearance="@style/ToolbarTitle"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/id_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:titleTextAppearance="@style/ToolbarTitle"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
-
-            <Button
-                android:id="@+id/select_region"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/track_region_seoul"
-                android:layout_gravity="end">
-            </Button>
-
-        </androidx.appcompat.widget.Toolbar>
-
-<!--        <com.google.android.material.tabs.TabLayout-->
-<!--            android:id="@+id/id_tablayout"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            app:tabGravity="fill"-->
-<!--            app:tabMode="fixed"-->
-<!--            tools:ignore="SpeakableTextPresentCheck" />-->
-    </com.google.android.material.appbar.AppBarLayout>
+        <Button
+            android:id="@+id/select_region"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/track_region_seoul"
+            android:layout_gravity="end">
+        </Button>
+    </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/track_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </androidx.recyclerview.widget.RecyclerView>
-
-    <Button
-        android:id="@+id/goto_record_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_marginTop="24dp"
-        android:text="서울시 대모산 무장애 나눔길"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="곡성 치유의숲 무장애 나눔길" />
-
-    <!--    <TextView-->
-<!--        android:id="@+id/satellite_cnt_txt"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="disable"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        app:layout_constraintTop_toBottomOf="@id/id_toolbar">
+    </androidx.recyclerview.widget.RecyclerView>
+</androidx.constraintlayout.widget.ConstraintLayout>

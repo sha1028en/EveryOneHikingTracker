@@ -19,10 +19,10 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     private ItemCourseData selectCourse; // Cursor
 
     // when checkBox state changed, notify others
+    private OnItemSelectListener listener;
     interface OnItemSelectListener {
         void onItemSelected(boolean isDeck, ItemCourseData item);
     }
-    private OnItemSelectListener listener;
 
     public CourseNameRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
         this.courseList = new LinkedList<>();

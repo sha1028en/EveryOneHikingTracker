@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp"
+    android:background="@drawable/backgound_round_border_16">
+
+    <TextView
+        android:id="@+id/track_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="대모산 무장애 나눔길"
+        android:textColor="@color/textColorSecondary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/track_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="서울 강남구 일원동 산52-14일대"
+        android:textColor="@color/textColorSecondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/track_name" />
+
+    <TextView
+        android:id="@+id/track_course_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="코스 정보"
+        android:textColor="@color/textColorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/track_address" />
+
+    <TextView
+        android:id="@+id/track_picture_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="시설물 사진"
+        android:textColor="@color/textColorSecondary"
+        app:layout_constraintBottom_toBottomOf="@+id/track_course_state"
+        app:layout_constraintEnd_toStartOf="@+id/goto_record"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/track_course_state"
+        app:layout_constraintTop_toTopOf="@+id/track_course_state" />
+
+    <TextView
+        android:id="@+id/goto_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/blue_round_border_32"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="정보 입력 >"
+        app:layout_constraintBottom_toBottomOf="@+id/track_picture_state"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/track_picture_state" />
+</androidx.constraintlayout.widget.ConstraintLayout>
