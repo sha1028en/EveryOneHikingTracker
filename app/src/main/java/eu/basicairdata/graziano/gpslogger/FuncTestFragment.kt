@@ -79,7 +79,7 @@ class FuncTestFragment : Fragment() {
         }
 
         this.mBinding!!.funcTestStopRecord.setOnClickListener {
-            this.recordManager.stopRecordTrack(true, "서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL", false)
+            this.recordManager.stopRecordTrack("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL", false)
         }
         return this.mBinding!!.root
     }

@@ -50,7 +50,7 @@ import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class RecordingActivity extends AppCompatActivity {
-    private ActivityRecordingBinding bind; // this View's Instance
+    private ActivityRecordingBinding bind; // this View n Layout Instance
     private PlacemarkTypeRecyclerViewAdapter placeMarkListAdapter; // POI list
     private CourseNameRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
@@ -58,18 +58,17 @@ public class RecordingActivity extends AppCompatActivity {
     private Uri tmpFile; // taken a Picture's File Instance
 
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
-    private boolean courseRecordButtonState = false;
+    private boolean isPauseCourseRecording = false; // this is FLAG course recording has paused
 
     private String currentTrackName = ""; // this course's Parents Track Name
-    private String currentTrackRegion;
+    private String currentTrackRegion; // this course Region
     private String currentPoiType = ""; // selected POI Type
     private String currentPoiName = ""; // selected POI Name
     private boolean currentPoiEnable = true; // is POI enabled( POI's checkbox )
-    private int currentPoiPosition = 0;
+    private int currentPoiPosition = 0; // this poi position that selected picture
     private ItemPlaceMarkData currentSelectedPlaceMarkItem; // selected POI's DataClass
 
     private Toast toast;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +178,14 @@ public class RecordingActivity extends AppCompatActivity {
         LinearLayoutManager placeMarkLayoutManager = new LinearLayoutManager(this);
         this.bind.modifyPlacemarkTypeList.setLayoutManager(placeMarkLayoutManager);
         this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter((placeMarkData, pos) -> {
+
+            if(!this.recordManager.isAvailableRecord()) {
+                this.toast.cancel();
+                this.toast = Toast.makeText(this, "시설을 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
+                this.toast.show();
+                return;
+            }
+
             this.currentPoiName = placeMarkData.getPlaceMarkTitle();
             this.currentPoiType = placeMarkData.getPlaceMarkType();
             this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
@@ -357,26 +364,36 @@ public class RecordingActivity extends AppCompatActivity {
 
         // upside "Start Record / Pause Record" btn
         this.bind.recordControlBtn.setOnClickListener(view -> {
-            if(this.bind == null || this.courseRecyclerAdapter == null) return;
-            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+            if(this.bind == null || this.courseRecyclerAdapter == null || this.recordManager == null) return;
+            if(!this.recordManager.isAvailableRecord()) {
+                this.toast.cancel();
+                this.toast = Toast.makeText(this, "코스를 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
+                this.toast.show();
+                return;
+            }
 
-            // start Record Course
+            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.startRecordCourse(currentTrackName, selectedCourseName, currentTrackRegion);
-                this.courseRecordButtonState = !this.courseRecordButtonState;
+                if(!this.recordManager.isRecordingCourse() && !this.isPauseCourseRecording) {
+                    // start Record Course
+                    this.recordManager.startRecordCourse(currentTrackName, selectedCourseName, currentTrackRegion);
+                    this.isPauseCourseRecording = false;
+
+                } else if (isPauseCourseRecording) {
+                    // resume Record Course
+                    this.recordManager.resumeRecordCourse();
+                    this.isPauseCourseRecording = false;
+
+                } else {
+                    // pause Record Course
+                    this.recordManager.pauseRecordTrack();
+                    this.isPauseCourseRecording = true;
+                }
+                this.updateUI();
 
             } else {
                 Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
             }
-
-            // TODO IMPL
-//            if(this.courseRecordButtonState) {
-//
-//            } else {
-//                // pause Record Course
-//                this.recordManager.stopRecordTrack();
-//                this.courseRecordButtonState = !this.courseRecordButtonState;
-//            }
         });
 
         // upside "Stop Record" btn
@@ -385,8 +402,9 @@ public class RecordingActivity extends AppCompatActivity {
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(true, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
-                this.courseRecordButtonState = false;
+                this.recordManager.stopRecordTrack(this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
+                this.isPauseCourseRecording = false;
+                this.updateUI();
             }
         });
 
@@ -435,21 +453,25 @@ public class RecordingActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        if(this.bind == null || this.recordManager == null) return;
+        if (this.bind == null || this.recordManager == null) return;
 //        this.mBind.proofSatliteTxt.setText(String.format("%d/%d : %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
 
-        boolean isRecording = this.recordManager.isRecordingCourse();
+        final boolean isRecording = this.recordManager.isRecordingCourse();
+
         this.bind.stopRecordBtn.setFocusable(isRecording);
         this.bind.stopRecordBtn.setClickable(isRecording);
         this.bind.stopRecordBtn.setEnabled(isRecording);
-        this.bind.stopRecordBtn.setText(isRecording? "종료": "            ");
-        this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording? R.drawable.ic_stop_24: 0, 0 ,0 ,0);
+        this.bind.stopRecordBtn.setText(isRecording ? "종료" : "            ");
+        this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording ? R.drawable.ic_stop_24 : 0, 0, 0, 0);
 
-        if(isRecording) {
+        if(!isRecording && !this.isPauseCourseRecording) {
+            this.setButtonState(this.bind.recordControlBtn, R.drawable.blue_round_border_32, R.drawable.ic_play_24, R.string.record);
+
+        } else if(isRecording && !this.isPauseCourseRecording) {
             this.setButtonState(this.bind.recordControlBtn, R.drawable.red_round_border_32, R.drawable.ic_pause_24, R.string.pause);
 
-        } else {
-            this.setButtonState(this.bind.recordControlBtn, R.drawable.blue_round_border_32, R.drawable.ic_play_24, R.string.record);
+        } else if (isRecording/* && this.isPauseCourseRecording*/) {
+            this.setButtonState(this.bind.recordControlBtn, R.drawable.red_round_border_32, R.drawable.ic_play_24, R.string.record);
         }
     }
 
@@ -469,7 +491,7 @@ public class RecordingActivity extends AppCompatActivity {
         // press "stop record" to stop recording, you can back to previous activity
         if(this.recordManager.isRecordingCourse()) {
             toast.cancel();
-            toast = Toast.makeText(this.bind.getRoot().getContext(), "", Toast.LENGTH_SHORT);
+            toast = Toast.makeText(this.bind.getRoot().getContext(), "코스 기록중에는 뒤로 돌아갈수 없습니다.", Toast.LENGTH_SHORT);
             toast.show();
 
         } else {

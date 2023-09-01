@@ -33,19 +33,19 @@ import eu.basicairdata.graziano.gpslogger.Track;
  * handling to start / stop record track. add placemark
  */
 public class TrackRecordManager {
-    private static TrackRecordManager instance = null;
+    private static TrackRecordManager instance = null; // this SINGLETON INSTANCE. never use outside
     private WeakReference<Context> mLocalContext;
-    private GPSApplication gpsApp = GPSApplication.getInstance();
-    private LocationExtended locationExt = null;
-    private int gpsState = GPS_DISABLED;
+    private GPSApplication gpsApp = GPSApplication.getInstance(); // GPS Observer, Track Recorder Instance
+    private LocationExtended locationExt = null; // current LocationExtends
 
-    private int totalSatellitesCnt = 0;
-    private int availableSatellitesCnt = 0;
+    private int gpsState = GPS_DISABLED; // current GPS State
+    private boolean isRecording = false; // now REALLY Recording Track???
 
-    private String courseName = "";
-    private String trackName = "";
+    private int totalSatellitesCnt = 0; // total satellite Count
+    private int availableSatellitesCnt = 0; // available satellite Count
 
-    private String poiName = "";
+    private double lastObserveLat = 0.0f; // last observe lat;
+    private double lastObserveLng = 0.0f; // last observe lng;
 
     private Toast toast;
 
@@ -76,7 +76,7 @@ public class TrackRecordManager {
 
     /**
      * Destructor<br>
-     * destroy this Singleton Instance and release resources
+     * destroy this Singleton Instance and release this resources
      */
     public static synchronized void destroyInstance() {
         if(instance != null) {
@@ -123,8 +123,6 @@ public class TrackRecordManager {
     }
 
 
-    // Getter, Setter
-
     /**
      * @return count of ALL Satellites INCLUDE not Available satellites
      */
@@ -146,13 +144,21 @@ public class TrackRecordManager {
     public void onEvent(Short msg) {
         if (msg == EventBusMSG.UPDATE_TRACK) {
 
-        } else if(msg == EventBusMSG.UPDATE_FIX) {
+        } else if(msg == EventBusMSG.UPDATE_FIX && this.gpsApp != null) {
             this.locationExt = this.gpsApp.getCurrentLocationExtended();
             this.gpsState = this.gpsApp.getGPSStatus();
+//            this.gpsApp.getCurrentLocationExtended();
 
             if(this.gpsState == GPS_OK && this.locationExt != null) {
                 this.totalSatellitesCnt = gpsApp.getNumberOfSatellitesTotal();
                 this.availableSatellitesCnt = gpsApp.getNumberOfSatellitesUsedInFix();
+
+                LocationExtended lastObserveLocation = this.gpsApp.getCurrentLocationExtended();
+                if(lastObserveLocation != null) {
+                    this.lastObserveLat = lastObserveLocation.getLatitude();
+                    this.lastObserveLng = lastObserveLocation.getLongitude();
+                    lastObserveLocation = null; // GC!
+                }
             }
         }
     }
@@ -211,69 +217,74 @@ public class TrackRecordManager {
      * start Record Track when GPS provider is ENABLED
      */
     public void startRecordCourse(final String trackName, final String courseName, @NonNull final String trackRegion) {
+        if(this.isRecording /*|| this.availableSatellitesCnt > 4*/) return;
+
         this.gpsApp.gpsDataBase.deleteLocation(trackName, courseName);
 
         this.gpsApp.setCurrentTrackName(trackName);
         this.gpsApp.setCurrentTrackDesc(courseName);
         this.gpsApp.setCurrentTrackRegion(trackRegion);
         this.gpsApp.setRecording(true);
+        this.isRecording = true;
     }
 
     /**
      * stop record track if it recording track
-     * @see GPSApplication::onRequestStop(bool, bool)
      *
-     * @param forceStop stop record track Forcefully???
-     * @param trackName to save track Name
+     * @param trackName   to save track Name
+     * @param courseName  to save track Description
      * @param trackRegion to save track Region
-     * @param courseName to save track Description
-     * @param isWoodDeck to save track Type ( Wooden or Dirty )
+     * @param isWoodDeck  to save track Type ( Wooden or Dirty )
+     * @see GPSApplication::onRequestStop(bool, bool)
      */
-    public void stopRecordTrack(final boolean forceStop, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
-        if (!gpsApp.isBottomBarLocked() || forceStop) {
-            if (!gpsApp.isStopButtonFlag()) {
-                gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
-                gpsApp.setRecording(false);
-                gpsApp.setPlacemarkRequested(false);
-                //Update();
+    public void stopRecordTrack(@NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
+        if(this.gpsApp == null || !this.isRecording) return;
 
-                Track currentTrack = this.gpsApp.getCurrentTrack();
-                if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
-                    LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
-                    if(!trackList.isEmpty()) {
-                        for(Track victim : trackList) {
-                            String deprecateTrackName = victim.getName();
-                            String deprecateTrackDesc = victim.getDescription();
+        this.gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
+        this.gpsApp.setRecording(false);
+        this.gpsApp.setPlacemarkRequested(false);
 
-                            if(trackName.equals(deprecateTrackName) && courseName.equals(deprecateTrackDesc)) {
-                                this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
-                            }
-                        }
+        Track currentTrack = this.gpsApp.getCurrentTrack();
+        if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
+            LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
+            if (!trackList.isEmpty()) {
+                for (Track victim : trackList) {
+                    String deprecateTrackName = victim.getName();
+                    String deprecateTrackDesc = victim.getDescription();
+
+                    if (trackName.equals(deprecateTrackName) && courseName.equals(deprecateTrackDesc)) {
+                        this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
                     }
-                    currentTrack.setTrackRegion(trackRegion);
-                    currentTrack.setName(trackName);
-                    currentTrack.setDescription(courseName);
-                    currentTrack.setCourseType(isWoodDeck? TRACK_COURSE_TYPE_WOOD_DECK: TRACK_COURSE_TYPE_DIRT);
-                    GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
-
-                    EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
-                    toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-                    toast.show();
-
-                } else {
-                    toast.cancel();
-                    toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_nothing_to_save, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-                    toast.show();
                 }
             }
+            currentTrack.setTrackRegion(trackRegion);
+            currentTrack.setName(trackName);
+            currentTrack.setDescription(courseName);
+            currentTrack.setCourseType(isWoodDeck ? TRACK_COURSE_TYPE_WOOD_DECK : TRACK_COURSE_TYPE_DIRT);
+            GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
+            this.isRecording = false;
 
-        } else {
-            toast.cancel();
-            toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-            toast.show();
+            EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
+            this.toast = Toast.makeText(this.gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
+            this.toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+            this.toast.show();
+//        if (!gpsApp.isBottomBarLocked() || forceStop) {
+//            if (!gpsApp.isStopButtonFlag()) {
+//
+//
+//                } else {
+//                    toast.cancel();
+//                    toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_nothing_to_save, Toast.LENGTH_SHORT);
+//                    toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+//                    toast.show();
+//                }
+//            }
+//
+//        } else {
+//            toast.cancel();
+//            toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
+//            toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+//            toast.show();
         }
     }
 
@@ -282,7 +293,7 @@ public class TrackRecordManager {
         this.gpsApp.setRecording(false);
     }
 
-    public void resumeRecordTrack() {
+    public void resumeRecordCourse() {
         if(this.gpsApp == null || this.gpsApp.isRecording()) return;
         this.gpsApp.setRecording(true);
     }
@@ -304,18 +315,38 @@ public class TrackRecordManager {
         return placeMarkList;
     }
 
+    public double getLastObserveLat() {
+        return this.lastObserveLat;
+    }
+
+    public double getLastObserveLng() {
+        return this.lastObserveLng;
+    }
+
+    public boolean isRecordingCourse() {
+        return this.isRecording;
+    }
+
+    public boolean isPauseRecordingCourse() {
+        boolean isPauseRecording = false;
+        if(this.gpsApp != null) {
+            isPauseRecording = this.gpsApp.isRecording();
+        }
+        return isPauseRecording;
+    }
+
+    /**
+     * @return is it Recording Course or add Placemark
+     */
+    public boolean isAvailableRecord() {
+        if(this.gpsApp == null || this.mLocalContext == null || this.mLocalContext.get() == null) return false;
+        return this.gpsState == GPS_OK;
+    }
+
     public void removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         if(this.gpsApp != null) {
             this.gpsApp.gpsDataBase.deleteTrack(trackName, courseName);
         }
-    }
-
-    public boolean isRecordingCourse() {
-        boolean isRecording = false;
-        if(this.gpsApp != null) {
-            isRecording = this.gpsApp.isRecording();
-        }
-        return isRecording;
     }
 
     public void updateCourseType(@NonNull final String trackName, @NonNull final String courseName, boolean isWoodDeck) {
