@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -13,6 +14,7 @@ import android.provider.ContactsContract.Directory
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -21,6 +23,7 @@ import java.io.InputStream
 import java.lang.NumberFormatException
 import java.lang.ref.WeakReference
 import java.util.LinkedList
+import kotlin.math.ln
 
 
 /**
@@ -364,6 +367,25 @@ class ImageManager {
             isRemoved = imageResolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"$selection = ?", args) > 0
 
             return isRemoved
+        }
+
+        @RequiresApi(Build.VERSION_CODES.Q)
+        @Throws(IllegalArgumentException::class, IOException::class)
+        fun addLocationIntoImage(image: File, lat: Double, lng: Double) {
+            if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
+
+            val imageExif = ExifInterface(image)
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat.toString())
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lng.toString())
+        }
+
+        @Throws(IllegalArgumentException::class, IOException::class)
+        fun addLocation(image: File, lat: Double, lng: Double) {
+            if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
+
+            val imageExif = ExifInterface(image.absolutePath)
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat.toString())
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lng.toString())
         }
 
         /** Bitmap **/
