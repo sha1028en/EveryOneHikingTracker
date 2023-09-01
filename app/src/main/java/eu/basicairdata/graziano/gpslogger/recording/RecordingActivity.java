@@ -37,6 +37,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
@@ -197,6 +198,8 @@ public class RecordingActivity extends AppCompatActivity {
 
         // update data
         LinkedList<LocationExtended> rawPlaceMarkList = recordManager.getPlaceMarkByTrackName(this.currentTrackName);
+        LinkedList<ItemPlaceMarkData> toSortPlacemarkList = new LinkedList<>();
+
         for(LocationExtended buffer : rawPlaceMarkList) {
             final String trackName = buffer.getTrackName();
             final String placeMarkType = buffer.getType();
@@ -209,6 +212,11 @@ public class RecordingActivity extends AppCompatActivity {
             ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
             placeMark.setPlaceMarkLat(lat);
             placeMark.setPlaceMarkLng(lng);
+            toSortPlacemarkList.add(placeMark);
+        }
+        Collections.sort(toSortPlacemarkList);
+
+        for (ItemPlaceMarkData placeMark : toSortPlacemarkList) {
             placeMarkListAdapter.addPlaceMark(placeMark);
 
             // load Image Later
@@ -216,7 +224,7 @@ public class RecordingActivity extends AppCompatActivity {
             try {
                 placeMarkImgList = ImageManager.Companion.loadImageUriList(
                         this.bind.getRoot().getContext(),
-                        "", "Trekking/" + this.currentTrackName + "/" + placeMarkType + "/" + placeMarkName + "/");
+                        "", "Trekking/" + this.currentTrackName + "/" + placeMark.getPlaceMarkType() + "/" + placeMark.getPlaceMarkTitle() + "/");
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

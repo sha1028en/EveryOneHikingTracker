@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.R;
@@ -130,6 +131,8 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         if(pos < 0) throw new IllegalArgumentException("PlacemarkTypeRecyclerViewAdapter.addPlaceMark(item, pos) : wrong value pos " + pos);
 
         this.placeMarkDataList.add(pos, item);
+        Collections.sort(this.placeMarkDataList);
+//        this.notifyDataSetChanged();
         this.notifyItemInserted(pos);
     }
 
@@ -238,6 +241,9 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
                     this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.PARKING.name()) ||
                     this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.BUS_STOP.name())) {
                 this.bind.placeamrkAddMore.setVisibility(View.GONE);
+
+            } else {
+                this.bind.placeamrkAddMore.setVisibility(View.VISIBLE);
             }
 
             // when it hide by bottom sheet, DONT ACTIVE CLICK EVENT

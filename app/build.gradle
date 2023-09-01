@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         applicationId "eu.basicairdata.graziano.gpslogger"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 34
 
         // -----------------------------------------------------------------------------------------

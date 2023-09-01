@@ -11,7 +11,7 @@ import java.util.Objects;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 
 
-public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData> {
+public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Comparable<ItemPlaceMarkData>{
     private String trackName;               // this placemark's Parent Track Name
     private String placeMarkTitle;          // this placemark Name by placemark type
     private String placeMarkType;           // this placemark type ( REST, ETC... )
@@ -178,7 +178,26 @@ public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData> {
         // is same placemark TYPE???
         if(isDiffType == 0) {
             // compare by Placemark visbilty NAME!
-            return o1.placeMarkTitle.hashCode() - o2.placeMarkTitle.hashCode();
+            return o2.placeMarkTitle.hashCode() - o1.placeMarkTitle.hashCode();
+        }
+        // diff type? return them!
+        return isDiffType;
+    }
+
+    @Override
+    public int compareTo(ItemPlaceMarkData o) {
+        // add placemark infomation label must be place roof
+        if(o.trackName.equals("label") && o.placeMarkDesc.equals("label") && o.placeMarkTitle.equals("label") && o.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o is high
+        else if(this.trackName.equals("label") && this.placeMarkDesc.equals("label") && this.placeMarkTitle.equals("label") && this.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
+
+        final PlaceMarkType o1Type = PlaceMarkType.valueOf(o.getPlaceMarkType());
+        final PlaceMarkType o2Type = PlaceMarkType.valueOf(this.getPlaceMarkType());
+        final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
+
+        // is same placemark TYPE???
+        if(isDiffType == 0) {
+            // compare by Placemark visbilty NAME!
+            return this.placeMarkTitle.hashCode() - o.placeMarkTitle.hashCode();
         }
         // diff type? return them!
         return isDiffType;
