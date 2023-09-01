@@ -47,7 +47,6 @@ import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
-import eu.basicairdata.graziano.gpslogger.management.TrackRegionType;
 
 public class RecordingActivity extends AppCompatActivity {
     private ActivityRecordingBinding bind; // this View's Instance
@@ -102,7 +101,6 @@ public class RecordingActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK) {
                     String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                     if (!fileName.isBlank()) {
-//                        recordManager.addPlaceMark(currentPoiType, currentTrackName);
                         recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackRegion, currentTrackName, currentPoiEnable);
                         try {
                             LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
@@ -133,7 +131,6 @@ public class RecordingActivity extends AppCompatActivity {
                 }
             }
         });
-
         this.initCourseList();
         this.initPlaceMarkList();
         this.initViewEvent();
@@ -145,7 +142,7 @@ public class RecordingActivity extends AppCompatActivity {
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
 
         if(rawCourseList.isEmpty()) {
-            this.recordManager.createBlankTables(this.currentTrackName, "코스 1", this.currentTrackRegion);
+            this.recordManager.createBlankTables(this.currentTrackName, "기본 코스", this.currentTrackRegion);
             rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
         }
 
@@ -181,6 +178,11 @@ public class RecordingActivity extends AppCompatActivity {
         LinearLayoutManager placeMarkLayoutManager = new LinearLayoutManager(this);
         this.bind.modifyPlacemarkTypeList.setLayoutManager(placeMarkLayoutManager);
         this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter((placeMarkData, pos) -> {
+            this.currentPoiName = placeMarkData.getPlaceMarkTitle();
+            this.currentPoiType = placeMarkData.getPlaceMarkType();
+            this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
+            this.currentPoiPosition = pos;
+            this.currentSelectedPlaceMarkItem = placeMarkData;
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             this.tmpFile = ImageManager.Companion.createTmpFile(
@@ -188,12 +190,6 @@ public class RecordingActivity extends AppCompatActivity {
                     placeMarkData.getPlaceMarkType(),
                     "Trekking/" + this.currentTrackName + "/" + placeMarkData.getPlaceMarkType() + "/" + placeMarkData.getPlaceMarkTitle());
             intent.putExtra(MediaStore.EXTRA_OUTPUT, this.tmpFile);
-
-            this.currentPoiName = placeMarkData.getPlaceMarkTitle();
-            this.currentPoiType = placeMarkData.getPlaceMarkType();
-            this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
-            this.currentPoiPosition = pos;
-            this.currentSelectedPlaceMarkItem = placeMarkData;
 
             this.requestCamera.launch(intent);
         });
@@ -220,7 +216,7 @@ public class RecordingActivity extends AppCompatActivity {
             try {
                 placeMarkImgList = ImageManager.Companion.loadImageUriList(
                         this.bind.getRoot().getContext(),
-                        "", "Trekking/" + this.currentTrackName + "/" + placeMarkType + "/" + placeMarkName);
+                        "", "Trekking/" + this.currentTrackName + "/" + placeMarkType + "/" + placeMarkName + "/");
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -358,7 +354,7 @@ public class RecordingActivity extends AppCompatActivity {
 
             // start Record Course
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.startRecordTrack(currentTrackName, selectedCourseName, currentTrackRegion);
+                this.recordManager.startRecordCourse(currentTrackName, selectedCourseName, currentTrackRegion);
                 this.courseRecordButtonState = !this.courseRecordButtonState;
 
             } else {

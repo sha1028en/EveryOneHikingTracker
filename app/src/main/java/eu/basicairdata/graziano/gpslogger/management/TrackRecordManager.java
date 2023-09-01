@@ -210,11 +210,11 @@ public class TrackRecordManager {
     /**
      * start Record Track when GPS provider is ENABLED
      */
-    public void startRecordTrack(final String trackName, final String trackDesc, @NonNull final String trackRegion) {
-        this.gpsApp.gpsDataBase.deleteLocation(trackName, trackDesc);
+    public void startRecordCourse(final String trackName, final String courseName, @NonNull final String trackRegion) {
+        this.gpsApp.gpsDataBase.deleteLocation(trackName, courseName);
 
         this.gpsApp.setCurrentTrackName(trackName);
-        this.gpsApp.setCurrentTrackDesc(trackDesc);
+        this.gpsApp.setCurrentTrackDesc(courseName);
         this.gpsApp.setCurrentTrackRegion(trackRegion);
         this.gpsApp.setRecording(true);
     }
@@ -225,10 +225,11 @@ public class TrackRecordManager {
      *
      * @param forceStop stop record track Forcefully???
      * @param trackName to save track Name
-     * @param trackDesc to save track Description
+     * @param trackRegion to save track Region
+     * @param courseName to save track Description
      * @param isWoodDeck to save track Type ( Wooden or Dirty )
      */
-    public void stopRecordTrack(final boolean forceStop, @NonNull final String trackName, @NonNull final String trackRegion, @NonNull final String trackDesc, boolean isWoodDeck) {
+    public void stopRecordTrack(final boolean forceStop, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
         if (!gpsApp.isBottomBarLocked() || forceStop) {
             if (!gpsApp.isStopButtonFlag()) {
                 gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -244,14 +245,14 @@ public class TrackRecordManager {
                             String deprecateTrackName = victim.getName();
                             String deprecateTrackDesc = victim.getDescription();
 
-                            if(trackName.equals(deprecateTrackName) && trackDesc.equals(deprecateTrackDesc)) {
+                            if(trackName.equals(deprecateTrackName) && courseName.equals(deprecateTrackDesc)) {
                                 this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
                             }
                         }
                     }
                     currentTrack.setTrackRegion(trackRegion);
                     currentTrack.setName(trackName);
-                    currentTrack.setDescription(trackDesc);
+                    currentTrack.setDescription(courseName);
                     currentTrack.setCourseType(isWoodDeck? TRACK_COURSE_TYPE_WOOD_DECK: TRACK_COURSE_TYPE_DIRT);
                     GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
 

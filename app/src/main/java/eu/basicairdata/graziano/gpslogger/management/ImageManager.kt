@@ -59,11 +59,6 @@ class ImageManager {
 
         fun createEmptyDirectory(directoryPath: String, directoryName: String): String {
             var dir: File
-            // = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName)
-            // if(!dir.exists()) {
-            //     dir.mkdirs()
-            //     return dir.absolutePath
-            // }
             for (i in 0..2) {
                 dir = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName + i.toString())
                 if (!dir.exists()) {

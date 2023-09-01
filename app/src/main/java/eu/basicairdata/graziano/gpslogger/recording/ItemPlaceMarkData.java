@@ -4,12 +4,18 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Objects;
 
-public class ItemPlaceMarkData {
+import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
+
+
+public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData> {
     private String trackName;               // this placemark's Parent Track Name
     private String placeMarkTitle;          // this placemark Name by placemark type
     private String placeMarkType;           // this placemark type ( REST, ETC... )
-    private String placeMarkDesc;           // this placemark desc
+    private String placeMarkDesc;           // this placemark desc ( selection information )
 
 
     private boolean isPlaceMarkEnable;      // it is not collectable placemark
@@ -151,5 +157,45 @@ public class ItemPlaceMarkData {
             this.placeMarkImg2.recycle();
             this.placeMarkImg2 = null;
         }
+    }
+
+    /**
+     * sort list by placemark type and title
+     * @param o1 the first object to be compared.
+     * @param o2 the second object to be compared.
+     * @return compare result
+     */
+    @Override
+    public int compare(ItemPlaceMarkData o1, ItemPlaceMarkData o2) {
+        // add placemark infomation label must be place roof
+        if(o1.trackName.equals("label") && o1.placeMarkDesc.equals("label") && o1.placeMarkTitle.equals("label") && o1.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o1 is high
+        else if(o2.trackName.equals("label") && o2.placeMarkDesc.equals("label") && o2.placeMarkTitle.equals("label") && o2.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
+
+        final PlaceMarkType o1Type = PlaceMarkType.valueOf(o1.getPlaceMarkType());
+        final PlaceMarkType o2Type = PlaceMarkType.valueOf(o2.getPlaceMarkType());
+        final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
+
+        // is same placemark TYPE???
+        if(isDiffType == 0) {
+            // compare by Placemark visbilty NAME!
+            return o1.placeMarkTitle.hashCode() - o2.placeMarkTitle.hashCode();
+        }
+        // diff type? return them!
+        return isDiffType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPlaceMarkData that = (ItemPlaceMarkData) o;
+        return trackName.equals(that.trackName) &&
+                placeMarkTitle.equals(that.placeMarkTitle) &&
+                placeMarkType.equals(that.placeMarkType) &&
+                placeMarkDesc.equals(that.placeMarkDesc);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(trackName, placeMarkTitle, placeMarkType, placeMarkDesc);
     }
 }

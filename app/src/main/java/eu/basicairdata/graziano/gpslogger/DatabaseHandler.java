@@ -384,6 +384,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         trkvalues.put(KEY_TRACK_VALIDMAP, track.getValidMap());
         trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
         trkvalues.put(KEY_TRACK_COURSE_TYPE, track.getCourseType());
+        trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
 
         try {
             db.beginTransaction();

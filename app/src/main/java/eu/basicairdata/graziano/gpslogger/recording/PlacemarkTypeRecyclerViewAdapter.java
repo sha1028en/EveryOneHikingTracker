@@ -68,6 +68,30 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         if(position != 0) {
             holder.onBind(this.placeMarkDataList.get(position), this.imgSelectedListener);
 
+            this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                holder.setViewEnableEvent(isChecked, false);
+            });
+
+            // FIXME !!!!! OVERRIDE CURRENT TITLE NAME DB...
+            this.bind.placeamrkAddMore.setOnClickListener(v -> {
+                if(this.bind.placeamrkAddMore.getVisibility() != View.VISIBLE || this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
+                ItemPlaceMarkData currentItem = this.placeMarkDataList.get(position);
+
+                int index = currentItem.getPlaceMarkType().equals(PlaceMarkType.ETC.name())? 0 : 1;
+                for(ItemPlaceMarkData buffer : this.placeMarkDataList) {
+                    if(buffer.getPlaceMarkType().equals(currentItem.getPlaceMarkType())) {
+                        ++index;
+                    }
+                }
+                final String newPlacemarkParent = currentItem.getTrackName();
+                final String newPlacemarkTitle = currentItem.getPlaceMarkTitle().substring(0, currentItem.getPlaceMarkTitle().length() -2) + " " + index;
+                final String newPlacemarkType = currentItem.getPlaceMarkType();
+                final String newPlacemarkDesc = ""; // currentItem.getPlaceMarkDesc().substring(0, currentItem.getPlaceMarkDesc().length() -2) + " " + index;
+                ItemPlaceMarkData item = new ItemPlaceMarkData(newPlacemarkParent, newPlacemarkTitle, newPlacemarkType, newPlacemarkDesc, true);
+
+                this.addPlaceMark(item, position +1);
+            });
+
         } else {
             holder.onAddPlaceMarkInfoBind();
         }
@@ -91,6 +115,10 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         return position; // super.getItemViewType(position);
     }
 
+    /**
+     * add item at last position
+     * @param item added Item data
+     */
     public void addPlaceMark(@NonNull final ItemPlaceMarkData item) {
         if(this.placeMarkDataList == null) return;
 
@@ -98,18 +126,32 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         this.notifyItemInserted(this.placeMarkDataList.size());
     }
 
+    public void addPlaceMark(@NonNull final ItemPlaceMarkData item, final int pos) {
+        if(pos < 0) throw new IllegalArgumentException("PlacemarkTypeRecyclerViewAdapter.addPlaceMark(item, pos) : wrong value pos " + pos);
+
+        this.placeMarkDataList.add(pos, item);
+        this.notifyItemInserted(pos);
+    }
+
     public void updatePlaceMark(@NonNull final ItemPlaceMarkData item) {
         if(this.placeMarkDataList == null) return;
 
         int index = 0;
         for(ItemPlaceMarkData buffer : this.placeMarkDataList) {
-            if(buffer.getPlaceMarkType().equals(item.getPlaceMarkType())) {
+            if(buffer.getPlaceMarkType().equals(item.getPlaceMarkType()) && buffer.getPlaceMarkTitle().equals(item.getPlaceMarkTitle())) {
                 this.placeMarkDataList.set(index, item);
                 break;
             }
             ++index;
         }
         this.notifyItemChanged(index);
+    }
+
+    private int getItemPosition(@NonNull final ItemPlaceMarkData item) {
+        if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return -1;
+
+        int pos = this.placeMarkDataList.indexOf(item);
+        return pos;
     }
 
     public void setPlaceMarksIsHidden(boolean isHide) {
@@ -170,14 +212,6 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         public PlacemarkTypeViewHolder(@NonNull View itemView) {
             super(itemView);
             this.bind = ItemPlacemarkTypeBinding.bind(itemView);
-
-            this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                this.setViewEnableEvent(isChecked, false);
-            });
-
-            this.bind.placeamrkAddMore.setOnClickListener(v -> {
-
-            });
         }
 
         public void onAddPlaceMarkInfoBind() {

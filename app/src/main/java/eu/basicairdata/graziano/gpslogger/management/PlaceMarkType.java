@@ -18,15 +18,15 @@ public enum PlaceMarkType {
     public int convertIntType() {
         switch (this.name()) {
             case "ENTRANCE" -> {
-                return 0;
+                return 6;
             }
 
             case "PARKING" -> {
-                return 1;
+                return 5;
             }
 
             case "TOILET" -> {
-                return 2;
+                return 4;
             }
 
             case "REST" -> {
@@ -34,19 +34,19 @@ public enum PlaceMarkType {
             }
 
             case "BUS_STOP" -> {
-                return 4;
+                return 2;
             }
 
             case "OBSERVATION_DECK" -> {
-                return 5;
+                return 1;
             }
 
             case "ETC" -> {
-                return 6;
+                return 0;
             }
 
             default -> {
-                return 6;
+                return 0;
             }
         }
     }
