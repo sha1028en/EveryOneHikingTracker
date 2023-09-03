@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.LinkedList;
 import java.util.Vector;
 
 import eu.basicairdata.graziano.gpslogger.R;
@@ -54,10 +55,23 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
         return this.trackList.size();
     }
 
-    public void addItem(ItemTrackData item) {
+    public void addItems(@NonNull final LinkedList<ItemTrackData> items) {
+        if(this.trackList != null) {
+            this.trackList.addAll(items);
+            this.notifyDataSetChanged();
+        }
+    }
+    public void addItem(@NonNull final ItemTrackData item) {
         if(this.trackList != null) {
             this.trackList.add(item);
             this.notifyItemInserted(this.getItemCount());
+        }
+    }
+
+    public void clearItems() {
+        if (this.trackList != null) {
+            this.trackList.clear();
+            this.notifyDataSetChanged();
         }
     }
 
