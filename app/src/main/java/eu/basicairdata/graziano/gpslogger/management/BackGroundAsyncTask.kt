@@ -6,21 +6,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 import java.lang.RuntimeException
 import java.util.concurrent.CancellationException
 
 /**
+ * A General Purpose BackGround Task Manager
+ *
  * for replace AsyncTask ( Deprecated Class )
  * Except "preTask()" others runs on BackGround Thread
  *
  * @param scopeType running mode during the do Task
+ * @see CoroutineDispatcher
  */
 class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatcher) {
-    private val taskExecutor: CoroutineScope = CoroutineScope(scopeType)
+    private val taskExecutor: CoroutineScope = CoroutineScope(this.scopeType)
+    private var currentTask: Deferred<V>? = null
 
     companion object {
         /**
@@ -74,14 +76,16 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
      * cancel Task when running
      */
     fun cancelTask() {
-        this.taskExecutor.cancel()
+        if(this.currentTask != null) this.currentTask!!.cancel()
     }
 
     /**
      * @return is Task Running?
      **/
     fun isTaskAlive(): Boolean {
-        val state = this.taskExecutor.isActive
+        if(this.currentTask == null) return false
+
+        val state = this.currentTask!!.isActive
         return state
     }
 
@@ -95,10 +99,10 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
         }
 
         try {
-            val deferred: Deferred<V> = this.taskExecutor.async(exceptionHandler) {
+            this.currentTask = this.taskExecutor.async(exceptionHandler) {
                 listener.doTask()
             }
-            val result = deferred.await()
+            val result = this.currentTask!!.await()
             listener.endTask(result)
 
         } catch (e: CancellationException) {

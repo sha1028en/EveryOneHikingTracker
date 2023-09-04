@@ -5,15 +5,26 @@ import androidx.annotation.NonNull;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 
 import eu.basicairdata.graziano.gpslogger.databinding.DialogChooseRegionListBinding;
 
-public class ChooseRegionListDialog extends Dialog implements CompoundButton.OnCheckedChangeListener {
+public class ChooseRegionListDialog extends Dialog implements View.OnClickListener {
 
     private DialogChooseRegionListBinding binding;
     private onItemChooseListener chooseListener;
+
+    @Override
+    public void onClick(View v) {
+        if(v instanceof TextView) {
+            final String region = ((TextView) v).getText().toString();
+            this.chooseListener.onItemChoose(region, true);
+        }
+        this.dismiss();
+    }
 
     public interface onItemChooseListener {
         void onItemChoose(String msg, boolean isChecked);
@@ -24,10 +35,11 @@ public class ChooseRegionListDialog extends Dialog implements CompoundButton.OnC
         this.chooseListener = listener;
     }
 
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        this.chooseListener.onItemChoose(buttonView.getText().toString(), isChecked);
-    }
+//    @Override
+//    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        this.chooseListener.onItemChoose(buttonView.getText().toString(), isChecked);
+//        this.dismiss();
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,28 +47,28 @@ public class ChooseRegionListDialog extends Dialog implements CompoundButton.OnC
         this.binding = DialogChooseRegionListBinding.inflate(this.getLayoutInflater());
         setContentView(this.binding.getRoot());
 
-        this.binding.regionChooseConfirm.setOnClickListener(v -> {
-            this.chooseListener.onItemChoose(((Button) v).getText().toString(), true);
-            this.dismiss();
-        });
+//        this.binding.regionChooseConfirm.setOnClickListener(v -> {
+//            this.chooseListener.onItemChoose(((Button) v).getText().toString(), true);
+//            this.dismiss();
+//        });
 
-        this.binding.chooseRegionSeoul.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionGueonggi.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionIncheon.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionGangwon.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionSejong.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionNorthChungchung.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionDaejeon.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionSouthChungchung.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionDaegu.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionNorthGyeongsang.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionUlsan.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionSouthGyeongsang.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionBusan.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionNorthJeolla.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionGwangju.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionSouthJeolla.setOnCheckedChangeListener(this);
-        this.binding.chooseRegionJeju.setOnCheckedChangeListener(this);
+        this.binding.chooseRegionSeoul.setOnClickListener(this);
+        this.binding.chooseRegionGueonggi.setOnClickListener(this);
+        this.binding.chooseRegionIncheon.setOnClickListener(this);
+        this.binding.chooseRegionGangwon.setOnClickListener(this);
+        this.binding.chooseRegionSejong.setOnClickListener(this);
+        this.binding.chooseRegionNorthChungchung.setOnClickListener(this);
+        this.binding.chooseRegionDaejeon.setOnClickListener(this);
+        this.binding.chooseRegionSouthChungchung.setOnClickListener(this);
+        this.binding.chooseRegionDaegu.setOnClickListener(this);
+        this.binding.chooseRegionNorthGyeongsang.setOnClickListener(this);
+        this.binding.chooseRegionUlsan.setOnClickListener(this);
+        this.binding.chooseRegionSouthGyeongsang.setOnClickListener(this);
+        this.binding.chooseRegionBusan.setOnClickListener(this);
+        this.binding.chooseRegionNorthJeolla.setOnClickListener(this);
+        this.binding.chooseRegionGwangju.setOnClickListener(this);
+        this.binding.chooseRegionSouthJeolla.setOnClickListener(this);
+        this.binding.chooseRegionJeju.setOnClickListener(this);
     }
 
     /**

@@ -55,10 +55,20 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
         return this.trackList.size();
     }
 
+    // if this method isnt overriding, sometimes detached view replaced other correct view
+    // so this list might be corrupt
+    // i didnt know what happened, but... problem resolved to override this method
+    @Override
+    public int getItemViewType(int position) {
+        return position; // super.getItemViewType(position);
+    }
+
     public void addItems(@NonNull final LinkedList<ItemTrackData> items) {
         if(this.trackList != null) {
+            final int beforeRearItemCount = this.getItemCount();
+
             this.trackList.addAll(items);
-            this.notifyDataSetChanged();
+            this.notifyItemRangeInserted(beforeRearItemCount, items.size());
         }
     }
     public void addItem(@NonNull final ItemTrackData item) {
@@ -83,6 +93,8 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
         this.listener = null;
     }
 
+    // INNER CLASS MIGHT BE STATIC CLASS
+    // FOR PREVENT MEMORY LEAK
     public static class TrackRecyclerViewHolder extends RecyclerView.ViewHolder {
         private final ItemTrackBinding bind;
         public TrackRecyclerViewHolder(@NonNull View itemView) {

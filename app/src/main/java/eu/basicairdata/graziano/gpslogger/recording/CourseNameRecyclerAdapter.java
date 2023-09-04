@@ -144,13 +144,16 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
     public boolean removeCourse(final ItemCourseData course) {
         boolean isRemove = false;
+
         if(this.courseList != null && course != null && this.bind != null) {
             isRemove = this.courseList.remove(course);
+            this.notifyDataSetChanged();
         }
-        this.notifyDataSetChanged();
         return isRemove;
     }
 
+    // INNER CLASS MIGHT BE STATIC CLASS
+    // FOR PREVENT MEMORY LEAK
     public static class CourseNameViewHolder extends RecyclerView.ViewHolder {
         private final ItemCourseBinding bind;
 

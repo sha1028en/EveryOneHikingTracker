@@ -177,6 +177,8 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         this.bind = null;
     }
 
+    // INNER CLASS MIGHT BE STATIC CLASS
+    // FOR PREVENT MEMORY LEAK
     public static class PlacemarkTypeViewHolder extends RecyclerView.ViewHolder {
         private ItemPlaceMarkData placeMarkData = null;
         private final ItemPlacemarkTypeBinding bind;

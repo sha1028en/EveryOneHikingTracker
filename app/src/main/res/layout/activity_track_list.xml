@@ -12,23 +12,32 @@
         android:layout_height="?attr/actionBarSize"
         app:titleTextAppearance="@style/ToolbarTitle"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:background="@color/colorItemBackground"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
+        <TextView
             android:id="@+id/select_region"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/track_region_seoul"
-            android:layout_gravity="end">
-        </Button>
+            android:textColor="@color/textColorSecondary"
+            android:background="@drawable/background_round_stroke_border_32"
+            android:gravity="center"
+            android:layout_gravity="end"
+            android:padding="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginEnd="16dp">
+        </TextView>
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/track_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
