@@ -76,6 +76,7 @@ public class Track {
 
     // Variables
     private long    id;                                             // Saved in DB
+    private long    trackId;                                        // Saved in DB
     private String  name                        = "";               // Saved in DB
     private String  description                 = "";               // Saved in DB
     // The data related to the Start Point
@@ -382,8 +383,9 @@ public class Track {
                        long distanceLastAltitude, double altitudeUp, double altitudeDown,
                        double altitudeInProgress, float speedMax, float speedAverage,
                        float speedAverageMoving, long numberOfLocations, long numberOfPlacemarks,
-                       int validMap, int type, String description, String courseType, String trackRegion) {
+                       int validMap, int type, String description, String courseType, String trackRegion, long trackId) {
         this.id = id;
+        this.trackId = trackId;
         this.name = name;
         this.description = description;
 
@@ -456,6 +458,14 @@ public class Track {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public long getTrackId() {
+        return trackId;
+    }
+
+    public void setTrackId(long trackId) {
+        this.trackId = trackId;
     }
 
     public String getName() {

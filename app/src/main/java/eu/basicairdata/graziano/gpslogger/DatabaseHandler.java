@@ -77,7 +77,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // ----------------------------------------------------------------------- Common Columns names
     private static final String KEY_ID = "id";
-    private static final String KEY_TRACK_ID = "track_id"; // for LEGACY LAYOUT. WILL NOT USE ANYMORE!
+    private static final String KEY_TRACK_ID = "track_id";
 
     // --------------------------------------------------------------- Location Table Columns names
     private static final String KEY_LOCATION_NUMBER = "nr";
@@ -211,7 +211,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_TRACK_TYPE + " INTEGER,"                      // 40
                 + KEY_TRACK_DESCRIPTION + " TEXT,"                  // 41
                 + KEY_TRACK_COURSE_TYPE + " TEXT,"                  // 42
-                + KEY_TRACK_REGION_TYPE + " TEXT" + ")";            // 43
+                + KEY_TRACK_REGION_TYPE + " TEXT,"                  // 43
+                + KEY_TRACK_ID + " INTRAGER" + ")";                 // 44
         db.execSQL(CREATE_TRACKS_TABLE);
 
         String CREATE_LOCATIONS_TABLE = "CREATE TABLE " + TABLE_LOCATIONS + "("
@@ -385,6 +386,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
         trkvalues.put(KEY_TRACK_COURSE_TYPE, track.getCourseType());
         trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
+        trkvalues.put(KEY_TRACK_ID, track.getTrackId());
 
         try {
             db.beginTransaction();
@@ -500,6 +502,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
         trkvalues.put(KEY_TRACK_COURSE_TYPE, track.getCourseType());
         trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
+        trkvalues.put(KEY_TRACK_ID, track.getTrackId());
 
         try {
             db.beginTransaction();
@@ -599,6 +602,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         trkvalues.put(KEY_TRACK_VALIDMAP, track.getValidMap());
         trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
         trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
+        trkvalues.put(KEY_TRACK_ID, track.getTrackId());
 
         LinkedList<LocationExtended> placemarkList = new LinkedList<>(this.getPlacemarksList(placemark.getTrackName()));
 
@@ -1377,6 +1381,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
         trkvalues.put(KEY_TRACK_COURSE_TYPE, track.getCourseType());
         trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
+        trkvalues.put(KEY_TRACK_ID, track.getTrackId());
 
         long TrackID;
         // Inserting Row
@@ -1389,12 +1394,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 
     // Get Track
-    public Track getTrack(long TrackID) {
+    public Track getTrack(long id) {
 
         Track track = null;
 
         String selectQuery = "SELECT  * FROM " + TABLE_TRACKS + " WHERE "
-                + KEY_ID + " = " + TrackID;
+                + KEY_ID + " = " + id;
 
         //Log.w("myApp", "[#] DatabaseHandler.java - getTrackList(" + startNumber + ", " +endNumber + ") ==> " + selectQuery);
 
@@ -1461,7 +1466,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         cursor.getInt(40),
                         cursor.getString(41),
                         cursor.getString(42),
-                        cursor.getString(43));
+                        cursor.getString(43),
+                        cursor.getLong(44));
             }
             cursor.close();
         }
@@ -1568,7 +1574,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                             cursor.getInt(40),
                             cursor.getString(41),
                             cursor.getString(42),
-                            cursor.getString(43));
+                            cursor.getString(43),
+                            cursor.getLong(44));
                     trackList.add(trk);             // Add Track to list
 
                 } while (cursor.moveToNext());
@@ -1646,7 +1653,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                         cursor.getInt(40),
                         cursor.getString(41),
                         cursor.getString(42),
-                        cursor.getString(43));
+                        cursor.getString(43),
+                        cursor.getLong(44));
             }
             cursor.close();
         }
@@ -1655,13 +1663,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     public List<Track> getTrackListByName(@NonNull final String trackName) {
         final List<Track> trackList = new ArrayList<>();
-        final String convertTrackName = "\"" + trackName + "\"";
+//        final String convertTrackName = "\"" + trackName + "\"";
+
         final String selectQuery = "SELECT  * FROM " + TABLE_TRACKS + " WHERE "
-                + KEY_TRACK_NAME + " LIKE " + convertTrackName
+                + KEY_TRACK_NAME + " LIKE ? " // + convertTrackName
                 + " ORDER BY " + KEY_ID + " DESC";
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { trackName });
 
         if (cursor != null) {
             // looping through all rows and adding to list
@@ -1723,7 +1732,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                             cursor.getInt(40),
                             cursor.getString(41),
                             cursor.getString(42),
-                            cursor.getString(43));
+                            cursor.getString(43),
+                            cursor.getLong(44));
                     trackList.add(trk);             // Add Track to list
 
                 } while (cursor.moveToNext());
@@ -1808,7 +1818,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                             cursor.getInt(40),
                             cursor.getString(41),
                             cursor.getString(42),
-                            cursor.getString(43));
+                            cursor.getString(43),
+                            cursor.getLong(44));
                     trackList.add(trk);             // Add Track to list
                 } while (cursor.moveToNext());
             }

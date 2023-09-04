@@ -216,11 +216,12 @@ public class TrackRecordManager {
     /**
      * start Record Track when GPS provider is ENABLED
      */
-    public void startRecordCourse(final String trackName, final String courseName, @NonNull final String trackRegion) {
+    public void startRecordCourse(final long trackId ,@NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion) {
         if(this.isRecording /*|| this.availableSatellitesCnt > 4*/) return;
 
         this.gpsApp.gpsDataBase.deleteLocation(trackName, courseName);
 
+        this.gpsApp.setCurrentTrackId(trackId);
         this.gpsApp.setCurrentTrackName(trackName);
         this.gpsApp.setCurrentTrackDesc(courseName);
         this.gpsApp.setCurrentTrackRegion(trackRegion);
@@ -231,13 +232,14 @@ public class TrackRecordManager {
     /**
      * stop record track if it recording track
      *
+     * @param trackId     to save track Id
      * @param trackName   to save track Name
      * @param courseName  to save track Description
      * @param trackRegion to save track Region
      * @param isWoodDeck  to save track Type ( Wooden or Dirty )
      * @see GPSApplication::onRequestStop(bool, bool)
      */
-    public void stopRecordTrack(@NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
+    public void stopRecordTrack(final long trackId, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
         if(this.gpsApp == null || !this.isRecording) return;
 
         this.gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -257,6 +259,7 @@ public class TrackRecordManager {
                     }
                 }
             }
+            currentTrack.setTrackId(trackId);
             currentTrack.setTrackRegion(trackRegion);
             currentTrack.setName(trackName);
             currentTrack.setDescription(courseName);
@@ -356,11 +359,12 @@ public class TrackRecordManager {
         }
     }
 
-    public boolean createBlankTables(@NonNull final String trackName, @NonNull final String trackDesc, @NonNull final String trackRegion) {
+    public boolean createBlankTables(final long trackId, @NonNull final String trackName, @NonNull final String trackDesc, @NonNull final String trackRegion) {
         if(this.gpsApp == null) return false;
 
         // create EMPTY track
         Track emptyTrack = new Track();
+        emptyTrack.setTrackId(trackId);
         emptyTrack.setName(trackName);
         emptyTrack.setDescription(trackDesc);
         emptyTrack.setCourseType(TRACK_COURSE_TYPE_WOOD_DECK);

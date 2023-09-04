@@ -87,6 +87,7 @@ public class GPSApplication extends Application implements LocationListener {
     //private static final float M_TO_FT = 3.280839895f;
     public static final String ATX_EXTRA_TRACK_TITLE = "TRACK_NAME";
     public static final String ATV_EXTRA_TRACK_REGION = "TRACK REGION";
+    public static final String ATV_EXTRA_TRACK_ID = "TRACK ID";
 
     public static final int NOT_AVAILABLE = 0;
 
@@ -192,6 +193,7 @@ public class GPSApplication extends Application implements LocationListener {
     private final Satellites satellites = new Satellites();      // The class that contains all the information about satellites
     public DatabaseHandler gpsDataBase;                                 // The handler for the GPSLogger Database of Tracks
 
+    private long currentTrackId = -1;
     private String currentTrackName = "";
     private String currentTrackDesc = "";
     private String currentTrackRegion = "";
@@ -636,6 +638,10 @@ public class GPSApplication extends Application implements LocationListener {
 
     public void setPlacemarkEnable(boolean placemarkEnable) {
         this.placemarkEnable = placemarkEnable;
+    }
+
+    public void setCurrentTrackId(long currentTrackId) {
+        this.currentTrackId = currentTrackId;
     }
 
     public void setCurrentTrackName(final String currentTrackName) {
@@ -1148,6 +1154,7 @@ public class GPSApplication extends Application implements LocationListener {
                 ast.taskType = TASK_ADDLOCATION;
                 ast.location = eloc;
                 ast.location.setTrackName(this.currentTrackName);
+                ast.location.setTrackId(this.currentTrackId);
                 ast.location.setTrackRegion(this.currentTrackRegion);
                 ast.location.setType(this.currentTrackDesc);
                 asyncTODOQueue.add(ast);

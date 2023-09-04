@@ -74,13 +74,13 @@ class FuncTestFragment : Fragment() {
             this.recordManager.addPlaceMark("Parking", "서울 강남구 대모산 무장애 나눔길")
         }
 
-        this.mBinding!!.funcTestStartRecord.setOnClickListener {
-            this.recordManager.startRecordCourse("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL");
-        }
-
-        this.mBinding!!.funcTestStopRecord.setOnClickListener {
-            this.recordManager.stopRecordTrack("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL", false)
-        }
+//        this.mBinding!!.funcTestStartRecord.setOnClickListener {
+//            this.recordManager.startRecordCourse("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL");
+//        }
+//
+//        this.mBinding!!.funcTestStopRecord.setOnClickListener {
+//            this.recordManager.stopRecordTrack("서울 강남구 대모산 무장애 나눔길", "코스 1", "SEOUL", false)
+//        }
         return this.mBinding!!.root
     }
 

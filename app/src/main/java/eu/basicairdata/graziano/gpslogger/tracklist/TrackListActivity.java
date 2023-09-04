@@ -2,7 +2,6 @@ package eu.basicairdata.graziano.gpslogger.tracklist;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +26,7 @@ import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.R;
+import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityTrackListBinding;
 import eu.basicairdata.graziano.gpslogger.management.BackGroundAsyncTask;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
@@ -78,13 +78,13 @@ public class TrackListActivity extends AppCompatActivity {
            Intent intent = new Intent(bind.getRoot().getContext(), RecordingActivity.class);
            intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
            intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
+           intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, item.getTrackId());
            startActivity(intent);
        });
        this.bind.trackList.setAdapter(trackListAdapter);
 
        this.requestTrackTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
        this.requestTrackList(TrackRegionType.SEOUL.getRegionName());
-
    }
 
    private void requestTrackList(@Nullable final String requestRegion) {
@@ -131,7 +131,22 @@ public class TrackListActivity extends AppCompatActivity {
                        trackAddress = rawJsonResponse.getString("addr");
                        trackRegion = rawJsonResponse.getString("sido");
 
-                       ItemTrackData track = new ItemTrackData(trackName, trackAddress, trackRegion);
+                       ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion);
+                       if(recordManager != null) {
+                           LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
+                           boolean isTrackHasCourse = false;
+                           // is this track has Course Record???
+                           if(!courses.isEmpty()) {
+                               for(Track course : courses) {
+                                   // is this course has valid record???
+                                   if(course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1)  {
+                                       isTrackHasCourse = true;
+                                       break;
+                                   }
+                               }
+                           }
+                           track.setDoneCourseInfo(isTrackHasCourse);
+                       }
                        trackList.add(track);
                    }
 
@@ -181,7 +196,7 @@ public class TrackListActivity extends AppCompatActivity {
         this.bind = null;
    }
 
-   @Subscribe(threadMode = ThreadMode.MAIN)
+   @Subscribe(threadMode = ThreadMode.BACKGROUND)
    public void onEvent(Short msg) {
 //        if (msg == EventBusMSG.UPDATE_FIX) {
 //

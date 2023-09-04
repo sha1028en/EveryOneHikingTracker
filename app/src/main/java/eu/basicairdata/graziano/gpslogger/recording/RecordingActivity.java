@@ -60,6 +60,7 @@ public class RecordingActivity extends AppCompatActivity {
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
     private boolean isPauseCourseRecording = false; // this is FLAG course recording has paused
 
+    private long currentTrackId = -1; // this course's parent track Id;
     private String currentTrackName = ""; // this course's Parents Track Name
     private String currentTrackRegion; // this course Region
     private String currentPoiType = ""; // selected POI Type
@@ -81,6 +82,7 @@ public class RecordingActivity extends AppCompatActivity {
 
         toast = new Toast(this.bind.getRoot().getContext());
         // FINAL VALUE, NEVER MODIFY THIS
+        this.currentTrackId = this.getIntent().getLongExtra(GPSApplication.ATV_EXTRA_TRACK_ID, -1);
         this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
         this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
 
@@ -142,7 +144,7 @@ public class RecordingActivity extends AppCompatActivity {
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
 
         if(rawCourseList.isEmpty()) {
-            this.recordManager.createBlankTables(this.currentTrackName, "기본 코스", this.currentTrackRegion);
+            this.recordManager.createBlankTables(this.currentTrackId, this.currentTrackName, "기본 코스", this.currentTrackRegion);
             rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
         }
 
@@ -376,7 +378,7 @@ public class RecordingActivity extends AppCompatActivity {
             if(!selectedCourseName.isBlank()) {
                 if(!this.recordManager.isRecordingCourse() && !this.isPauseCourseRecording) {
                     // start Record Course
-                    this.recordManager.startRecordCourse(currentTrackName, selectedCourseName, currentTrackRegion);
+                    this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
                     this.isPauseCourseRecording = false;
 
                 } else if (isPauseCourseRecording) {
@@ -402,7 +404,7 @@ public class RecordingActivity extends AppCompatActivity {
             final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
 
             if(!selectedCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
+                this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
                 this.isPauseCourseRecording = false;
                 this.updateUI();
             }

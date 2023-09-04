@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public class ItemTrackData {
 
+    private final long trackId; // Track Id
     private final String trackName; // Track Name
     private final String trackAddress; // Track Address
     private final String trackRegion;
@@ -11,12 +12,17 @@ public class ItemTrackData {
     boolean isDoneCourseInfo = false; // is CourseInfo has ???
     boolean isDonePlacemarkPic = false; // is placemark picture has ???
 
-    public ItemTrackData(@NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion) {
+    public ItemTrackData(final long trackId, @NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion) {
+        this.trackId = trackId;
         this.trackName = trackName;
         this.trackAddress = trackAddress;
         this.trackRegion = trackRegion;
     }
 
+
+    public long getTrackId() {
+        return this.trackId;
+    }
     public String getTrackName() {
         return trackName;
     }
