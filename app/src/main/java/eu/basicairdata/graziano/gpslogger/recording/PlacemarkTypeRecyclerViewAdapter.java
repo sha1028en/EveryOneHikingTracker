@@ -66,8 +66,8 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 
     @Override
     public void onBindViewHolder(@NonNull PlacemarkTypeViewHolder holder, int position) {
-        if(position != 0) {
-            holder.onBind(this.placeMarkDataList.get(position), this.imgSelectedListener);
+        if(holder.getBindingAdapterPosition() != 0) {
+            holder.onBind(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), this.imgSelectedListener);
 
             this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 holder.setViewEnableEvent(isChecked, false);
@@ -76,7 +76,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             // FIXME !!!!! OVERRIDE CURRENT TITLE NAME DB...
             this.bind.placeamrkAddMore.setOnClickListener(v -> {
                 if(this.bind.placeamrkAddMore.getVisibility() != View.VISIBLE || this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
-                ItemPlaceMarkData currentItem = this.placeMarkDataList.get(position);
+                ItemPlaceMarkData currentItem = this.placeMarkDataList.get(holder.getBindingAdapterPosition());
 
                 int index = currentItem.getPlaceMarkType().equals(PlaceMarkType.ETC.name())? 0 : 1;
                 for(ItemPlaceMarkData buffer : this.placeMarkDataList) {
@@ -96,6 +96,13 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         } else {
             holder.onAddPlaceMarkInfoBind();
         }
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull PlacemarkTypeViewHolder holder) {
+        super.onViewRecycled(holder);
+        holder.replaceImg();
+//        holder.onBind(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), this.imgSelectedListener);
     }
 
     @Override
@@ -124,6 +131,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         if(this.placeMarkDataList == null) return;
 
         this.placeMarkDataList.add(item);
+//        this.notifyDataSetChanged();
         this.notifyItemInserted(this.placeMarkDataList.size());
     }
 
@@ -229,6 +237,15 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             emphaticInformation.setSpan(new StyleSpan(Typeface.BOLD), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             this.bind.placemarkAddInfo.setText(emphaticInformation);
         }
+
+        public void replaceImg() {
+            if(this.placeMarkData == null || this.bind == null) return;
+
+            if(this.placeMarkData.getPlaceMarkImg0() != null) this.bind.placemarkPic0.setImageBitmap(this.placeMarkData.getPlaceMarkImg0());
+            if(this.placeMarkData.getPlaceMarkImg1() != null) this.bind.placemarkPic1.setImageBitmap(this.placeMarkData.getPlaceMarkImg1());
+            if(this.placeMarkData.getPlaceMarkImg2() != null) this.bind.placemarkPic2.setImageBitmap(this.placeMarkData.getPlaceMarkImg2());
+        }
+
 
         public void onBind(@NonNull final ItemPlaceMarkData item, OnImageSelectedListener listener) {
             this.placeMarkData = item;

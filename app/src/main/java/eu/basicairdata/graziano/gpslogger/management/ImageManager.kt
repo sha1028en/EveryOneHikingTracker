@@ -72,6 +72,36 @@ class ImageManager {
             return ""
         }
 
+        fun parsePathFromUri(context: Context, uri: Uri?): String {
+            if(uri == null) return ""
+            var filePath = ""
+            val localContext = WeakReference(context)
+
+            if(uri.scheme.equals("content")) {
+                try {
+                    val cursor = localContext.get()!!.contentResolver.query(uri, null, null, null, null)
+                    cursor.use {
+                        it!!.moveToFirst()
+                        val index = it.getColumnIndex(MediaStore.MediaColumns.DATA)
+                        if(index > 0) {
+                            filePath = cursor!!.getString(index)
+                        }
+                    }
+
+                } catch (e: NullPointerException) {
+                    filePath = ""
+
+                } catch (e: IndexOutOfBoundsException) {
+                    filePath = ""
+
+                } finally {
+                    localContext.clear()
+                }
+            }
+            return filePath;
+        }
+
+
         fun parseNameFromUri(context: Context, uri: Uri?): String {
             if(uri == null) return ""
             var fileName = ""
@@ -386,6 +416,7 @@ class ImageManager {
             val imageExif = ExifInterface(image.absolutePath)
             imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat.toString())
             imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lng.toString())
+            imageExif.saveAttributes()
         }
 
         /** Bitmap **/

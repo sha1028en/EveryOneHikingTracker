@@ -3,14 +3,17 @@ package eu.basicairdata.graziano.gpslogger.recording;
 public class ItemCourseData {
     private final String trackName;
     private String courseName;
+    private int coursePrimaryIndex;
+
     private int courseDistance;
     private boolean isWoodDeck;
 
     private boolean isClicked;
 
-    public ItemCourseData(final String trackName, String courseName, int distance, boolean isWoodDeck) {
+    public ItemCourseData(final String trackName, String courseName, final int coursePrimaryIndex, int distance, boolean isWoodDeck) {
         this.trackName = trackName;
         this.courseName = courseName;
+        this.coursePrimaryIndex = coursePrimaryIndex;
         this.courseDistance = distance;
         this.isWoodDeck = isWoodDeck;
         this.isClicked = false;
@@ -25,6 +28,14 @@ public class ItemCourseData {
     }
     public void setCourseName(String courseName) {
         this.courseName = courseName;
+    }
+
+    public int getCoursePrimaryIndex() {
+        return this.coursePrimaryIndex;
+    }
+
+    public void setCoursePrimaryIndex(final int coursePrimaryIndex) {
+        this.coursePrimaryIndex = coursePrimaryIndex;
     }
 
     public int getCourseDistance() {

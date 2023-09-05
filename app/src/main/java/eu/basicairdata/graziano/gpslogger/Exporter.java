@@ -127,6 +127,7 @@ class Exporter extends Thread {
             } else {
                 pickedDir = DocumentFile.fromFile(new File(saveIntoFolder));
             }
+
             if (!pickedDir.exists()) {
                 Log.w("myApp", "[#] Exporter.java - UNABLE TO CREATE THE FOLDER");
                 exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
@@ -300,12 +301,17 @@ class Exporter extends Thread {
                     dfdtGPX.format(loc.getLocation().getTime()));
             writeStream.write("</time>");
             writeStream.write("<name>");     // Name
-            writeStream.write(stringToXML(loc.getType()));
+            writeStream.write(stringToXML(loc.getTrackName()));
             writeStream.write("</name>");
             if (loc.getNumberOfSatellitesUsedInFix() > 0) {     // Satellites used in fix
                 writeStream.write("<sat>");
                 writeStream.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
                 writeStream.write("</sat>");
+            }
+            if (loc.getAccuracy() > 0.0f) {
+                writeStream.write("<accuracy>");
+                writeStream.write(String.valueOf(loc.getAccuracy()));
+                writeStream.write("</accuracy>");
             }
             writeStream.write("</wpt>" + newLine + newLine);
         }
@@ -421,6 +427,7 @@ class Exporter extends Thread {
     }
 
 
+    @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
@@ -569,7 +576,6 @@ class Exporter extends Thread {
 
                 this.writeGpxHeader(trackGpxBW, creationTime, gpsApp);
                 this.writeGpxHeader(trackWptBw, creationTime, gpsApp);
-
 //                // write trk header
 //                trackGpxBW.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
 //                trackGpxBW.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);

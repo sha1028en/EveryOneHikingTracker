@@ -76,8 +76,30 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         }
     }
 
+    public boolean replaceCourseItem(@NonNull final ItemCourseData toReplaceItem) {
+        boolean hasFound = false;
+
+        if(this.courseList != null) {
+            int index = 0;
+            for(ItemCourseData buffer : this.courseList) {
+                if(buffer.getTrackName().equals(toReplaceItem.getTrackName()) && buffer.getCourseName().equals(toReplaceItem.getCourseName())) {
+                    hasFound = true;
+                    break;
+                }
+                ++index;
+            }
+
+            if(hasFound) {
+                this.courseList.set(index, toReplaceItem);
+                this.notifyItemChanged(index);
+            }
+        }
+        return hasFound;
+    }
+
     public LinkedList<ItemCourseData> getCloneCourseList() {
-        return (LinkedList<ItemCourseData>) this.courseList.clone();
+        LinkedList<ItemCourseData> clonedCourseList = (LinkedList<ItemCourseData>) this.courseList.clone();
+        return clonedCourseList;
     }
 
     public void release() {

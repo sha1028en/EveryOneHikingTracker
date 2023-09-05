@@ -7,20 +7,25 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -35,8 +40,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 
@@ -46,11 +56,18 @@ import eu.basicairdata.graziano.gpslogger.LocationExtended;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
+import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class RecordingActivity extends AppCompatActivity {
+    private static final int REQUEST_ACTION_OPEN_DOCUMENT_TREE = 2;
+
     private ActivityRecordingBinding bind; // this View n Layout Instance
+    private boolean isModifyTrackExpended = false; // id Behavior Bottom Sheet has Expended? ( state )
+    private Toast toast; // using this activity's toast
+
+
     private PlacemarkTypeRecyclerViewAdapter placeMarkListAdapter; // POI list
     private CourseNameRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
@@ -58,7 +75,9 @@ public class RecordingActivity extends AppCompatActivity {
     private Uri tmpFile; // taken a Picture's File Instance
 
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
-    private boolean isPauseCourseRecording = false; // this is FLAG course recording has paused
+    private ExporterManager exporterManager; // Export Course, Placemark
+    private boolean isPauseCourseRecording = false; // this is FLAG course recording has paused ( state )
+
 
     private long currentTrackId = -1; // this course's parent track Id;
     private String currentTrackName = ""; // this course's Parents Track Name
@@ -69,7 +88,7 @@ public class RecordingActivity extends AppCompatActivity {
     private int currentPoiPosition = 0; // this poi position that selected picture
     private ItemPlaceMarkData currentSelectedPlaceMarkItem; // selected POI's DataClass
 
-    private Toast toast;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,46 +110,51 @@ public class RecordingActivity extends AppCompatActivity {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
-
+        this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
 
         // Camera Action
         // when Placemark list clicked, took Picture
         // and register Placemark with taken Picture
-        this.requestCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if(bind == null || placeMarkListAdapter == null || recordManager == null) return;
-                if (result.getResultCode() == RESULT_OK) {
-                    String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
-                    if (!fileName.isBlank()) {
-                        recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackRegion, currentTrackName, currentPoiEnable);
-                        try {
-                            LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
-                                    bind.getRoot().getContext(),
-                                    fileName.replaceAll(".png", ""),
-                                    "Trekking/" + currentTrackName + "/" + currentPoiType + "/" + currentPoiName);
+        this.requestCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if(bind == null || placeMarkListAdapter == null || recordManager == null) return;
+            if (result.getResultCode() == RESULT_OK) {
+                String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
 
-                            LinkedList<Uri> imgUri = new LinkedList<>();
-                            imgUri.add(imgUriList.getLast());
-                            imgUriList.clear();
-                            imgUriList = null;
+                if (!fileName.isBlank()) {
+                    try {
+                        ImageManager.Companion.addLocation(new File(ImageManager.Companion.parsePathFromUri(bind.getRoot().getContext(), tmpFile)), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
 
-                            imageLoadTask(imgUri, (compressedImg, isSuccess) -> {
-                                currentSelectedPlaceMarkItem.setPlaceMarkImg(compressedImg.get(0), currentPoiPosition);
-                                placeMarkListAdapter.updatePlaceMark(currentSelectedPlaceMarkItem);
-                            });
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackRegion, currentTrackName, currentPoiEnable);
 
-                        } catch (FileNotFoundException | IndexOutOfBoundsException e) {
-                            throw new RuntimeException(e);
-                        }
+                    try {
+                        LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
+                                bind.getRoot().getContext(),
+                                fileName.replaceAll(".png", ""),
+                                "Trekking/" + currentTrackName + "/" + currentPoiType + "/" + currentPoiName);
 
-                    } else {
-                        Toast.makeText(bind.getRoot().getContext(), "사진 저장에 실패했습니다.", Toast.LENGTH_SHORT).show();
+                        LinkedList<Uri> imgUri = new LinkedList<>();
+                        imgUri.add(imgUriList.getLast());
+                        imgUriList.clear();
+                        imgUriList = null;
+
+                        imageLoadTask(imgUri, (compressedImg, isSuccess) -> {
+                            currentSelectedPlaceMarkItem.setPlaceMarkImg(compressedImg.get(0), currentPoiPosition);
+                            placeMarkListAdapter.updatePlaceMark(currentSelectedPlaceMarkItem);
+                        });
+
+                    } catch (IndexOutOfBoundsException | IOException e) {
+                        throw new RuntimeException(e);
                     }
 
-                } else if (result.getResultCode() == RESULT_CANCELED) {
-                    ImageManager.Companion.removeLastImage(bind.getRoot().getContext(), currentPoiType);
+                } else {
+                    Toast.makeText(bind.getRoot().getContext(), "사진 저장에 실패했습니다.", Toast.LENGTH_SHORT).show();
                 }
+
+            } else if (result.getResultCode() == RESULT_CANCELED) {
+                ImageManager.Companion.removeLastImage(bind.getRoot().getContext(), currentPoiType);
             }
         });
         this.initCourseList();
@@ -138,6 +162,28 @@ public class RecordingActivity extends AppCompatActivity {
         this.initViewEvent();
         this.initModifyTrackBottomSheet();
     }
+
+//    /**
+//     * Executes the local exportation into the selected folder.
+//     * For Android >= LOLLYPOP
+//     */
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+//        if (requestCode == REQUEST_ACTION_OPEN_DOCUMENT_TREE && resultCode == Activity.RESULT_OK) {
+//            // The result data contains a URI for the document or directory that
+//            // the user selected.
+//
+//            if (resultData != null) {
+//                Uri treeUri = resultData.getData();
+//                grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//
+//
+//
+//                // Perform operations on the document using its URI.
+//            }
+//        }
+//        super.onActivityResult(resultCode, resultCode, resultData);
+//    }
 
     private void initCourseList() {
         if(this.recordManager == null || this.bind == null) return;
@@ -163,12 +209,13 @@ public class RecordingActivity extends AppCompatActivity {
         this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
 
         for(Track item : rawCourseList) {
+            final int coursePrimaryId = (int) item.getId();
             final String trackName = item.getName();
             final String courseName = item.getDescription();
             final int distance = (int) item.getDurationMoving();
             final boolean isWoodDeck = item.getCourseType().equals("wood_deck");
 
-            ItemCourseData course = new ItemCourseData(trackName, courseName, distance, isWoodDeck);
+            ItemCourseData course = new ItemCourseData(trackName, courseName, coursePrimaryId, distance, isWoodDeck);
             this.courseRecyclerAdapter.addCourseItem(course);
         }
     }
@@ -316,7 +363,17 @@ public class RecordingActivity extends AppCompatActivity {
         } else if (msg == EventBusMSG.UPDATE_TRACK) { // RECORDING COURSE
             Log.d("dspark", "Recording: UPDATE_TRACK");
 
-        } else if (msg == EventBusMSG.NEW_TRACK) { // MIGHT BE CREATE NEW TRACK?
+        } else if (msg == EventBusMSG.NEW_TRACK) { // A NEW NEW TRACK INCOMING!!!
+            if(this.courseRecyclerAdapter != null && this.recordManager != null) {
+                LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+
+                if(!rawCourseList.isEmpty()) {
+                    Track rawCourse = rawCourseList.getLast();
+                    // update course list's item
+                    ItemCourseData toUpdateCourse = new ItemCourseData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getId(), (int) rawCourse.getDurationMoving(), rawCourse.getCourseType().equals("wood_deck"));
+                    this.courseRecyclerAdapter.replaceCourseItem(toUpdateCourse);
+                }
+            }
             Log.d("dspark", "Recording: NEW_TRACK");
         }
     }
@@ -343,7 +400,7 @@ public class RecordingActivity extends AppCompatActivity {
                         Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다", Toast.LENGTH_SHORT).show();
 
                     } else {
-                        courseRecyclerAdapter.addCourseItem(new ItemCourseData(currentTrackName, receiveMessage, 0, true));
+                        courseRecyclerAdapter.addCourseItem(new ItemCourseData(currentTrackName, receiveMessage, -1,0, true));
                     }
                 }
             });
@@ -419,6 +476,12 @@ public class RecordingActivity extends AppCompatActivity {
                 this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.isWoodDeck());
             }
         });
+
+        // downside "^" BottomSheet Control Button
+        this.bind.modifySheetControlBtn.setOnClickListener(v -> {
+            BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
+            modifyTrackSheet.setState(this.isModifyTrackExpended? STATE_COLLAPSED: STATE_EXPANDED);
+        });
     }
 
     private void initModifyTrackBottomSheet() {
@@ -430,28 +493,230 @@ public class RecordingActivity extends AppCompatActivity {
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 switch (newState) {
                     case STATE_EXPANDED -> { // when BottomSheet Complete Appeared
+                        modifyTrackSheet.setDraggable(false);
+
                         bind.rootDisableLayout.bringToFront();
                         bind.rootDisableLayout.setVisibility(View.VISIBLE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(true);
+                        bind.getRoot().setNestedScrollingEnabled(false);
                         bind.getRoot().setFocusable(false);
                         bind.getRoot().setClickable(false);
                         bind.getRoot().setEnabled(false);
+                        isModifyTrackExpended = true;
+
+                        initWebView();
+                        parseCourseLocations();
+                        parsePlacemark();
                     }
 
-                    case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED -> {
+                    case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED, STATE_SETTLING -> {
                         bind.rootDisableLayout.setVisibility(View.GONE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(false);
                         bind.getRoot().setFocusable(true);
                         bind.getRoot().setClickable(true);
                         bind.getRoot().setEnabled(true);
+                        isModifyTrackExpended = false;
+
+                        // JUST FUNC TEST
+//                        exporterManager.export(exporterManager.pathToUri( "Trekking", currentTrackName), currentTrackName);
                     }
-                    case STATE_SETTLING, STATE_DRAGGING -> {}
+                    case STATE_DRAGGING -> {}
                 }
             }
 
             @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
         });
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void initWebView() {
+        WebView.setWebContentsDebuggingEnabled(true);
+
+        this.bind.modifyTrackWebview.getSettings().setAllowContentAccess(true);
+        this.bind.modifyTrackWebview.getSettings().setAllowFileAccessFromFileURLs(true);
+        this.bind.modifyTrackWebview.getSettings().setSupportZoom(true);
+
+        this.bind.modifyTrackWebview.getSettings().setJavaScriptEnabled(true);
+        this.bind.modifyTrackWebview.getSettings().setGeolocationEnabled(true);
+
+        this.bind.modifyTrackWebview.addJavascriptInterface(new ModifyTrackInterface(), "android");
+        this.bind.modifyTrackWebview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true); // javascript가 window.open()을 사용할 수 있도록 설정
+        this.bind.modifyTrackWebview.getSettings().setSupportMultipleWindows(true); // 멀티 윈도우 사용 여부
+        this.bind.modifyTrackWebview.getSettings().setDomStorageEnabled(true);
+        this.bind.modifyTrackWebview.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                super.onGeolocationPermissionsShowPrompt(origin, callback);
+                callback.invoke(origin, true, false);
+//                modifyTrackWebViewPermListener = callback;
+            }
+        });
+
+        this.bind.modifyTrackWebview.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                String dataString = parseCourseLocations().toString();
+                // 페이지 로드 시, 데이터 전달
+                view.loadUrl("javascript:window.AndroidToWeb('course', '" + dataString +"')");
+
+                dataString = parsePlacemark().toString();
+                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
+
+//                // 위치정보 요청 시, 데이터 전달
+                Location geoLocation = new Location("NONE");
+                geoLocation.setLatitude(recordManager.getLastObserveLat());
+                geoLocation.setLongitude(recordManager.getLastObserveLng());
+                view.loadUrl("javascript:window.AndroidToWeb('location test', '" + geoLocation +"')");
+            }
+        });
+        final String modifyTrackUrl = "http://cmrd-tracker.touring.city/index.html";
+        this.bind.modifyTrackWebview.loadUrl(modifyTrackUrl);
+    }
+
+    private class ModifyTrackInterface {
+        @JavascriptInterface
+        public void AndroidToWeb(final String type, final String json) {
+            // might be not used
+        }
+
+        @JavascriptInterface
+        public void WebToAndroid(final String key, final String value) {
+            if(key.contains("geolocation") && recordManager != null && bind != null) {
+                final double lat = recordManager.getLastObserveLat();
+                final double lng = recordManager.getLastObserveLng();
+
+                if(lat > 0.0f && lng > 0.0f) {
+                    try {
+                        JSONObject toSendCurrentLocationJson = new JSONObject();
+                        toSendCurrentLocationJson.put("lat", lat);
+                        toSendCurrentLocationJson.put("lng", lng);
+
+                        bind.modifyTrackWebview.loadUrl("javascript:window.AndroidToWeb('geolocation', '" + toSendCurrentLocationJson +"')");
+                        bind.modifyTrackWebview.reload();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
+    private void releaseWebView() {
+        if(this.bind != null) {
+            this.bind.modifyTrackWebview.removeJavascriptInterface("android");
+            this.bind.modifyTrackWebview.setWebViewClient(null);
+            this.bind.modifyTrackWebview.setWebChromeClient(null);
+            this.bind.modifyTrackWebview.clearCache(false);
+            this.bind.modifyTrackWebview.removeAllViews();
+            this.bind.modifyTrackWebview.destroyDrawingCache();
+            this.bind.modifyTrackWebview.destroy();
+        }
+    }
+
+    private JSONObject parseCourseLocations() {
+        JSONObject requestCourseList = new JSONObject();
+        try {
+            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
+            if(clonedCourseList.isEmpty()) return null;
+
+            requestCourseList = new JSONObject(); // Header
+            JSONArray requestCourseBody = new JSONArray(); // Body
+
+            // Header
+            requestCourseList.put("trackName", this.currentTrackName);
+            requestCourseList.put("cmrdId", this.currentTrackId);
+            requestCourseList.put("sido", this.currentTrackRegion);
+            double lat;
+            double lng;
+            int i = 0;
+
+            // Body
+            for (ItemCourseData courseData : clonedCourseList) {
+                LinkedList<LocationExtended> courseList = this.recordManager.getCourseLocationList(courseData.getTrackName(), courseData.getCourseName());
+
+                if (!courseList.isEmpty()) {
+                    try {
+                        JSONArray toSendCourseLocations = new JSONArray();
+                        JSONObject toSendCourseData = new JSONObject();
+                        toSendCourseData.put("courseName", courseData.getCourseName());
+
+                        for (LocationExtended courseLocation : courseList) {
+                            lat = courseLocation.getLatitude();
+                            lng = courseLocation.getLongitude();
+                            JSONObject courseLocationBuffer = new JSONObject();
+
+                            courseLocationBuffer.put("lat", lat);
+                            courseLocationBuffer.put("lng", lng);
+                            toSendCourseLocations.put(courseLocationBuffer);
+                        }
+                        toSendCourseData.put("courseLocations", toSendCourseLocations);
+                        requestCourseBody.put(i++, toSendCourseData);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            requestCourseList.put("data", requestCourseBody);
+            Log.d("dspark", requestCourseList.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return requestCourseList;
+    }
+
+    private JSONObject parsePlacemark() {
+        JSONObject requestPlaceMarkList = new JSONObject();
+
+        try {
+            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
+            if(clonedCourseList.isEmpty()) return null;
+
+            requestPlaceMarkList = new JSONObject(); // Header
+            JSONArray requestPlaceMarkBody = new JSONArray(); // Body
+
+            // Header
+            requestPlaceMarkList.put("trackName", this.currentTrackName);
+            requestPlaceMarkList.put("cmrdId", this.currentTrackId);
+            requestPlaceMarkList.put("sido", this.currentTrackRegion);
+            double lat;
+            double lng;
+            boolean isEnablePlaceMark;
+            int i = 0;
+
+            LinkedList<LocationExtended> placemarkList = this.recordManager.getPlaceMarkByTrackName(this.currentTrackName);
+
+            for(LocationExtended placemarkData : placemarkList) {
+                JSONObject placeMarkItem = new JSONObject();
+                isEnablePlaceMark = placemarkData.isEnable();
+                lat = placemarkData.getLatitude();
+                lng = placemarkData.getLongitude();
+                String placeMarkName = placemarkData.getName();
+                String placeMarkType = placemarkData.getType();
+
+                // this Data is not valid
+                if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
+
+                placeMarkItem.put("placeMarkName", placeMarkName);
+                placeMarkItem.put("placeMarkType", placeMarkType);
+                placeMarkItem.put("lat", lat);
+                placeMarkItem.put("lng", lng);
+                requestPlaceMarkBody.put(i++, placeMarkItem);
+            }
+            requestPlaceMarkList.put("data", requestPlaceMarkBody);
+            Log.d("dspark", requestPlaceMarkList.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return requestPlaceMarkList;
     }
 
     private void updateUI() {
@@ -518,6 +783,12 @@ public class RecordingActivity extends AppCompatActivity {
             this.toast.cancel();
             this.toast = null;
         }
+
+        if(this.exporterManager != null) {
+            this.exporterManager.release();
+            this.exporterManager = null;
+        }
+        this.releaseWebView();
 
         this.bind = null;
         EventBus.getDefault().unregister(this);

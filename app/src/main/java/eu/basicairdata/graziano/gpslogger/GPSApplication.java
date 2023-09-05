@@ -269,12 +269,9 @@ public class GPSApplication extends Application implements LocationListener {
     // It is used when the GPS provider is not available, to periodically check
     // if there is a new one available (for example when a Bluetooth GPS antenna is connected)
     private final Handler enableLocationUpdatesHandler = new Handler();
-    private final Runnable enableLocationUpdatesRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setGPSLocationUpdates(false);
-            setGPSLocationUpdates(true);
-        }
+    private final Runnable enableLocationUpdatesRunnable = () -> {
+        setGPSLocationUpdates(false);
+        setGPSLocationUpdates(true);
     };
 
     // The Handler that sets the GPS Status to GPS_TEMPORARYUNAVAILABLE
@@ -384,24 +381,13 @@ public class GPSApplication extends Application implements LocationListener {
         private GnssStatus.Callback mGnssStatusListener;
 
         public MyGPSStatus() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                mGnssStatusListener = new GnssStatus.Callback() {
-                    @Override
-                    public void onSatelliteStatusChanged(@NonNull GnssStatus status) {
-                        super.onSatelliteStatusChanged (status);
-                        updateGNSSStatus(status);
-                    }
-                };
-            } else {
-                gpsStatusListener = new GpsStatus.Listener() {
-                    @Override
-                    public void onGpsStatusChanged(int event) {
-                        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-                            updateGPSStatus();
-                        }
-                    }
-                };
-            }
+            mGnssStatusListener = new GnssStatus.Callback() {
+                @Override
+                public void onSatelliteStatusChanged(@NonNull GnssStatus status) {
+                    super.onSatelliteStatusChanged(status);
+                    updateGNSSStatus(status);
+                }
+            };
         }
 
         /**
@@ -409,8 +395,7 @@ public class GPSApplication extends Application implements LocationListener {
          */
         public void enable() {
             if (ContextCompat.checkSelfPermission(GPSApplication.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) locationManager.registerGnssStatusCallback(mGnssStatusListener);
-                else locationManager.addGpsStatusListener(gpsStatusListener);
+                locationManager.registerGnssStatusCallback(mGnssStatusListener);
             }
         }
 
@@ -419,8 +404,7 @@ public class GPSApplication extends Application implements LocationListener {
          */
         public void disable() {
             if (ContextCompat.checkSelfPermission(GPSApplication.getInstance(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) locationManager.unregisterGnssStatusCallback(mGnssStatusListener);
-                else locationManager.removeGpsStatusListener(gpsStatusListener);
+                locationManager.unregisterGnssStatusCallback(mGnssStatusListener);
             }
         }
     }
@@ -1379,7 +1363,7 @@ public class GPSApplication extends Application implements LocationListener {
 
             } catch (IllegalArgumentException e) {
                 gpsStatus = GPS_OUTOFSERVICE;
-                enableLocationUpdatesHandler.postDelayed(enableLocationUpdatesRunnable, 1000);  // Starts the switch-off handler (delayed by HandlerTimer)
+                enableLocationUpdatesHandler.postDelayed(enableLocationUpdatesRunnable, 1000L);  // Starts the switch-off handler (delayed by HandlerTimer)
                 Log.w("myApp", "[#] GPSApplication.java - unable to set GPSLocationUpdates: GPS_PROVIDER not available");
             }
 
@@ -1390,7 +1374,7 @@ public class GPSApplication extends Application implements LocationListener {
                 Log.w("myApp", "[#] GPSApplication.java - setGPSLocationUpdates = true");
                 if (prefGPSupdatefrequency >= 1000)
                     numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / prefGPSupdatefrequency);
-                else numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / 1000);
+                else numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / 1000.0f);
             }
         }
     }
@@ -1407,7 +1391,7 @@ public class GPSApplication extends Application implements LocationListener {
             gpsStatusListener.disable();
             locationManager.removeUpdates(this);
             if (prefGPSupdatefrequency >= 1000) numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / prefGPSupdatefrequency);
-            else numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / 1000);
+            else numberOfStabilizationSamples = (int) Math.ceil(STABILIZER_TIME / 1000.0f);
             gpsStatusListener.enable();
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, prefGPSupdatefrequency, 0, this);
         }
@@ -1444,7 +1428,6 @@ public class GPSApplication extends Application implements LocationListener {
     /**
      * Updates the GPS Status for new Androids (Build.VERSION_CODES >= N).
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void updateGNSSStatus(android.location.GnssStatus status) {
         try {
             if ((locationManager != null) && (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
@@ -1667,6 +1650,33 @@ public class GPSApplication extends Application implements LocationListener {
         this.jobType = jobType;
     }
 
+    public void toExportLoadJob(int jobType, @NonNull final String currentTrackName/*, @NonNull final String currentCourseName*/) {
+        exportingTaskList.clear();
+
+        synchronized(arrayListTracks) {
+            for (Track t : arrayListTracks) {
+                if (t.isSelected()) {
+                    t.setSelected(false);
+                }
+            }
+        }
+
+        synchronized(arrayListTracks) {
+            for (Track t : arrayListTracks) {
+                if (/*t.getDescription().equals(currentCourseName) && */t.getName().equals(currentTrackName)) {
+                    ExportingTask et = new ExportingTask();
+                    et.setId(t.getId());
+                    et.setName(getFileName(t));
+                    et.setNumberOfPoints_Total(t.getNumberOfLocations() + t.getNumberOfPlacemarks());
+                    et.setNumberOfPoints_Processed(0);
+                    exportingTaskList.add(et);
+                }
+            }
+        }
+        jobsPending = exportingTaskList.size();
+        this.jobType = jobType;
+    }
+
     /**
      * Executes a Job.
      * A Job is an operation to do with a set of Tracks.
@@ -1683,12 +1693,12 @@ public class GPSApplication extends Application implements LocationListener {
                 case JOB_TYPE_NONE: break;
 
                 case JOB_TYPE_DELETE:
-                    String s = TASK_DELETETRACKS;
+                    StringBuilder s = new StringBuilder(TASK_DELETETRACKS);
                     for (ExportingTask et : exportingTaskList) {
-                        s = s + " " + et.getId();
+                        s.append(" ").append(et.getId());
                     }
                     AsyncTODO ast = new AsyncTODO();
-                    ast.taskType = s;
+                    ast.taskType = s.toString();
                     ast.location = null;
                     asyncTODOQueue.add(ast);
                     break;
@@ -1743,6 +1753,10 @@ public class GPSApplication extends Application implements LocationListener {
         return Bitmap.createBitmap(defaultWidth, defaultHeight, Bitmap.Config.ARGB_8888);
     }
 
+
+    public void setExportFolderPath(@NonNull final Uri path) {
+
+    }
 
     public boolean isExportFolderWritable() {
         Uri uri = Uri.parse(prefExportFolder);

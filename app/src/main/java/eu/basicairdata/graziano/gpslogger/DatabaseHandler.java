@@ -26,6 +26,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.icu.lang.UProperty;
 import android.location.Location;
 import android.util.Log;
 
@@ -1312,6 +1313,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
+    public void updatePlacemarkPosition(@NonNull final String trackName, @NonNull final String placeMarkName, @NonNull final String placeMarkType, double lat, double lng) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues updateValues = new ContentValues();
+        updateValues.put(KEY_LOCATION_LATITUDE, lat);
+        updateValues.put(KEY_LOCATION_LONGITUDE, lng);
+
+        try {
+            db.beginTransaction();
+            db.update(TABLE_PLACEMARKS, updateValues, KEY_PLACEMARK_ROOT_TRACK + " LIKE ? AND " + KEY_PLACEMARK_NAME + " LIKE ? AND " + KEY_PLACEMARK_TYPE + " LIKE = ?", new String[] { trackName, placeMarkName, placeMarkType });
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
 
     /**
      * Adds a new track to the Database.
@@ -1661,6 +1677,89 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return track;
     }
 
+    public List<Track> getTrackList(@NonNull final String trackName, @NonNull final String courseName) {
+        final List<Track> trackList = new ArrayList<>();
+
+        final String selectQuery = "SELECT  * FROM " + TABLE_TRACKS + " WHERE "
+                + KEY_TRACK_NAME + " LIKE ? AND "
+                + KEY_TRACK_DESCRIPTION + " LIKE ? "
+                + " ORDER BY " + KEY_ID + " DESC";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { trackName, courseName });
+
+        if (cursor != null) {
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    Track trk = new Track();
+                    trk.fromDB(cursor.getLong(0),
+                            cursor.getString(1),
+                            cursor.getString(2),
+                            cursor.getString(3),
+
+                            cursor.getDouble(4),
+                            cursor.getDouble(5),
+                            cursor.getDouble(6),
+                            cursor.getFloat(7),
+                            cursor.getFloat(8),
+                            cursor.getLong(9),
+
+                            cursor.getLong(10),
+
+                            cursor.getDouble(11),
+                            cursor.getDouble(12),
+                            cursor.getDouble(13),
+                            cursor.getFloat(14),
+                            cursor.getFloat(15),
+                            cursor.getLong(16),
+
+                            cursor.getDouble(17),
+                            cursor.getDouble(18),
+                            cursor.getFloat(19),
+
+                            cursor.getDouble(20),
+                            cursor.getFloat(21),
+
+                            cursor.getDouble(22),
+                            cursor.getDouble(23),
+                            cursor.getDouble(24),
+                            cursor.getDouble(25),
+
+                            cursor.getLong(26),
+                            cursor.getLong(27),
+
+                            cursor.getFloat(28),
+                            cursor.getFloat(29),
+                            cursor.getLong(30),
+
+                            cursor.getDouble(31),
+                            cursor.getDouble(32),
+                            cursor.getDouble(33),
+
+                            cursor.getFloat(34),
+                            cursor.getFloat(35),
+                            cursor.getFloat(36),
+
+                            cursor.getLong(37),
+                            cursor.getLong(38),
+
+                            cursor.getInt(39),
+                            cursor.getInt(40),
+                            cursor.getString(41),
+                            cursor.getString(42),
+                            cursor.getString(43),
+                            cursor.getLong(44));
+                    trackList.add(trk);             // Add Track to list
+
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        return trackList;
+    }
+
     public List<Track> getTrackListByName(@NonNull final String trackName) {
         final List<Track> trackList = new ArrayList<>();
 //        final String convertTrackName = "\"" + trackName + "\"";
@@ -1827,9 +1926,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
         return trackList;
     }
-
-
-
 
     public void CorrectGPSWeekRollover() {
         String CorrectLocationsQuery = "UPDATE " + TABLE_LOCATIONS + " SET " + KEY_LOCATION_TIME + " = " + KEY_LOCATION_TIME + " + 619315200000 WHERE "

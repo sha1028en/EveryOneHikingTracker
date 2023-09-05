@@ -155,8 +155,13 @@ public class TrackRecordManager {
 
                 LocationExtended lastObserveLocation = this.gpsApp.getCurrentLocationExtended();
                 if(lastObserveLocation != null) {
-                    this.lastObserveLat = lastObserveLocation.getLatitude();
-                    this.lastObserveLng = lastObserveLocation.getLongitude();
+                    final double observeLat = lastObserveLocation.getLatitude();
+                    final double observeLng = lastObserveLocation.getLongitude();
+
+                    if(observeLat > 0.0f && observeLng > 0.0f) {
+                        this.lastObserveLat = observeLat;
+                        this.lastObserveLng = observeLng;
+                    }
                     lastObserveLocation = null; // GC!
                 }
             }
@@ -305,6 +310,22 @@ public class TrackRecordManager {
         LinkedList<Track> courseList = new LinkedList<>();
         if(this.gpsApp != null) {
             courseList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
+        }
+        return courseList;
+    }
+
+    public LinkedList<LocationExtended> getCourseLocationList(@NonNull final String trackName, @NonNull final String courseName) {
+        LinkedList<LocationExtended> courseList = new LinkedList<>();
+        if(this.gpsApp != null) {
+            courseList = new LinkedList<>(this.gpsApp.gpsDataBase.getLocationsList(trackName, courseName));
+        }
+        return courseList;
+    }
+
+    public LinkedList<Track> getCourseList(@NonNull final String trackName, @NonNull final String courseName) {
+        LinkedList<Track> courseList = new LinkedList<>();
+        if(this.gpsApp != null) {
+            courseList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackList(trackName, courseName));
         }
         return courseList;
     }

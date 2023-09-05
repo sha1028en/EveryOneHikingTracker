@@ -44,6 +44,8 @@ class SplashActivity : AppCompatActivity() {
                 // Fill with actual results from user
                 for (i in permissions.indices) perms[permissions[i]] = grantResults[i]
                 // Check for permissions
+
+
                 if (perms.containsKey(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED) {
                         Log.w("myApp", "[#] SplashActivity.java - ACCESS_FINE_LOCATION = PERMISSION_GRANTED; setGPSLocationUpdates!")

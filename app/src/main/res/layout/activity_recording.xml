@@ -171,9 +171,9 @@
     <LinearLayout
         android:id="@+id/modify_track_root"
         android:layout_width="match_parent"
-        android:layout_height="700dp"
+        android:layout_height="600dp"
         android:orientation="vertical"
-        android:background="@drawable/white_round_top_border_20"
+        android:background="#ededed"
         app:behavior_hideable="false"
         app:behavior_peekHeight="70dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
@@ -182,10 +182,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="top"
             android:background="@drawable/primary_round_border_8">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
                 android:layout_weight="1"
@@ -195,6 +196,7 @@
                 android:ellipsize="marquee"/>
 
             <Button
+                android:id="@+id/modify_sheet_control_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="지도"/>
@@ -215,18 +217,18 @@
                 android:layout_height="match_parent">
             </WebView>
 
-            <TextView
-                android:id="@+id/modify_placemark_information_txt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center"
-                android:text="@string/track_about_modify_placemark"
-                android:padding="16dp"
-                android:background="@drawable/deepgray_round_border_16"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:gravity="center"/>
+<!--            <TextView-->
+<!--                android:id="@+id/modify_placemark_information_txt"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="bottom|center"-->
+<!--                android:text="@string/track_about_modify_placemark"-->
+<!--                android:padding="16dp"-->
+<!--                android:background="@drawable/deepgray_round_border_16"-->
+<!--                android:layout_marginBottom="@dimen/activity_vertical_margin"-->
+<!--                android:layout_marginStart="@dimen/activity_horizontal_margin"-->
+<!--                android:layout_marginEnd="@dimen/activity_horizontal_margin"-->
+<!--                android:gravity="center"/>-->
         </FrameLayout>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
