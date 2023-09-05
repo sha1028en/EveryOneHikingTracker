@@ -106,6 +106,8 @@ public class TrackListActivity extends AppCompatActivity {
                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd" + requestRegionParam);
                    connection = (HttpURLConnection) serverUrl.openConnection();
                    connection.setRequestProperty("Accept", "application/json");
+//                   connection.setRequestProperty("Accept", "*/*");
+                   connection.setRequestProperty("Authorization", "anwkddosksnarlf");
                    connection.setRequestMethod("GET");
                    connection.connect();
 

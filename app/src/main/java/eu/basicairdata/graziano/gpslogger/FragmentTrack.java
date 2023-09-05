@@ -22,7 +22,6 @@
 package eu.basicairdata.graziano.gpslogger;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
@@ -222,7 +221,7 @@ public class FragmentTrack extends Fragment {
             if ((track != null) && (track.getNumberOfLocations() + track.getNumberOfPlacemarks() > 0)) {
 
                 fTrackID = (track.getDescription().isEmpty() ?
-                        getString(R.string.track_id) + " " + String.valueOf(track.getId()) :
+                        getString(R.string.track_id) + " " + String.valueOf(track.getPrimaryId()) :
                         track.getDescription());
                 fTrackName = track.getName();
                 phdDuration = phdformatter.format(track.getPrefTime(),PhysicalDataFormatter.FORMAT_DURATION);

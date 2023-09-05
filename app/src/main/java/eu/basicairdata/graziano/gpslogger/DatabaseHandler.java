@@ -26,7 +26,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.icu.lang.UProperty;
 import android.location.Location;
 import android.util.Log;
 
@@ -391,7 +390,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         try {
             db.beginTransaction();
-            db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getId()) });    // Update the corresponding Track
+            db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getPrimaryId()) });    // Update the corresponding Track
             db.setTransactionSuccessful();
 
         } finally {
@@ -430,7 +429,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Location loc = location.getLocation();
 
         ContentValues locvalues = new ContentValues();
-        locvalues.put(KEY_TRACK_ID, track.getId());
+        locvalues.put(KEY_TRACK_ID, track.getPrimaryId());
         locvalues.put(KEY_LOCATION_NUMBER, track.getNumberOfLocations());
         locvalues.put(KEY_LOCATION_LATITUDE, loc.getLatitude());
         locvalues.put(KEY_LOCATION_LONGITUDE, loc.getLongitude());
@@ -509,7 +508,118 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.beginTransaction();
             db.insert(TABLE_LOCATIONS, null, locvalues);              // Insert the new Location
             db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?",
-                    new String[] { String.valueOf(track.getId()) });               // Update the corresponding Track
+                    new String[] { String.valueOf(track.getPrimaryId()) });               // Update the corresponding Track
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+
+    public void updatePlacemark(final int placemarkId, final double lat, final double lng) {
+        if(placemarkId < 0 || lat <= 0.0f || lng <= 0.0f) return;
+        ContentValues locvalues = new ContentValues();
+        locvalues.put(KEY_LOCATION_LATITUDE, lat);
+        locvalues.put(KEY_LOCATION_LONGITUDE, lng);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        try { // UPDATE
+            db.beginTransaction();
+            db.update(TABLE_PLACEMARKS, locvalues, KEY_ID + " = ?", new String[] { String.valueOf(placemarkId) } );
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+
+    public void updatePlacemarkToTrack(final int placeamrkId, @NonNull LocationExtended placemark, @NonNull final Track track) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Location loc = placemark.getLocation();
+
+        ContentValues locvalues = new ContentValues();
+        locvalues.put(KEY_TRACK_ID, track.getPrimaryId());
+        locvalues.put(KEY_LOCATION_NUMBER, track.getNumberOfPlacemarks());
+        locvalues.put(KEY_LOCATION_LATITUDE, loc.getLatitude());
+        locvalues.put(KEY_LOCATION_LONGITUDE, loc.getLongitude());
+        locvalues.put(KEY_LOCATION_ALTITUDE, loc.hasAltitude() ? loc.getAltitude() : NOT_AVAILABLE);
+        locvalues.put(KEY_LOCATION_SPEED, loc.hasSpeed() ? loc.getSpeed() : NOT_AVAILABLE);
+        locvalues.put(KEY_LOCATION_ACCURACY, loc.hasAccuracy() ? loc.getAccuracy() : NOT_AVAILABLE);
+        locvalues.put(KEY_LOCATION_BEARING, loc.hasBearing() ? loc.getBearing() : NOT_AVAILABLE);
+        locvalues.put(KEY_LOCATION_TIME, loc.getTime());
+        locvalues.put(KEY_LOCATION_NUMBEROFSATELLITES, placemark.getNumberOfSatellites());
+        locvalues.put(KEY_LOCATION_TYPE, LOCATION_TYPE_PLACEMARK);
+        locvalues.put(KEY_PLACEMARK_TYPE, placemark.getType());
+        locvalues.put(KEY_LOCATION_NUMBEROFSATELLITESUSEDINFIX, placemark.getNumberOfSatellitesUsedInFix());
+        locvalues.put(KEY_PLACEMARK_ROOT_TRACK, placemark.getTrackName());
+        locvalues.put(KEY_PLACEMARK_NAME, placemark.getName());
+        locvalues.put(KEY_PLACEMARK_ENABLED, placemark.isEnable());
+
+        ContentValues trkvalues = new ContentValues();
+        trkvalues.put(KEY_TRACK_NAME, track.getName());
+        trkvalues.put(KEY_TRACK_FROM, "");
+        trkvalues.put(KEY_TRACK_TO, "");
+
+        trkvalues.put(KEY_TRACK_START_LATITUDE, track.getLatitudeStart());
+        trkvalues.put(KEY_TRACK_START_LONGITUDE, track.getLongitudeStart());
+        trkvalues.put(KEY_TRACK_START_ALTITUDE, track.getAltitudeStart());
+        trkvalues.put(KEY_TRACK_START_ACCURACY, track.getAccuracyStart());
+        trkvalues.put(KEY_TRACK_START_SPEED, track.getSpeedStart());
+        trkvalues.put(KEY_TRACK_START_TIME, track.getTimeStart());
+
+        trkvalues.put(KEY_TRACK_LASTFIX_TIME, track.getTimeLastFix());
+
+        trkvalues.put(KEY_TRACK_END_LATITUDE, track.getLatitudeEnd());
+        trkvalues.put(KEY_TRACK_END_LONGITUDE, track.getLongitudeEnd());
+        trkvalues.put(KEY_TRACK_END_ALTITUDE, track.getAltitudeEnd());
+        trkvalues.put(KEY_TRACK_END_ACCURACY, track.getAccuracyEnd());
+        trkvalues.put(KEY_TRACK_END_SPEED, track.getSpeedEnd());
+        trkvalues.put(KEY_TRACK_END_TIME, track.getTimeEnd());
+
+        trkvalues.put(KEY_TRACK_LASTSTEPDST_LATITUDE, track.getLatitudeLastStepDistance());
+        trkvalues.put(KEY_TRACK_LASTSTEPDST_LONGITUDE, track.getLongitudeLastStepDistance());
+        trkvalues.put(KEY_TRACK_LASTSTEPDST_ACCURACY, track.getAccuracyLastStepDistance());
+
+        trkvalues.put(KEY_TRACK_LASTSTEPALT_ALTITUDE, track.getAltitudeLastStepAltitude());
+        trkvalues.put(KEY_TRACK_LASTSTEPALT_ACCURACY, track.getAccuracyLastStepAltitude());
+
+        trkvalues.put(KEY_TRACK_MIN_LATITUDE, track.getLatitudeMin());
+        trkvalues.put(KEY_TRACK_MIN_LONGITUDE, track.getLongitudeMin());
+
+        trkvalues.put(KEY_TRACK_MAX_LATITUDE, track.getLatitudeMax());
+        trkvalues.put(KEY_TRACK_MAX_LONGITUDE, track.getLongitudeMax());
+
+        trkvalues.put(KEY_TRACK_DURATION, track.getDuration());
+        trkvalues.put(KEY_TRACK_DURATION_MOVING, track.getDurationMoving());
+
+        trkvalues.put(KEY_TRACK_DISTANCE, track.getDistance());
+        trkvalues.put(KEY_TRACK_DISTANCE_INPROGRESS, track.getDistanceInProgress());
+        trkvalues.put(KEY_TRACK_DISTANCE_LASTALTITUDE, track.getDistanceLastAltitude());
+
+        trkvalues.put(KEY_TRACK_ALTITUDE_UP, track.getAltitudeUp());
+        trkvalues.put(KEY_TRACK_ALTITUDE_DOWN, track.getAltitudeDown());
+        trkvalues.put(KEY_TRACK_ALTITUDE_INPROGRESS, track.getAltitudeInProgress());
+
+        trkvalues.put(KEY_TRACK_SPEED_MAX, track.getSpeedMax());
+        trkvalues.put(KEY_TRACK_SPEED_AVERAGE, track.getSpeedAverage());
+        trkvalues.put(KEY_TRACK_SPEED_AVERAGEMOVING, track.getSpeedAverageMoving());
+
+        trkvalues.put(KEY_TRACK_NUMBEROFLOCATIONS, track.getNumberOfLocations());
+        trkvalues.put(KEY_TRACK_NUMBEROFPLACEMARKS, track.getNumberOfPlacemarks());
+        trkvalues.put(KEY_TRACK_TYPE, track.getType());
+
+        trkvalues.put(KEY_TRACK_VALIDMAP, track.getValidMap());
+        trkvalues.put(KEY_TRACK_DESCRIPTION, track.getDescription());
+        trkvalues.put(KEY_TRACK_REGION_TYPE, track.getTrackRegion());
+        trkvalues.put(KEY_TRACK_ID, track.getTrackId());
+
+        try { // UPDATE
+            db.beginTransaction();
+            db.update(TABLE_PLACEMARKS, locvalues, KEY_ID + " = ?", new String[] { String.valueOf(placeamrkId) } );
+            db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getPrimaryId()) });            // Update the corresponding Track
             db.setTransactionSuccessful();
 
         } finally {
@@ -530,7 +640,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Location loc = placemark.getLocation();
 
         ContentValues locvalues = new ContentValues();
-        locvalues.put(KEY_TRACK_ID, track.getId());
+        locvalues.put(KEY_TRACK_ID, track.getPrimaryId());
         locvalues.put(KEY_LOCATION_NUMBER, track.getNumberOfPlacemarks());
         locvalues.put(KEY_LOCATION_LATITUDE, loc.getLatitude());
         locvalues.put(KEY_LOCATION_LONGITUDE, loc.getLongitude());
@@ -625,7 +735,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                                     KEY_PLACEMARK_TYPE + " LIKE ? AND " +
                                     KEY_PLACEMARK_NAME + " LIKE ?",
                             new String[] { placemark.getTrackName(), placemark.getType(), placemark.getName() } );
-                    db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getId()) });            // Update the corresponding Track
+                    db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getPrimaryId()) });            // Update the corresponding Track
                     db.setTransactionSuccessful();
 
                 } finally {
@@ -636,7 +746,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 try { // INSERT
                     db.beginTransaction();
                     db.insert(TABLE_PLACEMARKS, null, locvalues);         // Insert the new Placemark
-                    db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getId()) });            // Update the corresponding Track
+                    db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getPrimaryId()) });            // Update the corresponding Track
                     db.setTransactionSuccessful();
 
                 } finally {
@@ -649,7 +759,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             try { // INSERT
                 db.beginTransaction();
                 db.insert(TABLE_PLACEMARKS, null, locvalues);         // Insert the new Placemark
-                db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getId()) });            // Update the corresponding Track
+                db.update(TABLE_TRACKS, trkvalues, KEY_ID + " = ?", new String[] { String.valueOf(track.getPrimaryId()) });            // Update the corresponding Track
                 db.setTransactionSuccessful();
 
             } finally {
@@ -657,61 +767,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             }
         }
     }
-
-
-    // NOT USED, Commented out
-    // Get single Location
-//    public LocationExtended getLocation(long id) {
-//        SQLiteDatabase db = this.getWritableDatabase();
-//        LocationExtended extdloc = null;
-//        double lcdata_double;
-//        float lcdata_float;
-//
-//        Cursor cursor = db.query(TABLE_LOCATIONS, new String[] {KEY_ID,
-//                        KEY_LOCATION_LATITUDE,
-//                        KEY_LOCATION_LONGITUDE,
-//                        KEY_LOCATION_ALTITUDE,
-//                        KEY_LOCATION_SPEED,
-//                        KEY_LOCATION_ACCURACY,
-//                        KEY_LOCATION_BEARING,
-//                        KEY_LOCATION_TIME,
-//                        KEY_LOCATION_NUMBEROFSATELLITES,
-//                        KEY_LOCATION_NUMBEROFSATELLITESUSEDINFIX}, KEY_ID + "=?",
-//                new String[] { String.valueOf(id) }, null, null, null, null);
-//        if (cursor != null) {
-//            cursor.moveToFirst();
-//
-//            Location lc = new Location("DB");
-//            lc.setLatitude(cursor.getDouble(1));
-//            lc.setLongitude(cursor.getDouble(2));
-//
-//            lcdata_double = cursor.getDouble(3);
-//            if (lcdata_double != NOT_AVAILABLE) lc.setAltitude(lcdata_double);
-//            //else lc.removeAltitude();
-//
-//            lcdata_float = cursor.getFloat(4);
-//            if (lcdata_float != NOT_AVAILABLE) lc.setSpeed(lcdata_float);
-//            //else lc.removeSpeed();
-//
-//            lcdata_float = cursor.getFloat(5);
-//            if (lcdata_float != NOT_AVAILABLE) lc.setAccuracy(lcdata_float);
-//            //else lc.removeAccuracy();
-//
-//            lcdata_float = cursor.getFloat(6);
-//            if (lcdata_float != NOT_AVAILABLE) lc.setBearing(lcdata_float);
-//            //else lc.removeBearing();
-//
-//            lc.setTime(cursor.getLong(7));
-//
-//
-//            extdloc = new LocationExtended(lc);
-//            extdloc.setNumberOfSatellites(cursor.getInt(8));
-//            extdloc.setNumberOfSatellitesUsedInFix(cursor.getInt(9));
-//
-//            cursor.close();
-//        }
-//        return extdloc != null ? extdloc : null;
-//    }
 
 
     /**
@@ -995,6 +1050,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     lc.setTime(cursor.getLong(9));
 
                     LocationExtended extdloc = new LocationExtended(lc);
+                    extdloc.setPrimaryId(cursor.getInt(0));
                     extdloc.setNumberOfSatellites(cursor.getInt(10));
                     extdloc.setNumberOfSatellitesUsedInFix(cursor.getInt(13));
                     extdloc.setType(cursor.getString(12));
@@ -1048,6 +1104,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     lc.setTime(cursor.getLong(9));
 
                     LocationExtended extdloc = new LocationExtended(lc);
+                    extdloc.setPrimaryId(cursor.getInt(0));
                     extdloc.setNumberOfSatellites(cursor.getInt(10));
                     extdloc.setNumberOfSatellitesUsedInFix(cursor.getInt(13));
                     extdloc.setType(cursor.getString(12));
@@ -1102,6 +1159,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     lc.setTime(cursor.getLong(9));
 
                     LocationExtended extdloc = new LocationExtended(lc);
+                    extdloc.setPrimaryId(cursor.getInt(0));
                     extdloc.setNumberOfSatellites(cursor.getInt(10));
                     extdloc.setNumberOfSatellitesUsedInFix(cursor.getInt(13));
                     extdloc.setType(cursor.getString(12));

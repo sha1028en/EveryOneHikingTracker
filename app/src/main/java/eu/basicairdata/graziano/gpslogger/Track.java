@@ -28,8 +28,6 @@ import java.util.Locale;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
-import eu.basicairdata.graziano.gpslogger.management.TrackRegionType;
-
 
 /**
  * Describes and manages a Track.
@@ -75,7 +73,7 @@ public class Track {
     };
 
     // Variables
-    private long    id;                                             // Saved in DB
+    private long    primaryId;                                             // Saved in DB
     private long    trackId;                                        // Saved in DB
     private String  name                        = "";               // Saved in DB
     private String  description                 = "";               // Saved in DB
@@ -384,7 +382,7 @@ public class Track {
                        double altitudeInProgress, float speedMax, float speedAverage,
                        float speedAverageMoving, long numberOfLocations, long numberOfPlacemarks,
                        int validMap, int type, String description, String courseType, String trackRegion, long trackId) {
-        this.id = id;
+        this.primaryId = id;
         this.trackId = trackId;
         this.name = name;
         this.description = description;
@@ -452,12 +450,12 @@ public class Track {
 
     // ------------------------------------------------------------------------ Getters and Setters
 
-    public long getId() {
-        return id;
+    public long getPrimaryId() {
+        return primaryId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setPrimaryId(long primaryId) {
+        this.primaryId = primaryId;
     }
 
     public long getTrackId() {

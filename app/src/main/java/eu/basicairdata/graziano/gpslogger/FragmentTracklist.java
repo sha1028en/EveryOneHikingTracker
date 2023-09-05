@@ -133,7 +133,7 @@ public class FragmentTracklist extends Fragment {
             case EventBusMSG.TRACKLIST_SELECT, EventBusMSG.TRACKLIST_DESELECT -> {
                 synchronized (data) {
                     do {
-                        if (data.get(i).getId() == msg.trackID) {
+                        if (data.get(i).getPrimaryId() == msg.trackID) {
                             found = true;
                             data.get(i).setSelected(msg.eventBusMSG == EventBusMSG.TRACKLIST_SELECT);
                         }
@@ -146,11 +146,11 @@ public class FragmentTracklist extends Fragment {
                 if (GPSApplication.getInstance().getLastClickId() != NOT_AVAILABLE) {
                     synchronized (data) {
                         do {
-                            if (data.get(i).getId() == GPSApplication.getInstance().getLastClickId()) {
+                            if (data.get(i).getPrimaryId() == GPSApplication.getInstance().getLastClickId()) {
                                 data.get(i).setSelected(GPSApplication.getInstance().getLastClickState());
                                 found = !found;
                             }
-                            if (data.get(i).getId() == msg.trackID) {
+                            if (data.get(i).getPrimaryId() == msg.trackID) {
                                 data.get(i).setSelected(GPSApplication.getInstance().getLastClickState());
                                 found = !found;
                             }
@@ -177,7 +177,7 @@ public class FragmentTracklist extends Fragment {
                 final Track trk = GPSApplication.getInstance().getCurrentTrack();
 
                 synchronized (data) {
-                    if (data.get(0).getId() == trk.getId()) {
+                    if (data.get(0).getPrimaryId() == trk.getPrimaryId()) {
                         //data.set(0, trk);
                         getActivity().runOnUiThread(() -> {
                             // Update Current Track Card Statistics
@@ -440,7 +440,7 @@ public class FragmentTracklist extends Fragment {
                 if (!TI.isEmpty()) {
                     data.addAll(TI);
 
-                    if (data.get(0).getId() == GPSApplication.getInstance().getCurrentTrack().getId()) {
+                    if (data.get(0).getPrimaryId() == GPSApplication.getInstance().getCurrentTrack().getPrimaryId()) {
                         GPSApplication.getInstance().setCurrentTrackVisible(true);
                         //Log.w("myApp", "[#] FragmentTracklist.java - current track, VISIBLE into the tracklist ("
                         //    + GPSApplication.getInstance().getCurrentTrack().getId() + ")");

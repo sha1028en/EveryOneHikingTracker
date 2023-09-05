@@ -179,7 +179,6 @@ public class TrackRecordManager {
      * @param parentTrackName placemarker's parent Track Name
      */
     public void addPlaceMark(@NonNull final String placeMarkDesc, @NonNull final String parentTrackName) {
-
         // add black desc place marker <-
 //        this.gpsApp.setQuickPlacemarkRequest(true);
         if (!gpsApp.isStopButtonFlag() || this.gpsApp.getGPSStatus() != GPS_OK) {
@@ -216,6 +215,11 @@ public class TrackRecordManager {
         this.gpsApp.setPlacemarkEnable(isEnablePlaceMark);
         this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkRequested(true);
+    }
+
+    public void updatePlaceMark(final int placeMarkId, final double lat, final double lng) {
+        if(this.gpsApp == null || lat <= 0.0f || lng <= 0.0f ) return;
+        this.gpsApp.gpsDataBase.updatePlacemark(placeMarkId, lat, lng);
     }
 
     /**

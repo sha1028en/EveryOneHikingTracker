@@ -76,12 +76,19 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         }
     }
 
+    /**
+     * replace CourseItem when it found has same trackName, courseName item, replace that
+     *
+     * @param toReplaceItem to Replace Item
+     * @return is list has changed???
+     */
     public boolean replaceCourseItem(@NonNull final ItemCourseData toReplaceItem) {
         boolean hasFound = false;
 
         if(this.courseList != null) {
             int index = 0;
             for(ItemCourseData buffer : this.courseList) {
+                // is it has same TrackName, CourseName?
                 if(buffer.getTrackName().equals(toReplaceItem.getTrackName()) && buffer.getCourseName().equals(toReplaceItem.getCourseName())) {
                     hasFound = true;
                     break;
@@ -89,7 +96,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                 ++index;
             }
 
-            if(hasFound) {
+            if(hasFound) { // replace list
                 this.courseList.set(index, toReplaceItem);
                 this.notifyItemChanged(index);
             }

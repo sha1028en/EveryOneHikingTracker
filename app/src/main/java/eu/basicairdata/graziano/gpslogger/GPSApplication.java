@@ -1499,7 +1499,7 @@ public class GPSApplication extends Application implements LocationListener {
                 // Save Selections
                 ArrayList <Long> SelectedT = new ArrayList<>();
                 for (Track T : arrayListTracks) {
-                    if (T.isSelected()) SelectedT.add(T.getId());
+                    if (T.isSelected()) SelectedT.add(T.getPrimaryId());
                 }
 
                 // Update the List
@@ -1512,7 +1512,7 @@ public class GPSApplication extends Application implements LocationListener {
                 }
 
                 if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
-                    Log.w("myApp", "[#] GPSApplication.java - Update Tracklist: current track (" + currentTrack.getId() + ") visible into the tracklist");
+                    Log.w("myApp", "[#] GPSApplication.java - Update Tracklist: current track (" + currentTrack.getPrimaryId() + ") visible into the tracklist");
                     arrayListTracks.add(0, currentTrack);
 
                 } else Log.w("myApp", "[#] GPSApplication.java - Update Tracklist: current track not visible into the tracklist");
@@ -1520,7 +1520,7 @@ public class GPSApplication extends Application implements LocationListener {
                 // Restore the selection state
                 for (Track T : arrayListTracks) {
                     for (Long SelT : SelectedT) {
-                        if (SelT == T.getId()) {
+                        if (SelT == T.getPrimaryId()) {
                             T.setSelected(true);
                             break;
                         }
@@ -1572,7 +1572,7 @@ public class GPSApplication extends Application implements LocationListener {
             for (Track T : arrayListTracks) {
                 if (T.isSelected()) {
                     T.setSelected(false);
-                    EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACKLIST_DESELECT, T.getId()));
+                    EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACKLIST_DESELECT, T.getPrimaryId()));
                 }
             }
         }
@@ -1638,7 +1638,7 @@ public class GPSApplication extends Application implements LocationListener {
             for (Track t : arrayListTracks) {
                 if (t.isSelected()) {
                     ExportingTask et = new ExportingTask();
-                    et.setId(t.getId());
+                    et.setId(t.getPrimaryId());
                     et.setName(getFileName(t));
                     et.setNumberOfPoints_Total(t.getNumberOfLocations() + t.getNumberOfPlacemarks());
                     et.setNumberOfPoints_Processed(0);
@@ -1665,7 +1665,7 @@ public class GPSApplication extends Application implements LocationListener {
             for (Track t : arrayListTracks) {
                 if (/*t.getDescription().equals(currentCourseName) && */t.getName().equals(currentTrackName)) {
                     ExportingTask et = new ExportingTask();
-                    et.setId(t.getId());
+                    et.setId(t.getPrimaryId());
                     et.setName(getFileName(t));
                     et.setNumberOfPoints_Total(t.getNumberOfLocations() + t.getNumberOfPlacemarks());
                     et.setNumberOfPoints_Processed(0);
@@ -2029,22 +2029,22 @@ public class GPSApplication extends Application implements LocationListener {
                 if (asyncTODO.taskType.equals(TASK_NEWTRACK)) {
                     if ((track.getNumberOfLocations() != 0) || (track.getNumberOfPlacemarks() != 0)) {
                         // ---- Delete 2 thumbs files forward - in case of user deleted DB in App manager (pngs could be already presents for the new IDS)
-                        String fname = (track.getId() + 1) +".png";
+                        String fname = (track.getPrimaryId() + 1) +".png";
                         File file = new File(getApplicationContext().getFilesDir() + "/Thumbnails/", fname);
 
                         if (file.exists ()) file.delete ();
-                        fname = (track.getId() + 2) +".png";
+                        fname = (track.getPrimaryId() + 2) +".png";
                         file = new File(getApplicationContext().getFilesDir() + "/Thumbnails/", fname);
 
                         if (file.exists ()) file.delete ();
                         track = new Track();
                         // ----
-                        track.setId(gpsDataBase.addTrack(track));
-                        Log.w("myApp", "[#] GPSApplication.java - TASK_NEWTRACK: " + track.getId());
+                        track.setPrimaryId(gpsDataBase.addTrack(track));
+                        Log.w("myApp", "[#] GPSApplication.java - TASK_NEWTRACK: " + track.getPrimaryId());
                         currentTrack = track;
                         UpdateTrackList();
 
-                    } else Log.w("myApp", "[#] GPSApplication.java - TASK_NEWTRACK: Track " + track.getId() + " already empty (New track not created)");
+                    } else Log.w("myApp", "[#] GPSApplication.java - TASK_NEWTRACK: Track " + track.getPrimaryId() + " already empty (New track not created)");
                     currentTrack = track;
                     EventBus.getDefault().post(EventBusMSG.UPDATE_TRACK);
                 }
@@ -2109,10 +2109,10 @@ public class GPSApplication extends Application implements LocationListener {
                         for (String s : tokens) {
                             Track track = null;                 // The track found in the _ArrayListTracks
                             int i = Integer.parseInt(s);
-                            if (i != currentTrack.getId()) {   // Prevent the deletion of the current track
+                            if (i != currentTrack.getPrimaryId()) {   // Prevent the deletion of the current track
                                 synchronized (arrayListTracks) {
                                     for (Track t : arrayListTracks) {
-                                        if (t.getId() == i) {
+                                        if (t.getPrimaryId() == i) {
                                             track = t;
                                             gpsDataBase.deleteTrackWithRelated(i);
                                             Log.w("myApp", "[#] GPSApplication.java - TASK_DELETE_TRACKS: Track " + i + " deleted.");
@@ -2131,7 +2131,7 @@ public class GPSApplication extends Application implements LocationListener {
                                         }
                                     }
                                     // Delete thumbnail
-                                    fileDelete(getApplicationContext().getFilesDir() + "/Thumbnails/" + track.getId() + ".png");
+                                    fileDelete(getApplicationContext().getFilesDir() + "/Thumbnails/" + track.getPrimaryId() + ".png");
 
                                     tracksDeleted++;
                                     jobProgress = Math.round(1000L * tracksDeleted / tracksToBeDeleted);
@@ -2197,7 +2197,7 @@ public class GPSApplication extends Application implements LocationListener {
             //Log.w("myApp", "[#] GPSApplication.java - Bitmap Size = " + Size);
 
             if ((track.getNumberOfLocations() > 2) && (track.getDistance() >= 15) && (track.getValidMap() != 0)) {
-                this.id = track.getId();
+                this.id = track.getPrimaryId();
                 numberOfLocations = track.getNumberOfLocations();
 
                 // Setup Paints

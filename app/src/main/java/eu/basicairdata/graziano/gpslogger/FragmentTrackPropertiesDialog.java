@@ -102,7 +102,7 @@ public class FragmentTrackPropertiesDialog extends DialogFragment {
             if (!trackToEdit.getDescription().isEmpty()) {
                 etDescription.setText(trackToEdit.getDescription());
             }
-            etDescription.setHint(GPSApplication.getInstance().getString(R.string.track_id) + " " + trackToEdit.getId());
+            etDescription.setHint(GPSApplication.getInstance().getString(R.string.track_id) + " " + trackToEdit.getPrimaryId());
         }
 
         tracktypeImageView[0] = view.findViewById(R.id.tracktype_0);

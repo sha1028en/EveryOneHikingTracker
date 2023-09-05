@@ -32,6 +32,7 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 public class LocationExtended {
     private Location location;
 
+    private int primaryId = -1; // to INSERT / QUERY
     private long trackId = -1;
     private String trackName = "";
     private String trackRegion = "";
@@ -60,6 +61,14 @@ public class LocationExtended {
 
     public Location getLocation() {
         return location;
+    }
+
+    public int getPrimaryId() {
+        return primaryId;
+    }
+
+    public void setPrimaryId(int primaryId) {
+        this.primaryId = primaryId;
     }
 
     public double getLatitude() { return location.getLatitude(); }

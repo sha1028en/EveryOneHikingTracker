@@ -84,10 +84,10 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
             if (GPSApplication.getInstance().getJobsPending() == 0) {
                 track.setSelected(!track.isSelected());
                 card.setSelected(track.isSelected());
-                GPSApplication.getInstance().setLastClickId(track.getId());
+                GPSApplication.getInstance().setLastClickId(track.getPrimaryId());
                 GPSApplication.getInstance().setLastClickState(track.isSelected());
                 //Log.w("myApp", "[#] TrackAdapter.java - " + (track.isSelected() ? "Selected" : "Deselected") + " id = " + GPSApplication.getInstance().getLastClickId());
-                EventBus.getDefault().post(new EventBusMSGNormal(track.isSelected() ? EventBusMSG.TRACKLIST_SELECT : EventBusMSG.TRACKLIST_DESELECT, track.getId()));
+                EventBus.getDefault().post(new EventBusMSGNormal(track.isSelected() ? EventBusMSG.TRACKLIST_SELECT : EventBusMSG.TRACKLIST_DESELECT, track.getPrimaryId()));
                 //Log.w("myApp", "[#] TrackAdapter.java - Selected track id = " + track.getId());
             }
         }
@@ -95,10 +95,10 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
         @Override
         public boolean onLongClick(View view) {
             if ((GPSApplication.getInstance().getJobsPending() == 0)
-                    && (GPSApplication.getInstance().getLastClickId() != track.getId())
+                    && (GPSApplication.getInstance().getLastClickId() != track.getPrimaryId())
                     && (GPSApplication.getInstance().getNumberOfSelectedTracks() > 0)) {
                 //Log.w("myApp", "[#] TrackAdapter.java - onLongClick");
-                EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACKLIST_RANGE_SELECTION, track.getId()));
+                EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACKLIST_RANGE_SELECTION, track.getPrimaryId()));
             }
             return false;
         }
@@ -190,7 +190,7 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
             imageViewPulse.setVisibility(View.INVISIBLE);
             textViewTrackName.setText(track.getName());
 
-            if (track.getDescription().isEmpty()) textViewTrackDescription.setText(GPSApplication.getInstance().getString(R.string.track_id) + " " + track.getId());
+            if (track.getDescription().isEmpty()) textViewTrackDescription.setText(GPSApplication.getInstance().getString(R.string.track_id) + " " + track.getPrimaryId());
             else textViewTrackDescription.setText(track.getDescription());
 
             if (trk.getNumberOfLocations() >= 1) {
@@ -219,14 +219,14 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
             if (tt != NOT_AVAILABLE) imageViewIcon.setImageResource(Track.ACTIVITY_DRAWABLE_RESOURCE[tt]);
             else imageViewIcon.setImageBitmap(null);
 
-            if (GPSApplication.getInstance().getCurrentTrack().getId() == track.getId()) {
+            if (GPSApplication.getInstance().getCurrentTrack().getPrimaryId() == track.getPrimaryId()) {
                 imageViewThumbnail.setImageBitmap (GPSApplication.getInstance().isRecording() ? BMP_CURRENT_TRACK_RECORDING : BMP_CURRENT_TRACK_PAUSED);
 
             } else {
                 Glide.clear(imageViewThumbnail);
                 Glide
                         .with(GPSApplication.getInstance().getApplicationContext())
-                        .load(GPSApplication.getInstance().getApplicationContext().getFilesDir().toString() + "/Thumbnails/" + track.getId() + ".png")
+                        .load(GPSApplication.getInstance().getApplicationContext().getFilesDir().toString() + "/Thumbnails/" + track.getPrimaryId() + ".png")
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
                         //.skipMemoryCache(true)
                         .error(null)

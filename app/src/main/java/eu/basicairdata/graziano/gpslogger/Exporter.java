@@ -343,7 +343,7 @@ class Exporter extends Thread {
 
         writeStream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
         writeStream.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
-        writeStream.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+        writeStream.write("<!-- Track " + track.getPrimaryId() + " = " + track.getNumberOfLocations()
                 + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine + newLine);
 
         if (track.getNumberOfLocations() > 0) {
@@ -536,7 +536,7 @@ class Exporter extends Thread {
 
                 kmlBW.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + newLine);
                 kmlBW.write("<!-- Created with BasicAirData GPS Logger for Android - ver. " + versionName + " -->" + newLine);
-                kmlBW.write("<!-- Track " + track.getId() + " = " + track.getNumberOfLocations()
+                kmlBW.write("<!-- Track " + track.getPrimaryId() + " = " + track.getNumberOfLocations()
                         + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine);
                 kmlBW.write("<kml xmlns=\"http://www.opengis.net/kml/2.2\">" + newLine);
                 kmlBW.write(" <Document>" + newLine);
@@ -1075,7 +1075,7 @@ class Exporter extends Thread {
                 txtBW.close();
             }
 
-            Log.w("myApp", "[#] Exporter.java - Track "+ track.getId() +" exported in " + (System.currentTimeMillis() - startTime) + " ms (" + elements_total + " pts @ " + ((1000L * elements_total) / (System.currentTimeMillis() - startTime)) + " pts/s)");
+            Log.w("myApp", "[#] Exporter.java - Track "+ track.getPrimaryId() +" exported in " + (System.currentTimeMillis() - startTime) + " ms (" + elements_total + " pts @ " + ((1000L * elements_total) / (System.currentTimeMillis() - startTime)) + " pts/s)");
             //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACK_EXPORTED, track.getId()));
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_SUCCESS);
 
@@ -1112,7 +1112,7 @@ class Exporter extends Thread {
 
             for (int i = 0; i <= track.getNumberOfLocations(); i += groupOfLocations) {
                 //Log.w("myApp", "[#] Exporter.java - " + (i + GroupOfLocations));
-                lList.addAll(GPSApplication.getInstance().gpsDataBase.getLocationsList(track.getId(), i, i + groupOfLocations - 1));
+                lList.addAll(GPSApplication.getInstance().gpsDataBase.getLocationsList(track.getPrimaryId(), i, i + groupOfLocations - 1));
                 if (!lList.isEmpty()) {
                     for (LocationExtended loc : lList) {
                         try {
