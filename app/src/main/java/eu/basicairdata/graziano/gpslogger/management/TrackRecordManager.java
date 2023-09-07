@@ -107,7 +107,10 @@ public class TrackRecordManager {
             this.mLocalContext = null;
         }
         EventBus.getDefault().unregister(this);
-        this.gpsApp = null;
+        if(this.gpsApp != null) {
+            this.gpsApp.stopAndUnbindGPSService();
+            this.gpsApp = null;
+        }
         this.toast = null;
     }
 
