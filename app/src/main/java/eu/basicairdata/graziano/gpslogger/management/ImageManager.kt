@@ -7,23 +7,17 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.os.Environment.DIRECTORY_DCIM
-import android.provider.ContactsContract.Directory
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.view.WindowManager
-import androidx.annotation.RequiresApi
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
-import java.lang.NumberFormatException
 import java.lang.ref.WeakReference
 import java.util.LinkedList
-import kotlin.math.ln
 
 
 /**
@@ -188,7 +182,7 @@ class ImageManager {
             val projection = arrayOf(
                 MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.TITLE)
-            val path = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).path}/$filePath"
+            val path = "${Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).path}/$filePath"
 
             val where = "${MediaStore.Images.Media.DATA} LIKE ? AND ${MediaStore.MediaColumns.TITLE} LIKE ?"
             val whereArg = arrayOf("$path%", "$fileName%")
@@ -230,7 +224,7 @@ class ImageManager {
             val projection = arrayOf(
                 MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.TITLE)
-            val path = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).path}/$filePath"
+            val path = "${Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).path}/$filePath"
 
             val where = "${MediaStore.Images.Media.DATA} LIKE ? AND ${MediaStore.MediaColumns.TITLE} LIKE ?"
             val whereArg = arrayOf("$path%", "$fileName%")
@@ -275,7 +269,7 @@ class ImageManager {
         @Throws(IllegalArgumentException::class, FileNotFoundException::class, NumberFormatException::class)
         fun loadImage(context: Context, fileName: String, filePath: String, fileSuffix: String): Bitmap {
             var image: Bitmap? = null
-            val path = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).path}/$filePath/$fileName.$fileSuffix"
+            val path = "${Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).path}/$filePath/$fileName.$fileSuffix"
             val verifyFile = File(path)
 
             if(!verifyFile.exists()) throw FileNotFoundException("can not find $fileName where $path")
@@ -385,7 +379,7 @@ class ImageManager {
         fun removeImage(context: Context, fileName: String, filePath: String, fileSuffix: String) : Boolean  {
             val isRemoved: Boolean
 
-            val path = "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).path}/$filePath/$fileName.$fileSuffix"
+            val path = "${Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).path}/$filePath/$fileName.$fileSuffix"
             val verifyFile = File(path)
 
             if(!verifyFile.exists()) throw FileNotFoundException("can not find $fileName where $path")
@@ -399,24 +393,30 @@ class ImageManager {
             return isRemoved
         }
 
-        @RequiresApi(Build.VERSION_CODES.Q)
         @Throws(IllegalArgumentException::class, IOException::class)
         fun addLocationIntoImage(image: File, lat: Double, lng: Double) {
             if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
 
-            val imageExif = ExifInterface(image)
-            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat.toString())
-            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lng.toString())
+            val imageExif = ExifInterface(image.absolutePath)
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, convert(lat))
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, convert(lng))
+
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, if (lat > 0.0f) "N" else "S")
+            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, if(lng > 0.0f) "E" else "W")
+
+            imageExif.saveAttributes()
         }
 
-        @Throws(IllegalArgumentException::class, IOException::class)
-        fun addLocation(image: File, lat: Double, lng: Double) {
-            if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
-
-            val imageExif = ExifInterface(image.absolutePath)
-            imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, lat.toString())
-            imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, lng.toString())
-            imageExif.saveAttributes()
+        // Convert latitude/longitude to exif format
+        private fun convert(coord: Double): String? {
+            var coord = coord
+            coord = Math.abs(coord)
+            val degrees = coord.toInt()
+            coord = (coord - degrees) * 60
+            val minutes = coord.toInt()
+            coord = (coord - minutes) * 60
+            val seconds = (coord * 1000).toInt()
+            return "$degrees/1,$minutes/1,$seconds/1000"
         }
 
         /** Bitmap **/
@@ -507,6 +507,19 @@ class ImageManager {
             return compressedBitmap
         }
 
+
+        fun getFileFromImageURI(context: Context, contentUri: Uri): File {
+            val localContext: WeakReference<Context> = WeakReference(context)
+
+            val cursor = localContext.get()!!.contentResolver.query(contentUri, null, null, null, null);
+            var path: String
+
+            cursor.use {
+                it!!.moveToLast()
+                path = it.getString(it.getColumnIndex("_data"))
+            }
+            return File(path);
+        }
 
         /**
          * calc to bitmap scale
