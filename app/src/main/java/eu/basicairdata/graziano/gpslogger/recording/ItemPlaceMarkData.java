@@ -6,12 +6,14 @@ import androidx.annotation.NonNull;
 
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 
 
-public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Comparable<ItemPlaceMarkData>{
+public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Comparable<ItemPlaceMarkData> {
+    private int toServerId = -1;
     private String trackName;               // this placemark's Parent Track Name
     private String placeMarkTitle;          // this placemark Name by placemark type
     private String placeMarkType;           // this placemark type ( REST, ETC... )
@@ -24,6 +26,7 @@ public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Compara
     private double placeMarkLat = 0.0f;      // this placeamrk lat
     private double placeMarkLng = 0.0f;      // this placemark lng
 
+    private LinkedList<String> placeMarkImgUrlList;
     private Bitmap placeMarkImg0 = null;    // this placemark Image
     private Bitmap placeMarkImg1 = null;    // this placemark Image
     private Bitmap placeMarkImg2 = null;    // this placemark Image
@@ -35,6 +38,15 @@ public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Compara
         this.placeMarkDesc = placeMarkDesc;
         this.isPlaceMarkEnable = isPlaceMarkEnable;
         this.isPlaceMarkHidden = false;
+        this.placeMarkImgUrlList = new LinkedList<>();
+    }
+
+    public int getToServerId() {
+        return toServerId;
+    }
+
+    public void setToServerId(int toServerId) {
+        this.toServerId = toServerId;
     }
 
     public String getTrackName() {
@@ -108,6 +120,15 @@ public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Compara
 
     public void setPlaceMarkLng(double placeMarkLng) {
         this.placeMarkLng = placeMarkLng;
+    }
+
+
+    public LinkedList<String> getPlaceMarkImgUrlList() {
+        return this.placeMarkImgUrlList;
+    }
+
+    public void setPlaceMarkImgUrl(@NonNull final LinkedList<String> placeMarkImgUrlList) {
+        this.placeMarkImgUrlList = placeMarkImgUrlList;
     }
 
     public void setPlaceMarkImg(@NonNull Bitmap img, final int index) {
@@ -216,5 +237,21 @@ public class ItemPlaceMarkData implements Comparator<ItemPlaceMarkData>, Compara
     @Override
     public int hashCode() {
         return Objects.hash(trackName, placeMarkTitle, placeMarkType, placeMarkDesc);
+    }
+
+    @Override
+    public String toString() {
+        return "ItemPlaceMarkData{" +
+                "toServerId=" + toServerId +
+                ", trackName='" + trackName + '\'' +
+                ", placeMarkTitle='" + placeMarkTitle + '\'' +
+                ", placeMarkType='" + placeMarkType + '\'' +
+                ", placeMarkDesc='" + placeMarkDesc + '\'' +
+                ", isPlaceMarkEnable=" + isPlaceMarkEnable +
+                ", isPlaceMarkHidden=" + isPlaceMarkHidden +
+                ", placeMarkLat=" + placeMarkLat +
+                ", placeMarkLng=" + placeMarkLng +
+                ", placeMarkImgUrlList=" + placeMarkImgUrlList +
+                '}';
     }
 }

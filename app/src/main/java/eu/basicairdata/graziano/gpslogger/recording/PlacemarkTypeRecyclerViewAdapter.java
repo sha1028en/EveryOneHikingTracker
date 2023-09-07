@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.Collections;
 import java.util.LinkedList;
 
@@ -73,7 +75,6 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
                 holder.setViewEnableEvent(isChecked, false);
             });
 
-            // FIXME !!!!! OVERRIDE CURRENT TITLE NAME DB...
             this.bind.placeamrkAddMore.setOnClickListener(v -> {
                 if(this.bind.placeamrkAddMore.getVisibility() != View.VISIBLE || this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
                 ItemPlaceMarkData currentItem = this.placeMarkDataList.get(holder.getBindingAdapterPosition());
@@ -85,7 +86,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
                     }
                 }
                 final String newPlacemarkParent = currentItem.getTrackName();
-                final String newPlacemarkTitle = currentItem.getPlaceMarkTitle().substring(0, currentItem.getPlaceMarkTitle().length() -2) + " " + index;
+                final String newPlacemarkTitle = currentItem.getPlaceMarkTitle().substring(0, currentItem.getPlaceMarkTitle().length() -3) + String.format(" %02d", index);
                 final String newPlacemarkType = currentItem.getPlaceMarkType();
                 final String newPlacemarkDesc = ""; // currentItem.getPlaceMarkDesc().substring(0, currentItem.getPlaceMarkDesc().length() -2) + " " + index;
                 ItemPlaceMarkData item = new ItemPlaceMarkData(newPlacemarkParent, newPlacemarkTitle, newPlacemarkType, newPlacemarkDesc, true);
@@ -140,8 +141,8 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 
         this.placeMarkDataList.add(pos, item);
         Collections.sort(this.placeMarkDataList);
-//        this.notifyDataSetChanged();
-        this.notifyItemInserted(pos);
+        this.notifyDataSetChanged();
+//        this.notifyItemInserted(pos);
     }
 
     public void updatePlaceMark(@NonNull final ItemPlaceMarkData item) {
@@ -155,7 +156,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             }
             ++index;
         }
-        this.notifyItemChanged(index);
+        this.notifyDataSetChanged();
     }
 
     private int getItemPosition(@NonNull final ItemPlaceMarkData item) {
@@ -253,9 +254,27 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
             this.bind.placemarkEnabled.setChecked(this.placeMarkData.getPlaceMarkEnable());
 //            this.bind.placemarkInformation.setText(this.placeMarkData.getPlaceMarkDesc());
 
-            if(this.placeMarkData.getPlaceMarkImg0() != null) this.bind.placemarkPic0.setImageBitmap(this.placeMarkData.getPlaceMarkImg0());
-            if(this.placeMarkData.getPlaceMarkImg1() != null) this.bind.placemarkPic1.setImageBitmap(this.placeMarkData.getPlaceMarkImg1());
-            if(this.placeMarkData.getPlaceMarkImg2() != null) this.bind.placemarkPic2.setImageBitmap(this.placeMarkData.getPlaceMarkImg2());
+
+            // NOT FAR FEATURE WILL BE CHANGE TO SET IMAGE
+            // TODO IMAGE WILL BE LOADED BY SERVER
+            if(this.placeMarkData.getPlaceMarkImg0() != null) {
+                Glide.with(this.bind.placemarkPic0)
+                        .load(this.placeMarkData.getPlaceMarkImg0())
+                        .into(this.bind.placemarkPic0);
+            }
+
+            if(this.placeMarkData.getPlaceMarkImg1() != null) {
+                Glide.with(this.bind.placemarkPic1)
+                        .load(this.placeMarkData.getPlaceMarkImg1())
+                        .into(this.bind.placemarkPic1);
+            }
+
+            if(this.placeMarkData.getPlaceMarkImg2() != null) {
+                Glide.with(this.bind.placemarkPic2)
+                        .load(this.placeMarkData.getPlaceMarkImg2())
+                        .into(this.bind.placemarkPic2);
+            }
+
             if(this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.ENTRANCE.name()) ||
                     this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.PARKING.name()) ||
                     this.placeMarkData.getPlaceMarkType().equals(PlaceMarkType.BUS_STOP.name())) {
