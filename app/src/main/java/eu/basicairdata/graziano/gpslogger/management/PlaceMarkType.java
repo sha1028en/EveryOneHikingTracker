@@ -6,7 +6,7 @@ public enum PlaceMarkType {
     ENTRANCE,
     PARKING,
     TOILET,
-    REST,
+    REST_AREA,
     BUS_STOP,
     OBSERVATION_DECK,
     ETC;
