@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording;
+package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPSED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_DRAGGING;
@@ -7,11 +7,19 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,15 +35,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.greenrobot.eventbus.EventBus;
@@ -45,10 +44,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.BuildConfig;
@@ -57,25 +54,23 @@ import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.LocationExtended;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
-import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordingBinding;
+import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordEnahnecdBinding;
 import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.management.RequestPlaceMarkManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
+import eu.basicairdata.graziano.gpslogger.recording.AddCourseNameDialog;
+import eu.basicairdata.graziano.gpslogger.recording.CourseNameRecyclerAdapter;
+import eu.basicairdata.graziano.gpslogger.recording.ItemCourseData;
 
-/**
- * @deprecated {@link eu.basicairdata.graziano.gpslogger.recording.enhanced.RecordEnhancedActivity}
- */
-public class RecordingActivity extends AppCompatActivity {
-//    private static final int REQUEST_ACTION_OPEN_DOCUMENT_TREE = 2;
-
-    private ActivityRecordingBinding bind; // this View n Layout Instance
+public class RecordEnhancedActivity extends AppCompatActivity {
+    private ActivityRecordEnahnecdBinding bind; // this View n Layout Instance
     private boolean isModifyTrackExpended = false; // id Behavior Bottom Sheet has Expended? ( state )
     private Toast toast; // using this activity's toast
 
 
-    private PlacemarkTypeRecyclerViewAdapter placeMarkListAdapter; // POI list
+    private PlaceMarkEnhancedRecyclerAdapter placeMarkListAdapter; // POI list
     private CourseNameRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
     private ActivityResultLauncher<Intent> requestCamera; // Camera
@@ -90,12 +85,12 @@ public class RecordingActivity extends AppCompatActivity {
     private long currentTrackId = -1; // this course's parent track Id;
     private String currentTrackName = ""; // this course's Parents Track Name
     private String currentTrackRegion; // this course Region
+    private int currentPoiId = -1;
     private String currentPoiType = ""; // selected POI Type
     private String currentPoiName = ""; // selected POI Name
     private boolean currentPoiEnable = true; // is POI enabled( POI's checkbox )
     private int currentPoiPosition = 0; // this poi position that selected picture
-    private ItemPlaceMarkData currentSelectedPlaceMarkItem; // selected POI's DataClass
-
+    private ItemPlaceMarkEnhancedData currentSelectedPlaceMarkItem; // selected POI's DataClass
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +98,7 @@ public class RecordingActivity extends AppCompatActivity {
         setTheme(R.style.MyMaterialTheme);
         super.onCreate(savedInstanceState);
 
-        this.bind = ActivityRecordingBinding.inflate(this.getLayoutInflater());
+        this.bind = ActivityRecordEnahnecdBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
 
         toast = new Toast(this.bind.getRoot().getContext());
@@ -131,7 +126,7 @@ public class RecordingActivity extends AppCompatActivity {
                 if (!fileName.isBlank()) {
                     try {
                         ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-                        this.requestManager.requestAddPicturePlaceMark(3, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+                        this.requestManager.requestAddPicturePlaceMark(currentPoiId, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
                             @Override
                             public void onRequestResponse(Integer response, boolean isSuccess) {
                                 Log.d("RequestPlaceMarkMgr", "success?" + isSuccess);
@@ -143,26 +138,6 @@ public class RecordingActivity extends AppCompatActivity {
                     }
                     this.recordManager.addPlaceMark(currentPoiName, currentPoiType, currentTrackRegion, currentTrackName, currentPoiEnable);
 
-                    try {
-                        LinkedList<Uri> imgUriList = ImageManager.Companion.loadImageUriList(
-                                bind.getRoot().getContext(),
-                                fileName.replaceAll(".png", ""),
-                                "Trekking/" + currentTrackName + "/" + currentPoiType + "/" + currentPoiName);
-
-                        LinkedList<Uri> imgUri = new LinkedList<>();
-                        imgUri.add(imgUriList.getLast());
-                        imgUriList.clear();
-                        imgUriList = null;
-
-                        imageLoadTask(imgUri, (compressedImg, isSuccess) -> {
-                            currentSelectedPlaceMarkItem.setPlaceMarkImg(compressedImg.get(0), currentPoiPosition);
-                            placeMarkListAdapter.updatePlaceMark(currentSelectedPlaceMarkItem);
-                        });
-
-                    } catch (IndexOutOfBoundsException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
                 } else {
                     Toast.makeText(bind.getRoot().getContext(), "사진 저장에 실패했습니다.", Toast.LENGTH_SHORT).show();
                 }
@@ -171,64 +146,16 @@ public class RecordingActivity extends AppCompatActivity {
                 ImageManager.Companion.removeLastImage(bind.getRoot().getContext(), currentPoiType);
             }
         });
+
         this.initCourseList();
-        this.initPlaceMarkList();
+        this.requestPlaceMarkList();
         this.initViewEvent();
         this.initModifyTrackBottomSheet();
         this.initWebView();
     }
 
-//    /**
-//     * Executes the local exportation into the selected folder.
-//     * For Android >= LOLLYPOP
-//     */
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-//        if (requestCode == REQUEST_ACTION_OPEN_DOCUMENT_TREE && resultCode == Activity.RESULT_OK) {
-//            // The result data contains a URI for the document or directory that
-//            // the user selected.
-//
-//            if (resultData != null) {
-//                Uri treeUri = resultData.getData();
-//                grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-//
-//
-//
-//                // Perform operations on the document using its URI.
-//            }
-//        }
-//        super.onActivityResult(resultCode, resultCode, resultData);
-//    }
-
     private void initCourseList(/*ItemPlaceMarkData toRequestPlaceMarkType*/) {
         if(this.recordManager == null || this.bind == null) return;
-        this.requestManager.requestPlaceMarkList((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
-            @Override
-            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
-                if(isSuccess) {
-                    for (ItemPlaceMarkData item : response) {
-                        Log.d("RequestPlaceMarkMgr", item.toString());
-                    }
-                }
-
-                // if never
-                if(response.isEmpty()) {
-                    RecordingActivity.this.runOnUiThread(() -> {
-                        LinkedList<PlaceMarkType> requestEmptyPoiList = new LinkedList<>(Arrays.asList(PlaceMarkType.values()));
-                        requestManager.requestAddEmptyPlaceMarkList((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
-                            @Override
-                            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
-                                if (isSuccess) {
-                                    for (ItemPlaceMarkData item : response) {
-                                        Log.d("RequestPlaceMarkMgr", "response placemark id : " + item.toString());
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }
-            }
-        });
 
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
         if(rawCourseList.isEmpty()) {
@@ -262,91 +189,142 @@ public class RecordingActivity extends AppCompatActivity {
         }
     }
 
-    private void initPlaceMarkList() {
+    private void requestPlaceMarkList() {
         if(this.bind == null || this.recordManager == null) return;
 
         // init Placemark List
         LinearLayoutManager placeMarkLayoutManager = new LinearLayoutManager(this);
         this.bind.modifyPlacemarkTypeList.setLayoutManager(placeMarkLayoutManager);
-        this.placeMarkListAdapter = new PlacemarkTypeRecyclerViewAdapter((placeMarkData, pos) -> {
 
-            if(!this.recordManager.isAvailableRecord()) {
-                this.toast.cancel();
-                this.toast = Toast.makeText(this, "시설을 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
-                this.toast.show();
-                return;
+        this.placeMarkListAdapter = new PlaceMarkEnhancedRecyclerAdapter(new PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener() {
+            @Override
+            public void onImageSelect(ItemPlaceMarkEnhancedData placeMarkData, int pos) {
+
             }
 
-            this.currentPoiName = placeMarkData.getPlaceMarkTitle();
-            this.currentPoiType = placeMarkData.getPlaceMarkType();
-            this.currentPoiEnable = placeMarkData.isPlaceMarkEnable();
-            this.currentPoiPosition = pos;
-            this.currentSelectedPlaceMarkItem = placeMarkData;
+        }, new PlaceMarkEnhancedRecyclerAdapter.OnAddImageClickListener() {
+            @Override
+            public void onAddImageClick(ItemPlaceMarkEnhancedData placemarkItem, int pos) {
+                if (!recordManager.isAvailableRecord() || recordManager.getLastObserveLat() == 0.0f || recordManager.getLastObserveLng() == 0.0f) {
+                    toast.cancel();
+                    toast = Toast.makeText(bind.getRoot().getContext(), "시설을 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
+                    toast.show();
+                    return;
+                }
 
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            this.tmpFile = ImageManager.Companion.createTmpFile(
-                    this.bind.getRoot().getContext(),
-                    placeMarkData.getPlaceMarkType(),
-                    "Trekking/" + this.currentTrackName + "/" + placeMarkData.getPlaceMarkType() + "/" + placeMarkData.getPlaceMarkTitle());
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, this.tmpFile);
+                currentPoiName = placemarkItem.getPlaceMarkTitle();
+                currentPoiType = placemarkItem.getPlaceMarkType();
+                currentPoiEnable = placemarkItem.isPlaceMarkEnable();
+                currentPoiId = placemarkItem.getPlaceMarkId();
+                currentPoiPosition = pos;
+                currentSelectedPlaceMarkItem = placemarkItem;
 
-            this.requestCamera.launch(intent);
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                tmpFile = ImageManager.Companion.createTmpFile(
+                        bind.getRoot().getContext(),
+                        placemarkItem.getPlaceMarkType(),
+                        "Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType() + "/" + placemarkItem.getPlaceMarkTitle());
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpFile);
+
+                requestCamera.launch(intent);
+            }
         });
+
         this.bind.modifyPlacemarkTypeList.setAdapter(this.placeMarkListAdapter);
-
-        // update data
-        LinkedList<LocationExtended> rawPlaceMarkList = recordManager.getPlaceMarkByTrackName(this.currentTrackName);
-        LinkedList<ItemPlaceMarkData> toSortPlacemarkList = new LinkedList<>();
-
-        for(LocationExtended buffer : rawPlaceMarkList) {
-            final String trackName = buffer.getTrackName();
-            final String placeMarkType = buffer.getType();
-            final String placeMarkName = buffer.getName();
-            final String placeMarkDesc = "";
-            final boolean placeMarkEnable = true;
-            final double lat = buffer.getLatitude();
-            final double lng = buffer.getLongitude();
-
-            ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
-            placeMark.setPlaceMarkLat(lat);
-            placeMark.setPlaceMarkLng(lng);
-            toSortPlacemarkList.add(placeMark);
-        }
-        Collections.sort(toSortPlacemarkList);
-
-        for (ItemPlaceMarkData placeMark : toSortPlacemarkList) {
-            placeMarkListAdapter.addPlaceMark(placeMark);
-
-            // load Image Later
-            LinkedList<Uri> placeMarkImgList = null;
-            try {
-                placeMarkImgList = ImageManager.Companion.loadImageUriList(
-                        this.bind.getRoot().getContext(),
-                        "", "Trekking/" + this.currentTrackName + "/" + placeMark.getPlaceMarkType() + "/" + placeMark.getPlaceMarkTitle() + "/");
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            if(placeMarkImgList != null) {
-                this.imageLoadTask(placeMarkImgList, new OnCompressImageListener() {
-                    @Override
-                    public void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess) {
-                        if(isSuccess) {
-                            int index = 0;
-                            for(Bitmap img : compressedImg) {
-                                placeMark.setPlaceMarkImg(img, index++);
-                                if(index > 2) break;
-                            }
-                            if(placeMarkListAdapter != null) placeMarkListAdapter.updatePlaceMark(placeMark);
-                        }
+        this.requestManager.requestPlaceMarkListEnhanced((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+            @Override
+            public void onRequestResponse(LinkedList<ItemPlaceMarkEnhancedData> response, boolean isSuccess) {
+                if(isSuccess) {
+                    for (ItemPlaceMarkEnhancedData item : response) {
+                        Log.d("RequestPlaceMarkMgr", item.toString());
                     }
-                });
+
+                    runOnUiThread(() -> {
+                        updatePlaceMarkList(response);
+                    });
+                }
+
+                // if poi list are EMPTY? request insert EMPTY poi data
+                if(response.isEmpty()) {
+                    RecordEnhancedActivity.this.runOnUiThread(() -> {
+                        LinkedList<PlaceMarkType> requestEmptyPoiList = new LinkedList<>(Arrays.asList(PlaceMarkType.values()));
+                        requestManager.requestAddEmptyPlaceMarkListEnhanced((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
+                            @Override
+                            public void onRequestResponse(LinkedList<ItemPlaceMarkEnhancedData> response, boolean isSuccess) {
+                                if (isSuccess) {
+                                    for (ItemPlaceMarkEnhancedData item : response) {
+                                        Log.d("RequestPlaceMarkMgr", "NEW placemark : " + item.toString());
+                                    }
+
+                                    runOnUiThread(() -> {
+                                        updatePlaceMarkList(response);
+                                    });
+                                }
+                            }
+                        });
+                    });
+                }
             }
-        }
+        });
+//        // update data
+//        LinkedList<LocationExtended> rawPlaceMarkList = recordManager.getPlaceMarkByTrackName(this.currentTrackName);
+//        LinkedList<ItemPlaceMarkData> toSortPlacemarkList = new LinkedList<>();
+//
+//        for(LocationExtended buffer : rawPlaceMarkList) {
+//            final String trackName = buffer.getTrackName();
+//            final String placeMarkType = buffer.getType();
+//            final String placeMarkName = buffer.getName();
+//            final String placeMarkDesc = "";
+//            final boolean placeMarkEnable = true;
+//            final double lat = buffer.getLatitude();
+//            final double lng = buffer.getLongitude();
+//
+//            ItemPlaceMarkData placeMark = new ItemPlaceMarkData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
+//            placeMark.setPlaceMarkLat(lat);
+//            placeMark.setPlaceMarkLng(lng);
+//            toSortPlacemarkList.add(placeMark);
+//        }
+//        Collections.sort(toSortPlacemarkList);
+//
+//        for (ItemPlaceMarkData placeMark : toSortPlacemarkList) {
+//            placeMarkListAdapter.addPlaceMark(placeMark);
+//
+//            // load Image Later
+//            LinkedList<Uri> placeMarkImgList = null;
+//            try {
+//                placeMarkImgList = ImageManager.Companion.loadImageUriList(
+//                        this.bind.getRoot().getContext(),
+//                        "", "Trekking/" + this.currentTrackName + "/" + placeMark.getPlaceMarkType() + "/" + placeMark.getPlaceMarkTitle() + "/");
+//
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if(placeMarkImgList != null) {
+//                this.imageLoadTask(placeMarkImgList, new RecordEnhancedActivity.OnCompressImageListener() {
+//                    @Override
+//                    public void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess) {
+//                        if(isSuccess) {
+//                            int index = 0;
+//                            for(Bitmap img : compressedImg) {
+//                                placeMark.setPlaceMarkImg(img, index++);
+//                                if(index > 2) break;
+//                            }
+//                            if(placeMarkListAdapter != null) placeMarkListAdapter.updatePlaceMark(placeMark);
+//                        }
+//                    }
+//                });
+//            }
+//        }
     }
 
-    @Subscribe (threadMode = ThreadMode.MAIN)
+    private void updatePlaceMarkList(@NonNull final LinkedList<ItemPlaceMarkEnhancedData> placemarkList) {
+        if(this.bind == null || this.recordManager == null || this.placeMarkListAdapter == null) return;
+
+        this.placeMarkListAdapter.addPlaceMark(placemarkList);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(Short msg) {
         if(msg == EventBusMSG.UPDATE_FIX) { // GPS SIGNAL RECEIVE
             Log.d("dspark", "Recording: UPDATE_FIX");
@@ -519,9 +497,7 @@ public class RecordingActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
         });
     }
 
@@ -733,48 +709,48 @@ public class RecordingActivity extends AppCompatActivity {
     }
 
     // Load image TASK
-    private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final OnCompressImageListener listener) {
-        AsyncTask<Object, Integer, Object> imgLoadTask = new AsyncTask<>() {
-            LinkedList<Bitmap> compressedImgList;
-            boolean isSuccess = true;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                compressedImgList = new LinkedList<>();
-            }
-
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                try {
-                    for (Uri sourceUri : sourceImages) {
-                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 200, 100);
-                        compressedImgList.add(compressedImg);
-//                        if(!source.isRecycled()) source.recycle();
-//                        source = null;
-                    }
-
-                } catch (IllegalArgumentException | FileNotFoundException e) {
-                    e.printStackTrace();
-                    isSuccess = false;
-                }
-                sourceImages.clear();
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
-            }
-
-            @Override
-            protected void onCancelled() {
-                super.onCancelled();
-                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
-            }
-        };
-        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
-    }
+//    private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final RecordEnhancedActivity.OnCompressImageListener listener) {
+//        AsyncTask<Object, Integer, Object> imgLoadTask = new AsyncTask<>() {
+//            LinkedList<Bitmap> compressedImgList;
+//            boolean isSuccess = true;
+//
+//            @Override
+//            protected void onPreExecute() {
+//                super.onPreExecute();
+//                compressedImgList = new LinkedList<>();
+//            }
+//
+//            @Override
+//            protected Object doInBackground(Object[] objects) {
+//                try {
+//                    for (Uri sourceUri : sourceImages) {
+//                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 200, 100);
+//                        compressedImgList.add(compressedImg);
+////                        if(!source.isRecycled()) source.recycle();
+////                        source = null;
+//                    }
+//
+//                } catch (IllegalArgumentException | FileNotFoundException e) {
+//                    e.printStackTrace();
+//                    isSuccess = false;
+//                }
+//                sourceImages.clear();
+//                return null;
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Object o) {
+//                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
+//            }
+//
+//            @Override
+//            protected void onCancelled() {
+//                super.onCancelled();
+//                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
+//            }
+//        };
+//        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
+//    }
 
     private void updateUpsideControlButtonState() {
         if (this.bind == null || this.recordManager == null) return;
@@ -818,15 +794,15 @@ public class RecordingActivity extends AppCompatActivity {
             toast = Toast.makeText(this.bind.getRoot().getContext(), "코스 기록중에는 뒤로 돌아갈수 없습니다.", Toast.LENGTH_SHORT);
             toast.show();
 
-        // when BottomSheet has Expended and press Back,
-        // BottomSheet Close
+            // when BottomSheet has Expended and press Back,
+            // BottomSheet Close
         } else if (this.isModifyTrackExpended) {
             BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
             modifyTrackSheet.setState(STATE_COLLAPSED);
             this.isModifyTrackExpended = false;
             modifyTrackSheet = null;
 
-        // Exit Recording Activity
+            // Exit Recording Activity
         } else {
             super.onBackPressed();
         }

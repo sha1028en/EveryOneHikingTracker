@@ -2093,70 +2093,70 @@ public class GPSApplication extends Application implements LocationListener {
                 }
 
                 // Task: Delete some tracks
-                if (asyncTODO.taskType.startsWith(TASK_DELETETRACKS)) {
-                    String sTokens = asyncTODO.taskType.substring(asyncTODO.taskType.indexOf(" ") + 1);
-                    Log.w("myApp", "[#] GPSApplication.java - DELETING (" + sTokens + ")");
-                    List<String> tokens = new ArrayList<>();
-                    StringTokenizer tokenizer = new StringTokenizer(sTokens, " ");
-                    while (tokenizer.hasMoreElements()) {
-                        tokens.add(tokenizer.nextToken());
-                    }
-
-                    if (!tokens.isEmpty()) {
-                        jobProgress = 0;
-                        int tracksToBeDeleted = tokens.size();
-                        int tracksDeleted = 0;
-                        for (String s : tokens) {
-                            Track track = null;                 // The track found in the _ArrayListTracks
-                            int i = Integer.parseInt(s);
-                            if (i != currentTrack.getPrimaryId()) {   // Prevent the deletion of the current track
-                                synchronized (arrayListTracks) {
-                                    for (Track t : arrayListTracks) {
-                                        if (t.getPrimaryId() == i) {
-                                            track = t;
-                                            gpsDataBase.deleteTrackWithRelated(i);
-                                            Log.w("myApp", "[#] GPSApplication.java - TASK_DELETE_TRACKS: Track " + i + " deleted.");
-                                            arrayListTracks.remove(t);
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                if (track != null) {
-                                    // Delete track files
-                                    if (fileFind(DIRECTORY_TEMP, track.getName()) != null) {
-                                        for (File f : fileFind(DIRECTORY_TEMP, track.getName())) {
-                                            Log.w("myApp", "[#] GPSApplication.java - Deleting: " + f.getAbsolutePath());
-                                            fileDelete(f.getAbsolutePath());
-                                        }
-                                    }
-                                    // Delete thumbnail
-                                    fileDelete(getApplicationContext().getFilesDir() + "/Thumbnails/" + track.getPrimaryId() + ".png");
-
-                                    tracksDeleted++;
-                                    jobProgress = Math.round(1000L * tracksDeleted / tracksToBeDeleted);
-                                    EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
-                                    if (jobsPending > 0) jobsPending--;
-                                }
-
-                            } else {
-                                Log.w("myApp", "[#] GPSApplication.java - TASK_DELETE_TRACKS: Unable to delete the current track!");
-                                tracksDeleted++;
-                                jobProgress = Math.round(1000L * tracksDeleted / tracksToBeDeleted);
-                                EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
-                                if (jobsPending > 0) jobsPending--;
-                            }
-                        }
-                    }
-                    jobProgress = 0;
-                    EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
-                    EventBus.getDefault().post(EventBusMSG.NOTIFY_TRACKS_DELETED);
-                }
+//                if (asyncTODO.taskType.startsWith(TASK_DELETETRACKS)) {
+//                    String sTokens = asyncTODO.taskType.substring(asyncTODO.taskType.indexOf(" ") + 1);
+//                    Log.w("myApp", "[#] GPSApplication.java - DELETING (" + sTokens + ")");
+//                    List<String> tokens = new ArrayList<>();
+//                    StringTokenizer tokenizer = new StringTokenizer(sTokens, " ");
+//                    while (tokenizer.hasMoreElements()) {
+//                        tokens.add(tokenizer.nextToken());
+//                    }
+//
+//                    if (!tokens.isEmpty()) {
+//                        jobProgress = 0;
+//                        int tracksToBeDeleted = tokens.size();
+//                        int tracksDeleted = 0;
+//                        for (String s : tokens) {
+//                            Track track = null;                 // The track found in the _ArrayListTracks
+//                            int i = Integer.parseInt(s);
+//                            if (i != currentTrack.getPrimaryId()) {   // Prevent the deletion of the current track
+//                                synchronized (arrayListTracks) {
+//                                    for (Track t : arrayListTracks) {
+//                                        if (t.getPrimaryId() == i) {
+//                                            track = t;
+//                                            gpsDataBase.deleteTrackWithRelated(i);
+//                                            Log.w("myApp", "[#] GPSApplication.java - TASK_DELETE_TRACKS: Track " + i + " deleted.");
+//                                            arrayListTracks.remove(t);
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//
+//                                if (track != null) {
+//                                    // Delete track files
+//                                    if (fileFind(DIRECTORY_TEMP, track.getName()) != null) {
+//                                        for (File f : fileFind(DIRECTORY_TEMP, track.getName())) {
+//                                            Log.w("myApp", "[#] GPSApplication.java - Deleting: " + f.getAbsolutePath());
+//                                            fileDelete(f.getAbsolutePath());
+//                                        }
+//                                    }
+//                                    // Delete thumbnail
+//                                    fileDelete(getApplicationContext().getFilesDir() + "/Thumbnails/" + track.getPrimaryId() + ".png");
+//
+//                                    tracksDeleted++;
+//                                    jobProgress = Math.round(1000L * tracksDeleted / tracksToBeDeleted);
+//                                    EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
+//                                    if (jobsPending > 0) jobsPending--;
+//                                }
+//
+//                            } else {
+//                                Log.w("myApp", "[#] GPSApplication.java - TASK_DELETE_TRACKS: Unable to delete the current track!");
+//                                tracksDeleted++;
+//                                jobProgress = Math.round(1000L * tracksDeleted / tracksToBeDeleted);
+//                                EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
+//                                if (jobsPending > 0) jobsPending--;
+//                            }
+//                        }
+//                    }
+//                    jobProgress = 0;
+//                    EventBus.getDefault().post(EventBusMSG.UPDATE_JOB_PROGRESS);
+//                    EventBus.getDefault().post(EventBusMSG.NOTIFY_TRACKS_DELETED);
+//                }
 
                 // TASK: Delete some place mark
-                if (asyncTODO.taskType.startsWith(TASK_DELETETRACKS)) {
-
-                }
+//                if (asyncTODO.taskType.startsWith(TASK_DELETETRACKS)) {
+//
+//                }
             }
         }
     }

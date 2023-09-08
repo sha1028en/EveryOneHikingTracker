@@ -260,15 +260,14 @@ public class TrackRecordManager {
 
         Track currentTrack = this.gpsApp.getCurrentTrack();
         if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
-            LinkedList<Track> trackList = new LinkedList<>(this.gpsApp.gpsDataBase.getTrackListByName(trackName));
-            if (!trackList.isEmpty()) {
-                for (Track victim : trackList) {
-                    String deprecateTrackName = victim.getName();
-                    String deprecateTrackDesc = victim.getDescription();
+            Track course = this.gpsApp.gpsDataBase.getTrack(trackName, courseName);
 
-                    if (trackName.equals(deprecateTrackName) && courseName.equals(deprecateTrackDesc)) {
-                        this.gpsApp.gpsDataBase.deleteTrack(deprecateTrackName, deprecateTrackDesc);
-                    }
+            if (course != null) {
+                String deprecateTrackName = course.getName();
+                String deprecateTrackDesc = course.getDescription();
+
+                if (trackName.equals(deprecateTrackName) && courseName.equals(deprecateTrackDesc)) {
+                    this.gpsApp.gpsDataBase.deleteTrackOnly(deprecateTrackName, deprecateTrackDesc);
                 }
             }
             currentTrack.setTrackId(trackId);
@@ -283,23 +282,12 @@ public class TrackRecordManager {
             this.toast = Toast.makeText(this.gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
             this.toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
             this.toast.show();
-//        if (!gpsApp.isBottomBarLocked() || forceStop) {
-//            if (!gpsApp.isStopButtonFlag()) {
-//
-//
-//                } else {
-//                    toast.cancel();
-//                    toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_nothing_to_save, Toast.LENGTH_SHORT);
-//                    toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-//                    toast.show();
-//                }
-//            }
-//
-//        } else {
-//            toast.cancel();
-//            toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_bottom_bar_locked, Toast.LENGTH_SHORT);
-//            toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-//            toast.show();
+
+        } else {
+            toast.cancel();
+            toast = Toast.makeText(gpsApp.getApplicationContext(), R.string.toast_nothing_to_save, Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+            toast.show();
         }
     }
 

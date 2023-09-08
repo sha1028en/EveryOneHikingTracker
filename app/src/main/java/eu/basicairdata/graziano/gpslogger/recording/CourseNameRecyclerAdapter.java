@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemCourseBinding;
+import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRecyclerAdapter.CourseNameViewHolder> {
     private ItemCourseBinding bind;
@@ -20,7 +21,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
     // when checkBox state changed, notify others
     private OnItemSelectListener listener;
-    interface OnItemSelectListener {
+    public interface OnItemSelectListener {
         void onItemSelected(boolean isDeck, ItemCourseData item);
     }
 
@@ -36,10 +37,18 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
         CourseNameViewHolder holder = new CourseNameViewHolder(this.bind.getRoot());
         this.bind.courseRoot.setOnClickListener(v -> {
-            this.selectCourse = this.courseList.get(holder.getBindingAdapterPosition());
-            this.selectedCourseName = this.selectCourse.getCourseName();
-            this.updateItemSelect(holder.getBindingAdapterPosition());
-            if(this.listener != null) listener.onItemSelected(this.selectCourse.isWoodDeck(), this.selectCourse);
+            TrackRecordManager recordManager = TrackRecordManager.getInstance();
+            if(recordManager == null || recordManager.isRecordingCourse()) {
+                // DO NOTHING
+
+            } else {
+                // when Recording Course, CAN NOT SELECT other course
+                this.selectCourse = this.courseList.get(holder.getBindingAdapterPosition());
+                this.selectedCourseName = this.selectCourse.getCourseName();
+                this.updateItemSelect(holder.getBindingAdapterPosition());
+                if(this.listener != null) listener.onItemSelected(this.selectCourse.isWoodDeck(), this.selectCourse);
+            }
+            recordManager = null; // GC HURRY!
         });
         return holder;
     }

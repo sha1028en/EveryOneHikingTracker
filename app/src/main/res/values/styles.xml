@@ -137,13 +137,13 @@
     </style>
 
 
-    <!-- Modify Placemark Bottom Sheet -->
-    <style name="ModifyPlacemarkBottomSheetDialogTheme" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/ModifyPlacemarkBottomSheetShapeTheme</item>
-    </style>
+<!--    &lt;!&ndash; Modify Placemark Bottom Sheet &ndash;&gt;-->
+<!--    <style name="ModifyPlacemarkBottomSheetDialogTheme" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">-->
+<!--        <item name="bottomSheetStyle">@style/ModifyPlacemarkBottomSheetShapeTheme</item>-->
+<!--    </style>-->
 
-    <style name="ModifyPlacemarkBottomSheetShapeTheme" parent="Widget.MaterialComponents.BottomSheet">
-        <item name="android:background">@drawable/white_round_top_border_20</item>
-    </style>
+<!--    <style name="ModifyPlacemarkBottomSheetShapeTheme" parent="Widget.MaterialComponents.BottomSheet">-->
+<!--        <item name="android:background">@drawable/white_round_top_border_20</item>-->
+<!--    </style>-->
 
 </resources>

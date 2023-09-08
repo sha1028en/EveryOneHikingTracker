@@ -82,7 +82,7 @@
     <string name="track_start_with_button_below">Start recording Trackpoints\nor add an Annotation\nusing one of the buttons below</string>
     <string name="track_about_modify_placemark">You can move the location by double-clicking\nthe facility on the map.\n(Only when over a certain zoom level)</string>
     <string name="track_about_verify_information">Check the facilities of the registered course on the map</string>
-    
+
     <!-- Recording buttons (bottom side) -->
     <string name="record">Record</string>
     <string name="pause">Pause</string>
@@ -224,7 +224,7 @@
     <string name="about_ok">Close</string>
     <string name="about_rate_this_app">Rate this App</string>
     <string name="about_unable_to_rate">Unable to reach the Store</string>
-    
+
     <!-- Notification icon -->
     <string name="notification_contenttext">is active</string>
 

@@ -222,16 +222,16 @@ class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder> {
             if (GPSApplication.getInstance().getCurrentTrack().getPrimaryId() == track.getPrimaryId()) {
                 imageViewThumbnail.setImageBitmap (GPSApplication.getInstance().isRecording() ? BMP_CURRENT_TRACK_RECORDING : BMP_CURRENT_TRACK_PAUSED);
 
-            } else {
-                Glide.clear(imageViewThumbnail);
-                Glide
-                        .with(GPSApplication.getInstance().getApplicationContext())
-                        .load(GPSApplication.getInstance().getApplicationContext().getFilesDir().toString() + "/Thumbnails/" + track.getPrimaryId() + ".png")
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        //.skipMemoryCache(true)
-                        .error(null)
-                        .dontAnimate()
-                        .into(imageViewThumbnail);
+//            } else {
+//                Glide.clear(imageViewThumbnail);
+//                Glide
+//                        .with(GPSApplication.getInstance().getApplicationContext())
+//                        .load(GPSApplication.getInstance().getApplicationContext().getFilesDir().toString() + "/Thumbnails/" + track.getPrimaryId() + ".png")
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                        //.skipMemoryCache(true)
+//                        .error(null)
+//                        .dontAnimate()
+//                        .into(imageViewThumbnail);
             }
         }
     }

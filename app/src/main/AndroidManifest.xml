@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="eu.basicairdata.graziano.gpslogger" >
+    package="eu.basicairdata.graziano.gpslogger">
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -52,39 +52,41 @@
         android:installLocation="internalOnly"
         android:label="@string/app_name"
         android:largeHeap="true"
-        android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
-        android:theme="@style/LaunchScreenTheme" >
-
+        android:theme="@style/LaunchScreenTheme"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".recording.enhanced.RecordEnhancedActivity"
+            android:exported="false" />
         <activity
             android:name=".tracklist.TrackListActivity"
-            android:launchMode="singleTask"
-            android:exported="false" />
-
+            android:exported="false"
+            android:launchMode="singleTask" />
         <activity
             android:name=".splash.SplashActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".recording.RecordingActivity"
-            android:launchMode="singleTask"
-            android:exported="false" />
-
+            android:exported="false"
+            android:launchMode="singleTask" />
         <activity
             android:name=".GPSActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustPan" >
-<!--            <intent-filter>-->
-<!--                 <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--             </intent-filter>-->
+            android:windowSoftInputMode="adjustPan">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -92,7 +94,7 @@
             android:label="@string/menu_settings"
             android:launchMode="singleTask"
             android:theme="@style/MySettingsTheme"
-            android:windowSoftInputMode="adjustPan" >
+            android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".GPSActivity" />
@@ -102,7 +104,7 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="eu.basicairdata.graziano.gpslogger.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true" >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
@@ -110,7 +112,7 @@
 
         <receiver
             android:name=".ActionsBroadcastReceiver"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
             </intent-filter>
@@ -120,10 +122,11 @@
             android:name=".GPSService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="location" >
+            android:foregroundServiceType="location">
             <intent-filter>
                 <action android:name="eu.basicairdata.graziano.gpslogger.GPSService" />
             </intent-filter>
         </service>
     </application>
+
 </manifest>

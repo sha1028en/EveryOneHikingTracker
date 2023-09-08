@@ -61,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:background="@drawable/backgound_round_border_16"
+        android:background="@drawable/background_round_border_16"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:text="나눔길 입구"
             android:textColor="@color/textColorCardTitle"
-            android:textSize="@dimen/TextAppearanceLargeNumbersSize"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -89,7 +89,7 @@
             app:track="@drawable/switch_track_selector" />
 
         <ImageView
-            android:id="@+id/placemark_pic0"
+            android:id="@+id/placemark_pic_0"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -112,11 +112,11 @@
             android:adjustViewBounds="true"
             android:maxHeight="50dp"
             android:src="@drawable/ic_plus_dark_24"
-            app:layout_constraintBottom_toBottomOf="@+id/placemark_pic0"
+            app:layout_constraintBottom_toBottomOf="@+id/placemark_add_img"
             app:layout_constraintEnd_toStartOf="@+id/placemark_pic2"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toEndOf="@+id/placemark_pic0"
-            app:layout_constraintTop_toTopOf="@+id/placemark_pic0" />
+            app:layout_constraintStart_toEndOf="@+id/placemark_add_img"
+            app:layout_constraintTop_toTopOf="@+id/placemark_add_img" />
 
         <ImageView
             android:id="@+id/placemark_pic2"
