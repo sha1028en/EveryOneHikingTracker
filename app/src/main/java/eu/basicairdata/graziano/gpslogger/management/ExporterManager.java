@@ -3,6 +3,7 @@ package eu.basicairdata.graziano.gpslogger.management;
 import static android.os.Environment.DIRECTORY_DCIM;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -30,6 +31,16 @@ public class ExporterManager {
         }
     }
 
+    public Uri pathToUri(@NonNull final String path) {
+        File dir;
+        dir = new File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).getAbsolutePath() + "/" + path);
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return Uri.fromFile(dir);
+    }
+
     public Uri pathToUri(@NonNull final String directoryPath, @NonNull final String directoryName) {
         File dir;
         dir = new File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).getAbsolutePath() + "/" + directoryPath + "/" + directoryName + "/");
@@ -40,15 +51,20 @@ public class ExporterManager {
         return Uri.fromFile(dir);
     }
 
-    public void requestExport(@NonNull final Uri path, @NonNull final String currentTrackName) {
-
-
+    public void setExportDir(@NonNull final Uri path) {
+        if(this.gpsApp != null) gpsApp.setPrefExportFolder(path.toString());
     }
 
-    public void export(@NonNull final Uri path, @NonNull final String currentTrackName) {
-        gpsApp.setPrefExportFolder(path.getPath());
-        gpsApp.toExportLoadJob(GPSApplication.JOB_TYPE_EXPORT, currentTrackName);
-        gpsApp.executeJob();
-        gpsApp.deselectAllTracks();
+    public boolean isExportDirHas() {
+        if(this.gpsApp == null) return false;
+        return gpsApp.isExportFolderWritable();
+    }
+
+    public void export(@NonNull final String currentTrackName) {
+        if(this.gpsApp != null) {
+            this.gpsApp.toExportLoadJob(GPSApplication.JOB_TYPE_EXPORT, currentTrackName);
+            this.gpsApp.executeJob();
+            this.gpsApp.deselectAllTracks();
+        }
     }
 }

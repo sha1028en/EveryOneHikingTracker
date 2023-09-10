@@ -625,7 +625,7 @@ public class RequestPlaceMarkManager {
                     final int photoId = responseJson.optInt("photoId", -1);
 
                     if(photoId != -1 && (imgLat != 0.0 || imgLng != 0.0f)) {
-                        ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(, placemarkType, imgUrl);
+//                        ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(, placemarkType, imgUrl);
                         // TODO PARSE RAW TO IMAGE DATA CLASS
                     }
 

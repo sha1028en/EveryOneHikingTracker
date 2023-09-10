@@ -1753,11 +1753,6 @@ public class GPSApplication extends Application implements LocationListener {
         return Bitmap.createBitmap(defaultWidth, defaultHeight, Bitmap.Config.ARGB_8888);
     }
 
-
-    public void setExportFolderPath(@NonNull final Uri path) {
-
-    }
-
     public boolean isExportFolderWritable() {
         Uri uri = Uri.parse(prefExportFolder);
         Log.w("myApp", "[#] GPSApplication.java - isExportFolderWritable: " + prefExportFolder);
