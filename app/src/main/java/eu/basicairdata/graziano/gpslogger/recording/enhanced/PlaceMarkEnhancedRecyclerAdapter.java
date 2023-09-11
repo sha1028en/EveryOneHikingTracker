@@ -250,6 +250,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
             LinearLayoutManager layoutManager = new LinearLayoutManager(this.bind.getRoot().getContext(), LinearLayoutManager.HORIZONTAL, false);
             this.bind.placemarkImgList.setLayoutManager(layoutManager);
 
+            if(item.getPlaceMarkType().equals(PlaceMarkType.ENTRANCE.name())) {
+                this.bind.placemarkEnabled.setVisibility(View.GONE);
+                this.bind.placemarkEnabled.setEnabled(false);
+                this.bind.placemarkEnabled.setClickable(false);
+                this.bind.placemarkEnabled.setFocusable(false);
+            }
+
             // when it hide by bottom sheet, DONT ACTIVE CLICK EVENT
             if(item.isPlaceMarkHidden()) {
                 this.setViewEnableEvent(false, true);
