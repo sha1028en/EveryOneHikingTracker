@@ -137,6 +137,28 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
+    public void removePlaceMarkImg(@NonNull final ItemPlaceMarkImgData item) {
+        if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
+        ItemPlaceMarkEnhancedData toRemovePlaceMark = null;
+        boolean hasFind = false;
+        int i = 0;
+
+        for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+            if(placemark.getPlaceMarkId() == item.getPlaceMarkId()) {
+                toRemovePlaceMark = placemark;
+                toRemovePlaceMark.removePlaceMarkImgItemList(item);
+                hasFind = true;
+                break;
+            }
+            ++i;
+        }
+
+        if(hasFind) {
+            this.placeMarkDataList.set(i, toRemovePlaceMark);
+            this.notifyItemChanged(i);
+        }
+    }
+
     public void updatePlaceMark(@NonNull final ItemPlaceMarkEnhancedData item) {
         if(this.placeMarkDataList == null) return;
 

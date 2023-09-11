@@ -309,6 +309,7 @@ public class RequestPlaceMarkManager {
 
     /**
      * request EMPTY Placemark Item from Server
+     * @deprecated
      *
      * @param trackId this placemark's trackId
      * @param trackName this placemark's trackName
@@ -658,6 +659,65 @@ public class RequestPlaceMarkManager {
             public void failTask(@NonNull Throwable throwable) {
                 throwable.printStackTrace();
                 listener.onRequestResponse(null, false);
+            }
+        };
+        this.requestAddImgTask.executeTask(responseReceiver);
+    }
+
+    public void requestRemovePicture(final int photoId, @NonNull final RequestTrackManager.OnRequestResponse<Boolean> listener) {
+        if(this.requestAddImgTask != null && this.requestAddImgTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            @Override
+            public void preTask() {}
+
+            @Override
+            public ItemPlaceMarkImgData doTask() {
+                HttpURLConnection connection = null;
+                ItemPlaceMarkImgData imgData = null;
+                try {
+                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/poi/files/" + photoId);
+                    connection = (HttpURLConnection) serverUrl.openConnection();
+                    connection.setRequestMethod("DELETE");
+                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Content-type", "application/json");
+                    connection.setRequestProperty("Accept", "*/*");
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(10000);
+
+                    BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                    String buffer;
+                    StringBuilder response = new StringBuilder();
+                    try (readStream) {
+                        while ((buffer = readStream.readLine()) != null) {
+                            response.append(buffer);
+                        }
+                    }
+                    JSONObject responseJson = new JSONObject(response.toString());
+                    final String responseMsg = responseJson.optString("message", "fail");
+
+                    if(responseMsg.equals("OK")) {
+                        imgData = new ItemPlaceMarkImgData(-1, -1, "", "");
+                    }
+
+                } catch (IOException | JSONException | IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+                return imgData;
+            }
+
+            @Override
+            public void endTask(ItemPlaceMarkImgData value) {
+                if (value != null) listener.onRequestResponse(true, true);
+                else listener.onRequestResponse(false, false);
+            }
+
+            @Override
+            public void failTask(@NonNull Throwable throwable) {
+                throwable.printStackTrace();
+                listener.onRequestResponse(false, false);
             }
         };
         this.requestAddImgTask.executeTask(responseReceiver);

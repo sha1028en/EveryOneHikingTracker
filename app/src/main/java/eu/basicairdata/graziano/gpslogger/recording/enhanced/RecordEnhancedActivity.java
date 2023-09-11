@@ -62,6 +62,7 @@ import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.management.RequestPlaceMarkManager;
+import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 import eu.basicairdata.graziano.gpslogger.recording.AddCourseNameDialog;
 import eu.basicairdata.graziano.gpslogger.recording.CourseNameRecyclerAdapter;
@@ -233,7 +234,23 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.placeMarkListAdapter = new PlaceMarkEnhancedRecyclerAdapter(new PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener() {
             @Override
             public void onImageSelect(ItemPlaceMarkImgData imgData, int pos) {
-                ImageDetailDialog imgDialog = new ImageDetailDialog(bind.getRoot().getContext(), imgData);
+                ImageDetailDialog imgDialog = new ImageDetailDialog(bind.getRoot().getContext(), imgData, new ImageDetailDialog.OnRemoveBtnClickedListener() {
+                    @Override
+                    public void onRemoveBtnClicked(ItemPlaceMarkImgData removeImgData) {
+                        if(requestPlaceMarkManager != null) {
+                            requestPlaceMarkManager.requestRemovePicture(imgData.getImgId(), new RequestTrackManager.OnRequestResponse<Boolean>() {
+                                @Override
+                                public void onRequestResponse(Boolean response, boolean isSuccess) {
+                                    runOnUiThread(() -> {
+                                        if(placeMarkListAdapter != null) {
+                                            placeMarkListAdapter.removePlaceMarkImg(imgData);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
                 imgDialog.show();
             }
 
