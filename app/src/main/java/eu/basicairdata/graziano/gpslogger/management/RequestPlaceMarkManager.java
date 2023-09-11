@@ -28,8 +28,10 @@ import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgDat
 import kotlinx.coroutines.Dispatchers;
 
 public class RequestPlaceMarkManager {
-    private BackGroundAsyncTask<LinkedList<ItemPlaceMarkData>> requestTask;
+    private BackGroundAsyncTask<LinkedList<ItemPlaceMarkData>> requestTask; // LEGACY
     private BackGroundAsyncTask<LinkedList<ItemPlaceMarkEnhancedData>> requestEnhancedTask;
+
+    private BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask;
 
     private WeakReference<Context> localContext;
     public interface OnRequestResponse<V> {
@@ -40,6 +42,7 @@ public class RequestPlaceMarkManager {
         this.localContext = new WeakReference<>(context);
         this.requestTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestEnhancedTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
@@ -56,6 +59,11 @@ public class RequestPlaceMarkManager {
         if(this.requestEnhancedTask != null) {
             this.requestEnhancedTask.cancelTask();
             this.requestEnhancedTask = null;
+        }
+
+        if(this.requestAddImgTask != null) {
+            this.requestAddImgTask.cancelTask();
+            this.requestAddImgTask = null;
         }
     }
 
@@ -560,16 +568,17 @@ public class RequestPlaceMarkManager {
                                                    @NonNull final String placemarkType,
                                                    @NonNull final File imageFile,
                                                    @NonNull final String fileName,
-                                                   @NonNull final RequestPlaceMarkManager.OnRequestResponse<Integer> listener) {
-        if(this.requestTask != null && this.requestTask.isTaskAlive()) this.requestTask.cancelTask();
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemPlaceMarkData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+                                                   @NonNull final RequestPlaceMarkManager.OnRequestResponse<ItemPlaceMarkImgData> listener) {
+
+        if(this.requestAddImgTask != null && this.requestAddImgTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
 
             @Override
-            public LinkedList<ItemPlaceMarkData> doTask() {
+            public ItemPlaceMarkImgData doTask() {
                 HttpURLConnection connection = null;
-                LinkedList<ItemPlaceMarkData> placeMarkList = new LinkedList<>();
+                ItemPlaceMarkImgData imgData = null;
 
                 final String boundary = Long.toHexString(System.currentTimeMillis());
                 final String crlf = "\r\n";
@@ -626,12 +635,9 @@ public class RequestPlaceMarkManager {
                     final int photoId = responseJson.optInt("photoId", -1);
 
                     if(photoId != -1 && (imgLat != 0.0 || imgLng != 0.0f)) {
-//                        ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(, placemarkType, imgUrl);
+                        imgData = new ItemPlaceMarkImgData(-1, photoId, placemarkType, imgUrl);
                         // TODO PARSE RAW TO IMAGE DATA CLASS
                     }
-
-                    ItemPlaceMarkData rawPlaceMarkItem = new ItemPlaceMarkData("", "", "", "", true);
-                    placeMarkList.add(rawPlaceMarkItem);
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
                     e.printStackTrace();
@@ -639,21 +645,21 @@ public class RequestPlaceMarkManager {
                 } finally {
                     if (connection != null) connection.disconnect();
                 }
-                return placeMarkList;
+                return imgData;
             }
 
             @Override
-            public void endTask(LinkedList<ItemPlaceMarkData> value) {
-                if (!value.isEmpty()) listener.onRequestResponse(0, true);
-                else listener.onRequestResponse(-1, false);
+            public void endTask(ItemPlaceMarkImgData value) {
+                if (value != null) listener.onRequestResponse(value, true);
+                else listener.onRequestResponse(null, false);
             }
 
             @Override
             public void failTask(@NonNull Throwable throwable) {
                 throwable.printStackTrace();
-                listener.onRequestResponse(-1, false);
+                listener.onRequestResponse(null, false);
             }
         };
-        this.requestTask.executeTask(responseReceiver);
+        this.requestAddImgTask.executeTask(responseReceiver);
     }
 }

@@ -3,7 +3,7 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 import androidx.annotation.NonNull;
 
 public class ItemPlaceMarkImgData {
-    private final int placeMarkId;
+    private int placeMarkId;
     private final String placeMarkType;
 
     private int imgId;
@@ -16,6 +16,10 @@ public class ItemPlaceMarkImgData {
         this.imgId = imageId;
         this.placeMarkType = placeMarkType;
         this.imageUrl = imageUrl;
+    }
+
+    public void setPlaceMarkId(int placeMarkId) {
+        this.placeMarkId = placeMarkId;
     }
 
     public int getPlaceMarkId() {

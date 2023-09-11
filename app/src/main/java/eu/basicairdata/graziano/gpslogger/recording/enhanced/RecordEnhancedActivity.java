@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -47,9 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.BuildConfig;
@@ -120,8 +119,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
         this.requestPlaceMarkManager = new RequestPlaceMarkManager(this.bind.getRoot().getContext());
 
-//        this.requestTrackManager = new RequestTrackManager();
-
 
         // Request Perm to write GPX File
         this.requestExportDir = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<>() {
@@ -159,10 +156,14 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 if (!fileName.isBlank()) {
                     try {
                         ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-                        this.requestPlaceMarkManager.requestAddPicturePlaceMark(currentPoiId, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+                        this.requestPlaceMarkManager.requestAddPicturePlaceMarkEnhanced(currentPoiId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+
                             @Override
-                            public void onRequestResponse(Integer response, boolean isSuccess) {
-                                Log.d("RequestPlaceMarkMgr", "success?" + isSuccess);
+                            public void onRequestResponse(ItemPlaceMarkImgData response, boolean isSuccess) {
+                                runOnUiThread(() -> {
+                                    response.setPlaceMarkId(currentPoiId);
+                                    placeMarkListAdapter.addPlaceMarkImg(response);
+                                });
                             }
                         });
 
@@ -231,9 +232,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         this.placeMarkListAdapter = new PlaceMarkEnhancedRecyclerAdapter(new PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener() {
             @Override
-            public void onImageSelect(ItemPlaceMarkEnhancedData placeMarkData, int pos) {
-                // TODO SHOW IMG DIALOG
-                // SHOW, AND REMOVE IMG ( OPTIONAL )
+            public void onImageSelect(ItemPlaceMarkImgData imgData, int pos) {
+                ImageDetailDialog imgDialog = new ImageDetailDialog(bind.getRoot().getContext(), imgData);
+                imgDialog.show();
             }
 
         }, new PlaceMarkEnhancedRecyclerAdapter.OnAddImageClickListener() {
@@ -341,7 +342,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                                 | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
+
+                        // where *.gpx saved? where!
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
+                        }
                         this.requestExportDir.launch(intent);
                     }
                 }

@@ -124,6 +124,10 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         this.placeMarkImgItemList = placeMarkImgItemList;
     }
 
+    public void addPlaceMarkImgItemList(@NonNull final ItemPlaceMarkImgData item) {
+        this.placeMarkImgItemList.add(item);
+    }
+
     /**
      * sort list by placemark type and title
      * @param o1 the first object to be compared.

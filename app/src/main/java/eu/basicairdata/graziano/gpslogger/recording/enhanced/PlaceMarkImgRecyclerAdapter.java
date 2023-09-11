@@ -18,8 +18,21 @@ import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkImgBinding;
 public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkImgRecyclerAdapter.PlaceMarkImgViewHolder> {
     private LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
     private ItemPlacemarkImgBinding bind;
-    public PlaceMarkImgRecyclerAdapter() {
+
+    private OnImageClickListener listener;
+
+    interface OnImageClickListener {
+        void onImageClick(ItemPlaceMarkImgData placemarkItem, int pos);
+    }
+
+
+    private PlaceMarkImgRecyclerAdapter() {
         this.placeMarkImgList = new LinkedList<>();
+    }
+
+    public PlaceMarkImgRecyclerAdapter(@NonNull final OnImageClickListener listener) {
+        this();
+        this.listener = listener;
     }
 
     @NonNull @Override
@@ -27,7 +40,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         this.bind = ItemPlacemarkImgBinding.inflate(layoutInflater, parent, false);
 
-        PlaceMarkImgViewHolder holder = new PlaceMarkImgViewHolder(this.bind.getRoot());
+        PlaceMarkImgViewHolder holder = new PlaceMarkImgViewHolder(this.bind.getRoot(), this.listener);
         return holder;
     }
 
@@ -57,17 +70,26 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
     public static class PlaceMarkImgViewHolder extends RecyclerView.ViewHolder {
         private final ItemPlacemarkImgBinding bind;
         private ItemPlaceMarkImgData itemImg;
+        private OnImageClickListener listener;
 
-        public PlaceMarkImgViewHolder(@NonNull View itemView) {
+        public PlaceMarkImgViewHolder(@NonNull View itemView, @NonNull final OnImageClickListener listener) {
             super(itemView);
             this.bind = ItemPlacemarkImgBinding.bind(itemView);
+            this.listener = listener;
         }
 
         public void onBind(@NonNull final ItemPlaceMarkImgData itemImg) {
             this.itemImg = itemImg;
             Glide.with(this.bind.placemarkImgView.getContext())
+                    .setDefaultRequestOptions(RequestOptions.noAnimation())
+                    .setDefaultRequestOptions(RequestOptions.formatOf(DecodeFormat.PREFER_RGB_565))
                     .load(this.itemImg.getImageUrl())
                     .into(this.bind.placemarkImgView);
+
+
+            this.bind.placemarkImgView.setOnClickListener(v -> {
+                listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
+            });
         }
 
         void reBind() {
@@ -79,6 +101,11 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
                     .setDefaultRequestOptions(RequestOptions.formatOf(DecodeFormat.PREFER_RGB_565))
                     .load(this.itemImg.getImageUrl())
                     .into(this.bind.placemarkImgView);
+
+
+            this.bind.placemarkImgView.setOnClickListener(v -> {
+                listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
+            });
         }
     }
 }
