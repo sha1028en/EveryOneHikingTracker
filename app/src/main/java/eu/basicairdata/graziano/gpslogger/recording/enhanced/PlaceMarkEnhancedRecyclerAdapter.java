@@ -73,6 +73,10 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
+    public LinkedList<ItemPlaceMarkEnhancedData> getClonedList() {
+        return (LinkedList<ItemPlaceMarkEnhancedData>) this.placeMarkDataList.clone();
+    }
+
     @Override
     public int getItemCount() {
         return this.placeMarkDataList.size();

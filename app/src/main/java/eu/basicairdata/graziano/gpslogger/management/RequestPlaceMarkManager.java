@@ -214,7 +214,7 @@ public class RequestPlaceMarkManager {
 
                             // when not valid placemark record? ignore them!
                             if(imageLat == 0.0f && imageLng == 0.0f) continue;
-                            ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(imageId, placeMarkType, imageUrl);
+                            ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(placeMarkId, imageId, placeMarkType, imageUrl);
                             imgData.setImgLat(imageLat);
                             imgData.setImgLng(imageLng);
                             imgDataList.add(imgData);

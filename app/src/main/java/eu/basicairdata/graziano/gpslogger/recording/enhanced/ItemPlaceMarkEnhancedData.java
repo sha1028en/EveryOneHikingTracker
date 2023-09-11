@@ -190,12 +190,10 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
                 ", trackName='" + trackName + '\'' +
                 ", placeMarkTitle='" + placeMarkTitle + '\'' +
                 ", placeMarkType='" + placeMarkType + '\'' +
-                ", placeMarkDesc='" + placeMarkDesc + '\'' +
                 ", isPlaceMarkEnable=" + isPlaceMarkEnable +
-                ", isPlaceMarkHidden=" + isPlaceMarkHidden +
                 ", placeMarkLat=" + lat +
                 ", placeMarkLng=" + lng +
-                ", placeMarkImgList cnt=" + placeMarkImgItemList.size() +
+                ", placeMarkImgList=" + placeMarkImgItemList.toString() +
                 '}';
     }
 }

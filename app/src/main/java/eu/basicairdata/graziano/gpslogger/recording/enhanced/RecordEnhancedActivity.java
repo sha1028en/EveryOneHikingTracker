@@ -7,9 +7,6 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING;
 
-import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_DIRT;
-import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_WOOD_DECK;
-
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -352,23 +349,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             Log.d("dspark", "Recording: NEW_TRACK");
 
         } else if (msg == EventBusMSG.TRACK_EXPORTED) {  // when TRACK EXPORT SUCCESSFULLY BRANCH HERE!
-//            // TODO SEND *.GPX FILE TO SERVER
-//            final String courseType = this.courseRecyclerAdapter.getSelectCourse().isWoodDeck()? TRACK_COURSE_TYPE_WOOD_DECK :TRACK_COURSE_TYPE_DIRT;
-//            final String courseName = this.courseRecyclerAdapter.getSelectedCourseName();
-//            final File courseFile = ExporterManager.pathToFile(bind.getRoot().getContext(), "Trekking", "trk_" + courseName + ".gpx");
-//
-//            this.requestTrackManager.requestUploadCourseFile(
-//                    (int) this.currentTrackId,
-//                    courseName,
-//                    courseType,
-//                    courseFile,
-//                    new RequestTrackManager.OnRequestResponse<ItemTrackData>() {
-//                @Override
-//                public void onRequestResponse(ItemTrackData response, boolean isSuccess) {
-//                    Log.d("dspark", "send GPX Success = " + isSuccess);
-//                }
-//            });
-
             Log.d("dspark", "Recording: TRACK_EXPORTED");
         }
     }
@@ -500,10 +480,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         bind.getRoot().setEnabled(false);
                         isModifyTrackExpended = true;
                         loadMapFromWebView();
-
-//                        initWebView();
-//                        parseCourseLocations();
-//                        parsePlacemark();
                     }
 
                     case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED, STATE_SETTLING -> {
@@ -563,7 +539,8 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 String dataString = parseCourseLocations().toString();
                 view.loadUrl("javascript:window.AndroidToWeb('course', '" + dataString +"')");
 
-                dataString = parsePlacemark().toString();
+                dataString = parsePlaceMarkEnhanced().toString();
+//                dataString = parsePlacemark().toString();
                 view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
             }
         });
@@ -611,7 +588,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         final double lng = receiveModifyPlaceMarkJson.getDouble("lng");
                         recordManager.updatePlaceMark(placeMarkId, lat, lng);
 
-                        String toSendPlaceMarkList = parsePlacemark().toString();
+                        String toSendPlaceMarkList =  parsePlaceMarkEnhanced().toString(); //parsePlacemark().toString();
                         bind.modifyTrackWebview.loadUrl("javascript:window.AndroidToWeb('place', '" + toSendPlaceMarkList +"')");
 
                     } catch (JSONException e) {
@@ -675,58 +652,112 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         return requestCourseList;
     }
 
-    private JSONObject parsePlacemark() {
-        JSONObject requestPlaceMarkList = new JSONObject();
-
+    private JSONObject parsePlaceMarkEnhanced() {
+        JSONObject requestPlaceMarkHeader = new JSONObject(); // PlaceMark Header
         try {
-            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
-            if(clonedCourseList.isEmpty()) return null;
+            LinkedList<ItemPlaceMarkEnhancedData> clonedPlaceMarkList = this.placeMarkListAdapter.getClonedList();
+            if(clonedPlaceMarkList.isEmpty()) return requestPlaceMarkHeader;
 
-            requestPlaceMarkList = new JSONObject(); // Header
-            JSONArray requestPlaceMarkBody = new JSONArray(); // Body
+            requestPlaceMarkHeader.put("trackName", this.currentTrackName);
+            requestPlaceMarkHeader.put("cmrdId", this.currentTrackId);
+            requestPlaceMarkHeader.put("sido", this.currentTrackRegion);
+            JSONArray requestPlaceMarkBody = new JSONArray(); // PlaceMark Body
 
-            // Header
-            requestPlaceMarkList.put("trackName", this.currentTrackName);
-            requestPlaceMarkList.put("cmrdId", this.currentTrackId);
-            requestPlaceMarkList.put("sido", this.currentTrackRegion);
-            int placeMarkId;
-            double lat;
-            double lng;
-            boolean isEnablePlaceMark;
-            int index = 0;
+            for(ItemPlaceMarkEnhancedData itemPlaceMark : clonedPlaceMarkList) {
+                final boolean isEnablePlaceMark = itemPlaceMark.isPlaceMarkEnable();
+                final int placeMarkId = itemPlaceMark.getPlaceMarkId();
+                final String placeMarkName = itemPlaceMark.getPlaceMarkTitle();
+                final String placeMarkType = itemPlaceMark.getPlaceMarkType();
+//                final double lat = itemPlaceMark.getLat();
+//                final double lng = itemPlaceMark.getLng();
+                final LinkedList<ItemPlaceMarkImgData> imgList = itemPlaceMark.getPlaceMarkImgItemList();
 
-            LinkedList<LocationExtended> placemarkList = this.recordManager.getPlaceMarkByTrackName(this.currentTrackName);
-            for(LocationExtended placemarkData : placemarkList) {
-                JSONObject placeMarkItem = new JSONObject();
-                placeMarkId = placemarkData.getPrimaryId();
-                isEnablePlaceMark = placemarkData.isEnable();
-                lat = placemarkData.getLatitude();
-                lng = placemarkData.getLongitude();
-                String placeMarkName = placemarkData.getName();
-                String placeMarkType = placemarkData.getType();
+                if(placeMarkName.equals("label")) continue;
+                JSONArray itemSendPlaceMarkImg = new JSONArray();
+                int i = 0;
 
+                for(ItemPlaceMarkImgData itemImgBuffer : imgList) {
+                    if(i++ > 1) break;
 
-                // this Data is not valid
-                if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
+                    JSONObject itemSendPlaceMarkImgBuffer = new JSONObject();
+                    itemSendPlaceMarkImgBuffer.put("photoId", itemImgBuffer.getImgId()); // PlaceMark Image Id
+                    itemSendPlaceMarkImgBuffer.put("imgUrl", itemImgBuffer.getImageUrl()); // PlaceMark Image Url
+                    itemSendPlaceMarkImgBuffer.put("imgLat", itemImgBuffer.getImgLat()); // PlaceMark Image Lat
+                    itemSendPlaceMarkImgBuffer.put("imgLng", itemImgBuffer.getImgLng()); // PlaceMark Image Lng
+                    itemSendPlaceMarkImg.put(itemSendPlaceMarkImgBuffer);
+                }
 
-                placeMarkItem.put("notExists", true);
-                placeMarkItem.put("placeMarkId", placeMarkId);
-                placeMarkItem.put("placeMarkName", placeMarkName);
-                placeMarkItem.put("placeMarkType", placeMarkType);
-                placeMarkItem.put("lat", lat);
-                placeMarkItem.put("lng", lng);
-                placeMarkItem.putOpt("placeMarkImgUrl", new ArrayList<String>(Collections.singleton("IMG URL")));
+                JSONObject itemSendPlaceMark = new JSONObject();
+                // Essential Values
+                itemSendPlaceMark.put("placeMarkId", placeMarkId); // PlaceMark Id
+                itemSendPlaceMark.put("notExists", isEnablePlaceMark); // is PlaceMark Enable?
+                itemSendPlaceMark.put("placeMarkType", placeMarkType); // PlaceMark Type
 
-                requestPlaceMarkBody.put(index++, placeMarkItem);
+                // Optional Values
+                itemSendPlaceMark.put("placeMarkName", isEnablePlaceMark? placeMarkName: ""); // PlaceMark Name ( ex: 화장실 )
+//                itemSendPlaceMark.put("lat", isEnablePlaceMark? lat: 0.0f);
+//                itemSendPlaceMark.put("lng", isEnablePlaceMark? lng: 0.0f);
+                itemSendPlaceMark.put("imgUrl", isEnablePlaceMark? itemSendPlaceMarkImg: new JSONArray()); // a PlaceMark Image List
+                requestPlaceMarkBody.put(itemSendPlaceMark);
             }
-            requestPlaceMarkList.put("data", requestPlaceMarkBody);
-            Log.d("dspark", requestPlaceMarkList.toString());
+            requestPlaceMarkHeader.put("data", requestPlaceMarkBody);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return requestPlaceMarkList;
+        return requestPlaceMarkHeader;
     }
+
+//    private JSONObject parsePlacemark() {
+//        JSONObject requestPlaceMarkList = new JSONObject();
+//
+//        try {
+//            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
+//            if(clonedCourseList.isEmpty()) return null;
+//
+//            requestPlaceMarkList = new JSONObject(); // Header
+//            JSONArray requestPlaceMarkBody = new JSONArray(); // Body
+//
+//            // Header
+//            requestPlaceMarkList.put("trackName", this.currentTrackName);
+//            requestPlaceMarkList.put("cmrdId", this.currentTrackId);
+//            requestPlaceMarkList.put("sido", this.currentTrackRegion);
+//            int placeMarkId;
+//            double lat;
+//            double lng;
+//            boolean isEnablePlaceMark;
+//            int index = 0;
+//
+//            LinkedList<LocationExtended> placemarkList = this.recordManager.getPlaceMarkByTrackName(this.currentTrackName);
+//            for(LocationExtended placemarkData : placemarkList) {
+//                JSONObject placeMarkItem = new JSONObject();
+//                placeMarkId = placemarkData.getPrimaryId();
+//                isEnablePlaceMark = placemarkData.isEnable();
+//                lat = placemarkData.getLatitude();
+//                lng = placemarkData.getLongitude();
+//                String placeMarkName = placemarkData.getName();
+//                String placeMarkType = placemarkData.getType();
+//
+//                // this Data is not valid
+//                if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
+//
+//                placeMarkItem.put("notExists", isEnablePlaceMark);
+//                placeMarkItem.put("placeMarkId", placeMarkId);
+//                placeMarkItem.put("placeMarkName", placeMarkName);
+//                placeMarkItem.put("placeMarkType", placeMarkType);
+//                placeMarkItem.put("lat", lat);
+//                placeMarkItem.put("lng", lng);
+//
+//                requestPlaceMarkBody.put(index++, placeMarkItem);
+//            }
+//            requestPlaceMarkList.put("data", requestPlaceMarkBody);
+//            Log.d("dspark", requestPlaceMarkList.toString());
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return requestPlaceMarkList;
+//    }
 
     private void updateUpsideControlButtonState() {
         if (this.bind == null || this.recordManager == null) return;

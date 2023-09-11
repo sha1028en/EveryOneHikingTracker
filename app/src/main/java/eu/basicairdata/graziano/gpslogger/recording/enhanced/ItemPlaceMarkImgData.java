@@ -6,13 +6,14 @@ public class ItemPlaceMarkImgData {
     private final int placeMarkId;
     private final String placeMarkType;
 
-    private int imgId = -1;
-    private String imageUrl = "";
+    private int imgId;
+    private String imageUrl;
     private double imgLat = 0.0f;
     private double imgLng = 0.0f;
 
-    public ItemPlaceMarkImgData(final int placeMarkId, @NonNull final  String placeMarkType, @NonNull final String imageUrl) {
+    public ItemPlaceMarkImgData(final int placeMarkId, final int imageId, @NonNull final  String placeMarkType, @NonNull final String imageUrl) {
         this.placeMarkId = placeMarkId;
+        this.imgId = imageId;
         this.placeMarkType = placeMarkType;
         this.imageUrl = imageUrl;
     }
@@ -55,5 +56,15 @@ public class ItemPlaceMarkImgData {
 
     public void setImgLng(double imgLng) {
         this.imgLng = imgLng;
+    }
+
+    @Override
+    public String toString() {
+        return  "{" +
+                "imgId=" + imgId +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", imgLat=" + imgLat +
+                ", imgLng=" + imgLng +
+                '}';
     }
 }
