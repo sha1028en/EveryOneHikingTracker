@@ -39,7 +39,7 @@ public class TrackListActivity extends AppCompatActivity {
         this.bind = ActivityTrackListBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
         this.recordManager = TrackRecordManager.createInstance(this);
-        this.requestTrackManager = new RequestTrackManager(this.bind.trackList.getContext());
+        this.requestTrackManager = new RequestTrackManager();
 
        this.initViewListener();
 

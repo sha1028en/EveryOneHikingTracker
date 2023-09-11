@@ -7,6 +7,9 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_SETTLING;
 
+import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_DIRT;
+import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_WOOD_DECK;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,7 +50,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.BuildConfig;
@@ -77,11 +81,13 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> requestCamera; // Camera
     private ActivityResultLauncher<Intent> requestExportDir; // RW Document;
+//    private ActivityResultLauncher<Intent> requestReadDir; // Read Document;
     private Uri tmpFile; // taken a Picture's File Instance
 
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
     private ExporterManager exporterManager; // Export Course, Placemark
-    private RequestPlaceMarkManager requestManager; // Request and Send Placemark Info to Server
+    private RequestPlaceMarkManager requestPlaceMarkManager; // Request and Send Placemark Info to Server
+//    private RequestTrackManager requestTrackManager; // Request Send *.gpx file to Server
 
     private boolean isPauseCourseRecording = false; // this is FLAG course recording has paused ( state )
     private long currentTrackId = -1; // this course's parent track Id;
@@ -115,8 +121,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
         EventBus.getDefault().register(this);
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
-        this.requestManager = new RequestPlaceMarkManager(this.bind.getRoot().getContext());
+        this.requestPlaceMarkManager = new RequestPlaceMarkManager(this.bind.getRoot().getContext());
 
+//        this.requestTrackManager = new RequestTrackManager();
+
+
+        // Request Perm to write GPX File
         this.requestExportDir = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<>() {
             @Override
             public void onActivityResult(ActivityResult result) {
@@ -135,27 +145,13 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri.getPath());
                         Log.w("myApp", "[#] GPSActivity.java - onActivityResult URI: " + treeUri.getEncodedPath());
                         exporterManager.setExportDir(treeUri);
+                        exporterManager.export(currentTrackName, courseRecyclerAdapter.getSelectedCourseName());
                     }
                 }
             }
         });
 
-        if(this.exporterManager.isExportDirHas()) {
-            this.exporterManager.export(this.currentTrackName);
-
-        } else {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-            intent.putExtra("android.content.extra.FANCY", true);
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
-            this.requestExportDir.launch(intent);
-        }
-
-        // Camera Action
+        // Request to Camera Action
         // when Placemark list clicked, took Picture
         // and register Placemark with taken Picture
         this.requestCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -166,7 +162,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 if (!fileName.isBlank()) {
                     try {
                         ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-                        this.requestManager.requestAddPicturePlaceMark(currentPoiId, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+                        this.requestPlaceMarkManager.requestAddPicturePlaceMark(currentPoiId, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<>() {
                             @Override
                             public void onRequestResponse(Integer response, boolean isSuccess) {
                                 Log.d("RequestPlaceMarkMgr", "success?" + isSuccess);
@@ -239,7 +235,8 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.placeMarkListAdapter = new PlaceMarkEnhancedRecyclerAdapter(new PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener() {
             @Override
             public void onImageSelect(ItemPlaceMarkEnhancedData placeMarkData, int pos) {
-
+                // TODO SHOW IMG DIALOG
+                // SHOW, AND REMOVE IMG ( OPTIONAL )
             }
 
         }, new PlaceMarkEnhancedRecyclerAdapter.OnAddImageClickListener() {
@@ -271,7 +268,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         });
 
         this.bind.modifyPlacemarkTypeList.setAdapter(this.placeMarkListAdapter);
-        this.requestManager.requestPlaceMarkListEnhanced((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+        this.requestPlaceMarkManager.requestPlaceMarkListEnhanced((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
             @Override
             public void onRequestResponse(LinkedList<ItemPlaceMarkEnhancedData> response, boolean isSuccess) {
                 if(isSuccess) {
@@ -288,7 +285,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 if(response.isEmpty()) {
                     RecordEnhancedActivity.this.runOnUiThread(() -> {
                         LinkedList<PlaceMarkType> requestEmptyPoiList = new LinkedList<>(Arrays.asList(PlaceMarkType.values()));
-                        requestManager.requestAddEmptyPlaceMarkListEnhanced((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
+                        requestPlaceMarkManager.requestAddEmptyPlaceMarkListEnhanced((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
                             @Override
                             public void onRequestResponse(LinkedList<ItemPlaceMarkEnhancedData> response, boolean isSuccess) {
                                 if (isSuccess) {
@@ -310,7 +307,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     private void updatePlaceMarkList(@NonNull final LinkedList<ItemPlaceMarkEnhancedData> placemarkList) {
         if(this.bind == null || this.recordManager == null || this.placeMarkListAdapter == null) return;
-
         this.placeMarkListAdapter.addPlaceMark(placemarkList);
     }
 
@@ -332,9 +328,48 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     // update course list's item
                     ItemCourseData toUpdateCourse = new ItemCourseData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getPrimaryId(), (int) rawCourse.getDurationMoving(), rawCourse.getCourseType().equals("wood_deck"));
                     this.courseRecyclerAdapter.replaceCourseItem(toUpdateCourse);
+
+                    // when new TRACK has, create *.gpx File
+                    if(this.exporterManager.isExportDirHas()) {
+
+                        // if already has Perm? Export NOW!
+                        this.exporterManager.export(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+
+                    } else {
+                        // request Perm With File Picker by Android System
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+                        intent.putExtra("android.content.extra.FANCY", true);
+                        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
+                        this.requestExportDir.launch(intent);
+                    }
                 }
             }
             Log.d("dspark", "Recording: NEW_TRACK");
+
+        } else if (msg == EventBusMSG.TRACK_EXPORTED) {  // when TRACK EXPORT SUCCESSFULLY BRANCH HERE!
+//            // TODO SEND *.GPX FILE TO SERVER
+//            final String courseType = this.courseRecyclerAdapter.getSelectCourse().isWoodDeck()? TRACK_COURSE_TYPE_WOOD_DECK :TRACK_COURSE_TYPE_DIRT;
+//            final String courseName = this.courseRecyclerAdapter.getSelectedCourseName();
+//            final File courseFile = ExporterManager.pathToFile(bind.getRoot().getContext(), "Trekking", "trk_" + courseName + ".gpx");
+//
+//            this.requestTrackManager.requestUploadCourseFile(
+//                    (int) this.currentTrackId,
+//                    courseName,
+//                    courseType,
+//                    courseFile,
+//                    new RequestTrackManager.OnRequestResponse<ItemTrackData>() {
+//                @Override
+//                public void onRequestResponse(ItemTrackData response, boolean isSuccess) {
+//                    Log.d("dspark", "send GPX Success = " + isSuccess);
+//                }
+//            });
+
+            Log.d("dspark", "Recording: TRACK_EXPORTED");
         }
     }
 
@@ -478,9 +513,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         bind.getRoot().setClickable(true);
                         bind.getRoot().setEnabled(true);
                         isModifyTrackExpended = false;
-
-                        // JUST FUNC TEST
-//                        exporterManager.export(exporterManager.pathToUri( "Trekking", currentTrackName), currentTrackName);
                     }
                     case STATE_DRAGGING -> {}
                 }
@@ -677,11 +709,14 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 // this Data is not valid
                 if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
 
+                placeMarkItem.put("notExists", true);
                 placeMarkItem.put("placeMarkId", placeMarkId);
                 placeMarkItem.put("placeMarkName", placeMarkName);
                 placeMarkItem.put("placeMarkType", placeMarkType);
                 placeMarkItem.put("lat", lat);
                 placeMarkItem.put("lng", lng);
+                placeMarkItem.putOpt("placeMarkImgUrl", new ArrayList<String>(Collections.singleton("IMG URL")));
+
                 requestPlaceMarkBody.put(index++, placeMarkItem);
             }
             requestPlaceMarkList.put("data", requestPlaceMarkBody);
@@ -692,55 +727,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
         return requestPlaceMarkList;
     }
-
-    // when Compressed Images Ready to show, notify
-    private interface OnCompressImageListener {
-        void onCompressImage(LinkedList<Bitmap> compressedImg, boolean isSuccess);
-    }
-
-    // Load image TASK
-//    private void imageLoadTask(@NonNull LinkedList<Uri> sourceImages, @NonNull final RecordEnhancedActivity.OnCompressImageListener listener) {
-//        AsyncTask<Object, Integer, Object> imgLoadTask = new AsyncTask<>() {
-//            LinkedList<Bitmap> compressedImgList;
-//            boolean isSuccess = true;
-//
-//            @Override
-//            protected void onPreExecute() {
-//                super.onPreExecute();
-//                compressedImgList = new LinkedList<>();
-//            }
-//
-//            @Override
-//            protected Object doInBackground(Object[] objects) {
-//                try {
-//                    for (Uri sourceUri : sourceImages) {
-//                        Bitmap compressedImg = ImageManager.Companion.loadBitmapWithCompressAggressive(bind.getRoot().getContext(), sourceUri, 200, 100);
-//                        compressedImgList.add(compressedImg);
-////                        if(!source.isRecycled()) source.recycle();
-////                        source = null;
-//                    }
-//
-//                } catch (IllegalArgumentException | FileNotFoundException e) {
-//                    e.printStackTrace();
-//                    isSuccess = false;
-//                }
-//                sourceImages.clear();
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Object o) {
-//                if(listener != null) listener.onCompressImage(compressedImgList, isSuccess);
-//            }
-//
-//            @Override
-//            protected void onCancelled() {
-//                super.onCancelled();
-//                if(listener != null) listener.onCompressImage(new LinkedList<>(), false);
-//            }
-//        };
-//        imgLoadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 8);
-//    }
 
     private void updateUpsideControlButtonState() {
         if (this.bind == null || this.recordManager == null) return;
@@ -812,6 +798,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
         this.releaseWebView();
 
         if(this.courseRecyclerAdapter != null) {
@@ -834,15 +821,18 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             this.exporterManager = null;
         }
 
-        if(this.requestManager != null) {
-            this.requestManager.release();
-            this.requestManager = null;
+        if(this.requestPlaceMarkManager != null) {
+            this.requestPlaceMarkManager.release();
+            this.requestPlaceMarkManager = null;
         }
+
+//        if(this.requestTrackManager != null) {
+//            this.requestTrackManager.release();
+//            this.requestTrackManager = null;
+//        }
         this.recordManager = null;
 
         this.bind = null;
-        EventBus.getDefault().unregister(this);
-
         super.onDestroy();
     }
 }

@@ -65,6 +65,8 @@ public class RequestPlaceMarkManager {
      * @param trackId placemark's TrackId
      * @param trackName placemark's trackName
      * @param listener Response CallBack Listener
+     *
+     * @deprecated not used function
      */
     public void requestPlaceMarkList(final int trackId,
                                      @NonNull final String trackName,
@@ -129,7 +131,6 @@ public class RequestPlaceMarkManager {
                         ItemPlaceMarkData rawPlaceMarkItem = new ItemPlaceMarkData(trackName, "", placeMarkType, "", true);
                         rawPlaceMarkItem.setToServerId(placeMarkId);
                         rawPlaceMarkItem.setPlaceMarkImgUrl(imageUrlList);
-
                         placeMarkList.add(rawPlaceMarkItem);
                     }
 
@@ -499,7 +500,7 @@ public class RequestPlaceMarkManager {
 
                     try (DataOutputStream sendImageStream = new DataOutputStream(connection.getOutputStream())) {
                         sendImageStream.writeBytes(twoHyphens + boundary + crlf);
-                        final String fileHeader = "Content-Disposition: form-data; name=\"files\";" + "filename=\"" + fileName + "\"" + crlf;
+                        final String fileHeader = "Content-Disposition: form-data; name=\"cmrdCourseDtos[0].courseGpx\";" + "filename=\"" + fileName + "\"" + crlf;
                         sendImageStream.write(fileHeader.getBytes(StandardCharsets.UTF_8));
                         sendImageStream.writeBytes(crlf);
 

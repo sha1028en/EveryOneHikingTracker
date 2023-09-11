@@ -1,15 +1,20 @@
 package eu.basicairdata.graziano.gpslogger.management;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
@@ -18,31 +23,39 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
+import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 import kotlinx.coroutines.Dispatchers;
 
 public class RequestTrackManager {
-    private BackGroundAsyncTask<LinkedList<ItemTrackData>> requestTask;
+    private BackGroundAsyncTask<LinkedList<ItemTrackData>> requestTrackListTask;
 
-    private WeakReference<Context> localContext;
+    private BackGroundAsyncTask<ItemTrackData> requestTrackUploadTask;
+
+//    private WeakReference<Context> localContext;
     public interface OnRequestResponse<V> {
         void onRequestResponse(final V response, final boolean isSuccess);
     }
 
-    public RequestTrackManager(@NonNull final Context context) {
-        this.localContext = new WeakReference<>(context);
+    public RequestTrackManager(/*@NonNull final Context context*/) {
+//        this.localContext = new WeakReference<>(context);
     }
 
     public void release() {
-        if(this.localContext != null) {
-            this.localContext.clear();
-            this.localContext = null;
+//        if(this.localContext != null) {
+//            this.localContext.clear();
+//            this.localContext = null;
+//        }
+
+        if(this.requestTrackListTask != null) {
+            this.requestTrackListTask.cancelTask();
+            this.requestTrackListTask = null;
         }
 
-        if(this.requestTask != null) {
-            this.requestTask.cancelTask();
-            this.requestTask = null;
+        if(this.requestTrackUploadTask != null) {
+            this.requestTrackUploadTask.cancelTask();
+            this.requestTrackUploadTask = null;
         }
     }
 
@@ -54,7 +67,7 @@ public class RequestTrackManager {
      * @param listener Response CallBack Listener
      */
     public void requestTrackList(@Nullable final String requestRegion, @NonNull final TrackRecordManager recordManager, @NonNull final OnRequestResponse<LinkedList<ItemTrackData>> listener) {
-        if(this.requestTask != null && this.requestTask.isTaskAlive()) this.requestTask.cancelTask();
+        if(this.requestTrackListTask != null && this.requestTrackListTask.isTaskAlive()) this.requestTrackListTask.cancelTask();
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemTrackData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
@@ -138,7 +151,115 @@ public class RequestTrackManager {
 
             }
         };
-        this.requestTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-        this.requestTask.executeTask(responseReceiver);
+        this.requestTrackListTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestTrackListTask.executeTask(responseReceiver);
+    }
+
+    public void requestUploadCourseFile(
+            final int trackId,
+            @NonNull final String courseName,
+            @NonNull final String courseType,
+            @NonNull final DocumentFile courseFile,
+            @NonNull final OnRequestResponse<ItemTrackData> listener) {
+
+        if(this.requestTrackUploadTask != null && this.requestTrackUploadTask.isTaskAlive()) this.requestTrackUploadTask.cancelTask();
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemTrackData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+
+            @Override
+            public void preTask() {}
+
+            @Override
+            public ItemTrackData doTask() {
+                HttpURLConnection connection = null;
+
+                final String boundary = Long.toHexString(System.currentTimeMillis());
+                final String crlf = "\r\n";
+                final String twoHyphens = "--";
+
+                try {
+                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/upload/gpx/" + trackId + "/files");
+                    connection = (HttpURLConnection) serverUrl.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Connection", "Keep-Alive");
+                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Content-type", "multipart/form-data;boundary=" + boundary);
+                    connection.setRequestProperty("Accept", "*/*");
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(10000);
+                    connection.setDoOutput(true);
+                    connection.setDoInput(true);
+                    connection.setUseCaches(false);
+
+                    try (DataOutputStream sendImageStream = new DataOutputStream(connection.getOutputStream())) {
+
+                        // *.GPX Name
+                        sendImageStream.writeBytes(twoHyphens + boundary + crlf);
+                        final String courseName = "Content-Disposition: form-data; name=\"cmrdCourseDtos[0].courseName\"" + crlf;
+                        sendImageStream.writeBytes(crlf);
+                        sendImageStream.write(courseName.getBytes(StandardCharsets.UTF_8));
+                        sendImageStream.writeBytes(crlf);
+
+                        // *.GPX Course Type
+                        sendImageStream.writeBytes(twoHyphens + boundary + crlf);
+                        final String courseType = "Content-Disposition: form-data; name=\"cmrdCourseDtos[0].courseType\"" + crlf;
+                        sendImageStream.writeBytes(crlf);
+                        sendImageStream.write(courseType.getBytes(StandardCharsets.UTF_8));
+                        sendImageStream.writeBytes(crlf);
+
+                        // *.GPX BODY
+                        sendImageStream.writeBytes(twoHyphens + boundary + crlf);
+                        final String fileBody = "Content-Disposition: form-data; name=\"cmrdCourseDtos[0].courseGpx\";" + "filename=\"" + courseName + "\"" + crlf;
+                        sendImageStream.write(fileBody.getBytes(StandardCharsets.UTF_8));
+                        sendImageStream.writeBytes(crlf);
+
+
+//                        byte[] toSendImageBuffer = new byte[4 * 1024];
+                        String buffer;
+                        try (BufferedReader imageReadStream = new BufferedReader(new InputStreamReader(GPSApplication.getInstance().getContentResolver().openInputStream(courseFile.getUri())))) {
+                            while ((buffer = imageReadStream.readLine()) != null) {
+                                sendImageStream.write(buffer.getBytes(StandardCharsets.UTF_8));
+                            }
+                        }
+                        sendImageStream.writeBytes(crlf);
+                        sendImageStream.writeBytes(twoHyphens + boundary + twoHyphens);
+                        sendImageStream.flush();
+                    }
+                    Log.d("dspark", connection.getResponseMessage() + "send Gpx response Code " + connection.getResponseCode());
+
+                    BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                    String buffer;
+                    StringBuilder response = new StringBuilder();
+                    try (readStream) {
+                        while ((buffer = readStream.readLine()) != null) {
+                            response.append(buffer);
+                        }
+                    }
+                    JSONObject responseJson = new JSONObject(response.toString());
+                    final String isSuccess = responseJson.getString("message");
+                    if (isSuccess.equals("OK")) Log.d("dspark", "course *.gpx upload success");
+
+                } catch (IOException | JSONException | IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+                return null;
+            }
+
+            @Override
+            public void endTask(ItemTrackData value) {
+                listener.onRequestResponse(null, true);
+            }
+
+            @Override
+            public void failTask(@NonNull Throwable throwable) {
+                throwable.printStackTrace();
+                listener.onRequestResponse(null, false);
+            }
+
+        };
+        this.requestTrackUploadTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestTrackUploadTask.executeTask(responseReceiver);
     }
 }

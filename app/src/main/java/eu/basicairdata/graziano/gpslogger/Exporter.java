@@ -43,6 +43,11 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.getInstance;
 
 import androidx.documentfile.provider.DocumentFile;
 
+import org.greenrobot.eventbus.EventBus;
+
+import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
+import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
+
 /**
  * A Thread that performs the exportation of a Track in KML, GPX, and/or TXT format.
  * The files exported and the destination folder depend on the input parameters.
@@ -259,6 +264,18 @@ class Exporter extends Thread {
                 writeStream.write(String.valueOf(loc.getNumberOfSatellitesUsedInFix()));
                 writeStream.write("</sat>");
             }
+
+            if(loc.getAccuracy() > 0.0f) {
+                writeStream.write("<accuracy>");
+                writeStream.write(String.valueOf(loc.getAccuracy()));
+                writeStream.write("</accuracy>");
+            }
+
+            if(loc.getAltitude() > 0.0f) {
+                writeStream.write("<altitude>");
+                writeStream.write(String.valueOf(loc.getAltitude()));
+                writeStream.write("</altitude>");
+            }
                         /*
                         if (getPrefGPXVersion == GPX1_1) {                                // GPX 1.1 doesn't support speed tags. Let's switch to Garmin extensions :(
                             if (loc.getLocation().hasSpeed()) {
@@ -382,10 +399,10 @@ class Exporter extends Thread {
                     + "     xmlns=\"http://www.topografix.com/GPX/1/0\"" + newLine
                     + "     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" + newLine
                     + "     xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd\">" + newLine);
-            writeStream.write("<name>GPS Logger " + track.getName() + "</name>" + newLine);
+            writeStream.write("<name>" + track.getName() + "</name>" + newLine);
             if (!track.getDescription().isEmpty()) writeStream.write("<desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
             writeStream.write("<time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
-            if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
+//            if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write("<keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
             if ((track.getValidMap() != 0)
                     && (track.getLatitudeMin() != NOT_AVAILABLE) && (track.getLongitudeMin() != NOT_AVAILABLE)
                     && (track.getLatitudeMax() != NOT_AVAILABLE) && (track.getLongitudeMax() != NOT_AVAILABLE)) {
@@ -408,7 +425,7 @@ class Exporter extends Thread {
             //          + "     xmlns:gpxtrkx=\"http://www.garmin.com/xmlschemas/TrackStatsExtension/v1\"" + newLine  //
             //          + "     xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\">" + newLine); //
             writeStream.write("<metadata> " + newLine);    // GPX Metadata
-            writeStream.write(" <name>GPS Logger " + track.getName() + "</name>" + newLine);
+            writeStream.write(" <name>" + track.getName() + "</name>" + newLine);
             if (!track.getDescription().isEmpty()) writeStream.write(" <desc>" + stringToXML(track.getDescription()) + "</desc>" + newLine);
             writeStream.write(" <time>" + dfdtGPX_NoMillis.format(creationTime) + "</time>" + newLine);
             if (track.getEstimatedTrackType() != NOT_AVAILABLE) writeStream.write(" <keywords>" + Track.ACTIVITY_DESCRIPTION[track.getEstimatedTrackType()] + "</keywords>" + newLine);
@@ -540,7 +557,7 @@ class Exporter extends Thread {
                         + " TrackPoints + " + track.getNumberOfPlacemarks() + " Placemarks -->" + newLine);
                 kmlBW.write("<kml xmlns=\"http://www.opengis.net/kml/2.2\">" + newLine);
                 kmlBW.write(" <Document>" + newLine);
-                kmlBW.write("  <name>GPS Logger " + track.getName() + "</name>" + newLine);
+                kmlBW.write("  <name>" + track.getName() + "</name>" + newLine);
                 kmlBW.write("  <description><![CDATA[" + (track.getDescription().isEmpty() ? "" : stringToCDATA(track.getDescription()) + newLine));
                 kmlBW.write(track.getNumberOfLocations() + " Trackpoints + " + track.getNumberOfPlacemarks() + " Placemarks]]></description>" + newLine);
                 if (track.getNumberOfLocations() > 0) {
@@ -920,7 +937,7 @@ class Exporter extends Thread {
                             "<br><br><i>" + track.getNumberOfLocations() + " " + gpsApp.getApplicationContext().getString(R.string.trackpoints) + "</i>" ;
 
                     kmlBW.write("  <Placemark id=\"" + track.getName() + "\">" + newLine);
-                    kmlBW.write("   <name>" + gpsApp.getApplicationContext().getString(R.string.tab_track) + " " + track.getName() + "</name>" + newLine);
+                    kmlBW.write("   <name>" + track.getName() + "</name>" + newLine);
                     kmlBW.write("   <description><![CDATA[" + TrackDesc + "]]></description>" + newLine);
                     kmlBW.write("   <styleUrl>#TrackStyle</styleUrl>" + newLine);
                     kmlBW.write("   <LineString>" + newLine);
@@ -929,9 +946,10 @@ class Exporter extends Thread {
                     kmlBW.write("    <altitudeMode>" + (getPrefKMLAltitudeMode == 1 ? "clampToGround" : "absolute") + "</altitudeMode>" + newLine);
                     kmlBW.write("    <coordinates>" + newLine);
                 }
+
                 if (exportGPX) {
                     trackGpxBW.write("<trk>" + newLine);
-                    trackGpxBW.write(" <name>" + gpsApp.getApplicationContext().getString(R.string.tab_track) + " " + track.getName() + "</name>" + newLine);
+                    trackGpxBW.write(" <name>" + track.getDescription() + "</name>" + newLine);
                     trackGpxBW.write(" <trkseg>" + newLine);
                 }
 
@@ -1048,8 +1066,6 @@ class Exporter extends Thread {
                 }
             }
 
-
-
             // ------------------------------------------------------------ Writing tails and close
             Log.w("myApp", "[#] Exporter.java - Writing Tails and close files");
 
@@ -1065,18 +1081,32 @@ class Exporter extends Thread {
                 trackGpxBW.flush();
                 trackGpxBW.close();
 
+                RequestTrackManager uploadManager = new RequestTrackManager();
+                uploadManager.requestUploadCourseFile(
+                        (int) this.track.getTrackId(),
+                        track.getDescription(),
+                        track.getCourseType(),
+                        this.gpxFile,
+                        new RequestTrackManager.OnRequestResponse<ItemTrackData>() {
+                    @Override
+                    public void onRequestResponse(ItemTrackData response, boolean isSuccess) {
+                        uploadManager.release();
+                    }
+                });
+
                 // List of POI
                 trackWptBw.write("</gpx>" + newLine + " ");
                 trackWptBw.flush();
                 trackWptBw.close();
             }
+
             if (exportTXT) {
                 txtBW.flush();
                 txtBW.close();
             }
 
             Log.w("myApp", "[#] Exporter.java - Track "+ track.getPrimaryId() +" exported in " + (System.currentTimeMillis() - startTime) + " ms (" + elements_total + " pts @ " + ((1000L * elements_total) / (System.currentTimeMillis() - startTime)) + " pts/s)");
-            //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TRACK_EXPORTED, track.getId()));
+            EventBus.getDefault().post(EventBusMSG.TRACK_EXPORTED);
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_SUCCESS);
 
         } catch (IOException e) {
@@ -1084,6 +1114,7 @@ class Exporter extends Thread {
             //EventBus.getDefault().post(new EventBusMSGNormal(EventBusMSG.TOAST_UNABLE_TO_WRITE_THE_FILE, track.getId()));
             asyncGeopointsLoader.interrupt();
             Log.w("myApp", "[#] Exporter.java - Unable to write the file: " + e);
+
         } catch (InterruptedException e) {
             exportingTask.setStatus(ExportingTask.STATUS_ENDED_FAILED);
             asyncGeopointsLoader.interrupt();
@@ -1102,8 +1133,7 @@ class Exporter extends Thread {
      */
     private class AsyncGeopointsLoader extends Thread {
 
-        public AsyncGeopointsLoader() {
-        }
+        public AsyncGeopointsLoader() {}
 
         public void run() {
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);

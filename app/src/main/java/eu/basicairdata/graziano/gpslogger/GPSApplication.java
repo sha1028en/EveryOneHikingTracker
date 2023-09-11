@@ -866,8 +866,10 @@ public class GPSApplication extends Application implements LocationListener {
      * @return a valid string for a filename (without .extension)
      */
     public String getFileName(Track track) {
-        if (track.getDescription().isEmpty()) return track.getName();
-        else return /*track.getName() + " - " + */ stringToDescFileName(track.getDescription());
+        return String.format("%s_%s", track.getName(), track.getDescription());
+
+//        if (track.getDescription().isEmpty()) return track.getName();
+//        else if (track.getName().isEmpty()) return /*track.getName() + " - " + */ stringToDescFileName(track.getDescription());
     }
 
     /**
@@ -1650,7 +1652,7 @@ public class GPSApplication extends Application implements LocationListener {
         this.jobType = jobType;
     }
 
-    public void toExportLoadJob(int jobType, @NonNull final String currentTrackName/*, @NonNull final String currentCourseName*/) {
+    public void toExportLoadJob(int jobType, @NonNull final String trackName, @NonNull final String courseName) {
         exportingTaskList.clear();
 
         synchronized(arrayListTracks) {
@@ -1663,7 +1665,7 @@ public class GPSApplication extends Application implements LocationListener {
 
         synchronized(arrayListTracks) {
             for (Track t : arrayListTracks) {
-                if (/*t.getDescription().equals(currentCourseName) && */t.getName().equals(currentTrackName)) {
+                if (t.getDescription().equals(courseName) && t.getName().equals(trackName)) {
                     ExportingTask et = new ExportingTask();
                     et.setId(t.getPrimaryId());
                     et.setName(getFileName(t));
