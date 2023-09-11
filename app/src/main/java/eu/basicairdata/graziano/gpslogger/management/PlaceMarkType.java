@@ -29,7 +29,7 @@ public enum PlaceMarkType {
                 return 4;
             }
 
-            case "REST" -> {
+            case "REST_AREA" -> {
                 return 3;
             }
 

@@ -49,6 +49,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.BuildConfig;
@@ -322,6 +323,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     private void updatePlaceMarkList(@NonNull final LinkedList<ItemPlaceMarkEnhancedData> placemarkList) {
         if(this.bind == null || this.recordManager == null || this.placeMarkListAdapter == null) return;
+        Collections.sort(placemarkList);
         this.placeMarkListAdapter.addPlaceMark(placemarkList);
     }
 

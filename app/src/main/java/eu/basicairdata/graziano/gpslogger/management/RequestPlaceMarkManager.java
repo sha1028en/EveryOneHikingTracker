@@ -265,9 +265,9 @@ public class RequestPlaceMarkManager {
             case ENTRANCE -> placemarkType = "나눔길 입구";
             case PARKING -> placemarkType = "주차장";
             case TOILET -> placemarkType = "화장실 01";
-            case REST_AREA -> placemarkType = "휴계 공간 01";
-            case BUS_STOP -> placemarkType = "버스 정류장";
-            case OBSERVATION_DECK -> placemarkType = "전망 데크 01";
+            case REST_AREA -> placemarkType = "쉼터 01";
+            case BUS_STOP -> placemarkType = "버스";
+            case OBSERVATION_DECK -> placemarkType = "전망대 01";
             case ETC -> placemarkType = "기타 시설물 01";
 //            default -> placemarkType = "기타 시설물 1";
         }
@@ -281,9 +281,9 @@ public class RequestPlaceMarkManager {
             case ENTRANCE -> placemarkType = "나눔길 입구";
             case PARKING -> placemarkType = "주차장";
             case TOILET -> placemarkType = "화장실";
-            case REST_AREA -> placemarkType = "휴계 공간";
-            case BUS_STOP -> placemarkType = "버스 정류장";
-            case OBSERVATION_DECK -> placemarkType = "전망 데크";
+            case REST_AREA -> placemarkType = "쉼터";
+            case BUS_STOP -> placemarkType = "버스";
+            case OBSERVATION_DECK -> placemarkType = "전망대";
             case ETC -> placemarkType = "기타 시설물";
 //            default -> placemarkType = "기타 시설물";
         }
@@ -297,9 +297,9 @@ public class RequestPlaceMarkManager {
             case "ENTRANCE" -> placemarkType = "나눔길 입구";
             case "PARKING" -> placemarkType = "주차장";
             case "TOILET" -> placemarkType = "화장실";
-            case "REST_AREA" -> placemarkType = "휴계 공간";
-            case "BUS_STOP" -> placemarkType = "버스 정류장";
-            case "OBSERVATION_DECK" -> placemarkType = "전망 데크";
+            case "REST_AREA" -> placemarkType = "쉼터";
+            case "BUS_STOP" -> placemarkType = "버스";
+            case "OBSERVATION_DECK" -> placemarkType = "전망대";
             case "ETC" -> placemarkType = "기타 시설물";
 //            default -> placemarkType = "기타 시설물";
         }

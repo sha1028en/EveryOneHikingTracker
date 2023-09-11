@@ -148,12 +148,12 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         final PlaceMarkType o2Type = PlaceMarkType.valueOf(o2.getPlaceMarkType());
         final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
 
-        // is same placemark TYPE???
-        if(isDiffType == 0) {
-            // compare by Placemark visbilty NAME!
-            return o2.placeMarkTitle.hashCode() - o1.placeMarkTitle.hashCode();
-        }
-        // diff type? return them!
+//        // is same placemark TYPE???
+//        if(isDiffType == 0) {
+//            // compare by Placemark visbilty NAME!
+//            return o2.placeMarkTitle.hashCode() - o1.placeMarkTitle.hashCode();
+//        }
+//        // diff type? return them!
         return isDiffType;
     }
 
@@ -167,12 +167,12 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         final PlaceMarkType o2Type = PlaceMarkType.valueOf(this.getPlaceMarkType());
         final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
 
-        // is same placemark TYPE???
-        if(isDiffType == 0) {
-            // compare by Placemark visbilty NAME!
-            return this.placeMarkTitle.hashCode() - o.placeMarkTitle.hashCode();
-        }
-        // diff type? return them!
+//        // is same placemark TYPE???
+//        if(isDiffType == 0) {
+//            // compare by Placemark visbilty NAME!
+//            return this.placeMarkTitle.hashCode() - o.placeMarkTitle.hashCode();
+//        }
+//        // diff type? return them!
         return isDiffType;
     }
 
