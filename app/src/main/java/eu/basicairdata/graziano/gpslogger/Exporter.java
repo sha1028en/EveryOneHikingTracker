@@ -1093,7 +1093,7 @@ class Exporter extends Thread {
                             @Override
                             public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
                                 uploadManager.release();
-
+                                EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_SUCCESS);
                             }
                         });
 

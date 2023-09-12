@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 
 import androidx.annotation.Nullable;
@@ -42,26 +43,26 @@ public class TrackListActivity extends AppCompatActivity {
         this.bind = ActivityTrackListBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 //            if(ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
 //
 //            }
-        }
+//        }
 
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
-
 
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
+        this.initViewListener();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        this.initViewListener();
+        this.requestTrackList(this.bind.selectRegion.getText().toString());
     }
 
     private void initViewListener() {
@@ -85,7 +86,7 @@ public class TrackListActivity extends AppCompatActivity {
            startActivity(intent);
        });
        this.bind.trackList.setAdapter(trackListAdapter);
-       this.requestTrackList(TrackRegionType.SEOUL.getRegionName());
+//       this.requestTrackList(TrackRegionType.SEOUL.getRegionName());
    }
 
    private void requestTrackList(@Nullable final String requestRegion) {
@@ -101,7 +102,9 @@ public class TrackListActivity extends AppCompatActivity {
                    });
 
                } else {
-                   // TODO Toast
+                   runOnUiThread(() -> {
+                       Toast.makeText(TrackListActivity.this, "서버와 연결이 실패했습니다. 다시 시도해 보세요.", Toast.LENGTH_SHORT).show();
+                   });
                }
            }
        });

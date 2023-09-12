@@ -23,18 +23,11 @@ import java.util.LinkedList;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgData;
 import kotlinx.coroutines.Dispatchers;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class RequestRecordManager {
     private BackGroundAsyncTask<ItemTrackRecord> requestTrackRecordTask;
     private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseRemoveTask;
-    private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseAddTask;
+    private BackGroundAsyncTask<ItemTrackRecord> requestCourseTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestRemoveImgTask;
     public interface OnRequestResponse<V> {
@@ -46,7 +39,7 @@ public class RequestRecordManager {
         this.requestCourseRemoveTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestRemoveImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-        this.requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestCourseTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
@@ -70,9 +63,9 @@ public class RequestRecordManager {
             this.requestRemoveImgTask = null;
         }
 
-        if(this.requestCourseAddTask != null) {
-            this.requestCourseAddTask.cancelTask();
-            this.requestCourseAddTask = null;
+        if(this.requestCourseTask != null) {
+            this.requestCourseTask.cancelTask();
+            this.requestCourseTask = null;
         }
     }
     // REQUEST ADD IMG
@@ -80,7 +73,7 @@ public class RequestRecordManager {
                               @NonNull final String placemarkType,
                               @NonNull final File imageFile,
                               @NonNull final String fileName,
-                              @NonNull final RequestPlaceMarkManager.OnRequestResponse<ItemPlaceMarkImgData> listener) {
+                              @NonNull final OnRequestResponse<ItemPlaceMarkImgData> listener) {
 
         if(this.requestAddImgTask == null) return;
         if(this.requestAddImgTask.isTaskAlive()) this.requestAddImgTask.cancelTask();
@@ -259,7 +252,7 @@ public class RequestRecordManager {
         if(this.requestCourseRemoveTask == null) return;
         if(this.requestCourseRemoveTask.isTaskAlive()) this.requestCourseRemoveTask.cancelTask();
 
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData>() {
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
 
@@ -296,35 +289,102 @@ public class RequestRecordManager {
 
             @Override
             public void endTask(ItemCourseEnhancedData value) {
-                if(listener != null) listener.onRequestResponse(value, true);
+                if (listener != null) listener.onRequestResponse(value, true);
             }
 
             @Override
             public void failTask(@NonNull Throwable throwable) {
                 throwable.printStackTrace();
-                if(listener != null) listener.onRequestResponse(null, false);
+                if (listener != null) listener.onRequestResponse(null, false);
             }
         };
         this.requestCourseRemoveTask.executeTask(responseReceiver);
     }
 
-    // REQUEST TRACK RECORDS LIST
-    private String convertPlacemarkTypeToName(String type) {
-        String placemarkType = "기타 시설물";
+//    private String convertPlacemarkTypeToName(String type) {
+//        String placemarkType = "기타 시설물";
+//
+//        switch (type) {
+//            case "ENTRANCE" -> placemarkType = "나눔길 입구";
+//            case "PARKING" -> placemarkType = "주차장";
+//            case "TOILET" -> placemarkType = "화장실";
+//            case "REST_AREA" -> placemarkType = "쉼터";
+//            case "BUS_STOP" -> placemarkType = "버스";
+//            case "OBSERVATION_DECK" -> placemarkType = "전망대";
+//            case "ETC" -> placemarkType = "기타 시설물";
+////            default -> placemarkType = "기타 시설물";
+//        }
+//        return placemarkType;
+//    }
 
-        switch (type) {
-            case "ENTRANCE" -> placemarkType = "나눔길 입구";
-            case "PARKING" -> placemarkType = "주차장";
-            case "TOILET" -> placemarkType = "화장실";
-            case "REST_AREA" -> placemarkType = "쉼터";
-            case "BUS_STOP" -> placemarkType = "버스";
-            case "OBSERVATION_DECK" -> placemarkType = "전망대";
-            case "ETC" -> placemarkType = "기타 시설물";
-//            default -> placemarkType = "기타 시설물";
-        }
-        return placemarkType;
+    public void requestCourse(final int trackId, @NonNull final OnRequestResponse<ItemTrackRecord> listener) {
+        if(this.requestCourseTask == null) return;
+        if(this.requestCourseTask.isTaskAlive()) this.requestCourseTask.cancelTask();
+
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemTrackRecord> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            @Override
+            public void preTask() {}
+
+            @Override
+            public ItemTrackRecord doTask() {
+                ItemTrackRecord trackRecord = new ItemTrackRecord();
+                HttpURLConnection connection = null;
+
+                LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
+                LinkedList<ItemCourseEnhancedData> courseList;
+
+                try {
+                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId);
+                    connection = (HttpURLConnection) serverUrl.openConnection();
+                    connection.setRequestProperty("Accept", "application/json");
+                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestMethod("GET");
+                    connection.connect();
+
+                    BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                    String buffer;
+                    StringBuilder response = new StringBuilder();
+                    try (readStream) {
+                        while ((buffer = readStream.readLine()) != null) {
+                            response.append(buffer);
+                        }
+                    }
+                    JSONObject rawJsonResponse = new JSONObject(response.toString());
+                    rawJsonResponse = rawJsonResponse.getJSONObject("data");
+
+                    final String trackName = rawJsonResponse.getString("name");
+                    final int trackId = rawJsonResponse.getInt("cmrdId");
+
+//                    placeMarkImgList = parsePlacemarkList(trackName, trackId, rawJsonResponse);
+                    courseList = parseCourseList(trackName, trackId, rawJsonResponse);
+
+//                    trackRecord.setItemPlacemarkImgList(placeMarkImgList);
+                    trackRecord.setItemCourseList(courseList);
+
+                } catch (IOException | JSONException | IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+                return trackRecord;
+            }
+
+            @Override
+            public void endTask(ItemTrackRecord value) {
+                listener.onRequestResponse(value, true);
+            }
+
+            @Override
+            public void failTask(@NonNull Throwable throwable) {
+                throwable.printStackTrace();
+                listener.onRequestResponse(null, false);
+            }
+        };
+        this.requestCourseTask.executeTask(responseReceiver);
     }
 
+    // REQUEST TRACK RECORDS LIST
     public void requestTrackRecords(final int trackId, @NonNull final OnRequestResponse<ItemTrackRecord> listener) {
         if(this.requestTrackRecordTask == null) return;
         if(this.requestTrackRecordTask.isTaskAlive()) this.requestTrackRecordTask.cancelTask();

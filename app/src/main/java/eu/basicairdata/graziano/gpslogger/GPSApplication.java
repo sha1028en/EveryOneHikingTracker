@@ -1098,6 +1098,7 @@ public class GPSApplication extends Application implements LocationListener {
         // Save fix in case this is a STOP or a START (the speed is "old>0 and new=0" or "old=0 and new>0")
         if ((prevFix != null) && (prevFix.getLocation().hasSpeed()) && (eloc.getLocation().hasSpeed()) && (gpsStatus == GPS_OK) && (isRecording)
                 && (((eloc.getLocation().getSpeed() == 0) && (prevFix.getLocation().getSpeed() != 0)) || ((eloc.getLocation().getSpeed() != 0) && (prevFix.getLocation().getSpeed() == 0)))) {
+
             if (!isPrevFixRecorded) {                   // Record the old sample if not already recorded
                 AsyncTODO ast = new AsyncTODO();
                 ast.taskType = TASK_ADDLOCATION;
@@ -1105,13 +1106,13 @@ public class GPSApplication extends Application implements LocationListener {
                 asyncTODOQueue.add(ast);
                 prevRecordedFix = prevFix;
                 isPrevFixRecorded = true;
+                Log.w("dspark", "ADD LOCATION INTO TRACK...");
             }
             forceRecord = true;                         // + Force to record the new
         }
 
         if (gpsStatus == GPS_OK) {
             AsyncTODO ast = new AsyncTODO();
-
             // Distance Filter and Interval Filter in AND
             // The Trackpoint is recorded when both filters are True.
 //                if ((isRecording) && ((prevRecordedFix == null)
@@ -1134,7 +1135,7 @@ public class GPSApplication extends Application implements LocationListener {
                     || ((prefGPSinterval == 0)
                         && (prefGPSdistance > 0)                                                            // Only distance filter enabled
                         && ((loc.distanceTo(prevRecordedFix.getLocation()) >= prefGPSdistance)))
-                    || (currentTrack.getNumberOfLocations() == 0))){                                        // It is the first point of a track
+                    || (currentTrack.getNumberOfLocations() == 0))) {                                       // It is the first point of a track
 
                 prevRecordedFix = eloc;
                 ast.taskType = TASK_ADDLOCATION;
@@ -1145,6 +1146,8 @@ public class GPSApplication extends Application implements LocationListener {
                 ast.location.setType(this.currentTrackDesc);
                 asyncTODOQueue.add(ast);
                 isPrevFixRecorded = true;
+                Log.w("dspark", "ADD LOCATION INTO TRACK...");
+
 
             } else {
                 ast.taskType = TASK_UPDATEFIX;

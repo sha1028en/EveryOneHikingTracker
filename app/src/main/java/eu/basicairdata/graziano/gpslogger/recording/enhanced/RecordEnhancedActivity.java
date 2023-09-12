@@ -61,7 +61,6 @@ import eu.basicairdata.graziano.gpslogger.databinding.ActivityRecordEnahnecdBind
 import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.ItemTrackRecord;
-import eu.basicairdata.graziano.gpslogger.management.RequestPlaceMarkManager;
 import eu.basicairdata.graziano.gpslogger.management.RequestRecordManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 import eu.basicairdata.graziano.gpslogger.recording.AddCourseNameDialog;
@@ -153,8 +152,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 if (!fileName.isBlank()) {
                     try {
                         ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-
-                        this.requestManager.requestAddImg((int) currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestPlaceMarkManager.OnRequestResponse<ItemPlaceMarkImgData>() {
+                        this.requestManager.requestAddImg((int) currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new RequestRecordManager.OnRequestResponse<ItemPlaceMarkImgData>() {
                             @Override
                             public void onRequestResponse(ItemPlaceMarkImgData response, boolean isSuccess) {
                                 runOnUiThread(() -> {
@@ -178,7 +176,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             }
         });
 
-        this.initCourseList();
+        this.initCourseList(true);
         this.initPlaceMarkList();
         this.requestTrackRecords();
         this.initViewEvent();
@@ -186,11 +184,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.initWebView();
     }
 
-    private void initCourseList() {
+    private void initCourseList(boolean createEmptyCourse) {
         if(this.recordManager == null || this.bind == null) return;
 
         LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
-        if(rawCourseList.isEmpty()) {
+        if(rawCourseList.isEmpty() && createEmptyCourse) {
             this.recordManager.createBlankTables(this.currentTrackId, this.currentTrackName, "코스 1", this.currentTrackRegion);
         }
 
@@ -254,7 +252,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         placemarkItem.getPlaceMarkType(),
                         "Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType() + "/" + placemarkItem.getPlaceMarkTitle());
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpFile);
-
                 requestCamera.launch(intent);
             }
         });
@@ -268,13 +265,27 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             final String placeMarkType = buffer.getType();
             final String placeMarkName = buffer.getName();
             final String placeMarkDesc = "";
-            final boolean placeMarkEnable = true;
+            final boolean placeMarkEnable = buffer.isEnable();
 
             ItemPlaceMarkEnhancedData placeMark = new ItemPlaceMarkEnhancedData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
             toSortPlacemarkList.add(placeMark);
         }
         Collections.sort(toSortPlacemarkList);
         this.placeMarkListAdapter.addPlaceMark(toSortPlacemarkList);
+    }
+
+    private void requestCourseRecord() {
+        if(this.bind == null || this.recordManager == null || this.requestManager == null || this.courseRecyclerAdapter == null) return;
+        this.requestManager.requestCourse((int) this.currentTrackId, new RequestRecordManager.OnRequestResponse<ItemTrackRecord>() {
+            @Override
+            public void onRequestResponse(ItemTrackRecord response, boolean isSuccess) {
+                runOnUiThread(() -> {
+                    if(courseRecyclerAdapter != null) {
+                        courseRecyclerAdapter.addCourseItems(response.getItemCourseList());
+                    }
+                });
+            }
+        });
     }
 
     private void requestTrackRecords() {
@@ -285,10 +296,17 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 if (isSuccess) {
                     runOnUiThread(() -> {
                         // SET Course Items
-                        courseRecyclerAdapter.addCourseItems(response.getItemCourseList());
+                        if(courseRecyclerAdapter != null) {
+                            if(response.getItemCourseList() == null || response.getItemCourseList().isEmpty()) {
+                                courseRecyclerAdapter.addCourseItem(new ItemCourseEnhancedData(currentTrackName, "코스 1", (int) currentTrackId, -1, 0.0f, true));
+
+                            } else {
+                                courseRecyclerAdapter.addCourseItems(response.getItemCourseList());
+                            }
+                        }
 
                         // SET Placemark Img
-                        placeMarkListAdapter.addPlaceMarkImg(response.getItemPlacemarkImgList());
+                        if(placeMarkListAdapter != null) placeMarkListAdapter.addPlaceMarkImg(response.getItemPlacemarkImgList());
                     });
                 }
             }
@@ -348,6 +366,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         } else if (msg == EventBusMSG.TRACK_EXPORTED) {  // when TRACK EXPORT SUCCESSFULLY BRANCH HERE!
             Log.i("dspark", "Recording: TRACK_EXPORTED");
+
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
+            Log.i("dspark", "Recording : TRACK_COURSE_SEND_SUCCESS");
+            this.initCourseList(false);
+            this.requestCourseRecord();
         }
     }
 
@@ -541,7 +564,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 dataString = parsePlaceMarkEnhanced().toString();
 //                dataString = parsePlacemark().toString();
-                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
+//                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
             }
         });
         final String modifyTrackUrl = "http://cmrd-tracker.touring.city/index.html";
@@ -768,21 +791,26 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
     }
 
-    private void verifyTrackCourseValid() {
-        LinkedList<ItemCourseEnhancedData> courseList = this.courseRecyclerAdapter.getCloneCourseList();
-        boolean hasValidCourse = false;
-
-        for(ItemCourseEnhancedData item : courseList) {
-            if(item.getCourseDistance() > 0.0f && !item.getCourseName().isBlank()) {
-                hasValidCourse = true;
-                break;
-            }
-        }
-
-        if(hasValidCourse) {
-//            this.recordManager.updateTt
-        }
-    }
+//    private void checkCollectAllPlaceMarks() {
+//        if(this.recordManager == null || this.bind == null || this.placeMarkListAdapter == null) return;
+//
+//        LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = this.placeMarkListAdapter.getClonedList();
+//        boolean isCollectAllPlaceMark = true;
+//
+//        for(ItemPlaceMarkEnhancedData item : placeMarkList) {
+//
+//            // upside label and disable placemark type are IGNORE
+//            if(!item.isPlaceMarkEnable() || item.getPlaceMarkTitle().equals("label")) continue;
+//            if (item.getPlaceMarkImgItemList().isEmpty()) {
+//                isCollectAllPlaceMark = false;
+//                break;
+//            }
+//        }
+//
+//        if(isCollectAllPlaceMark) {
+//
+//        }
+//    }
 
     @Override
     protected void onDestroy() {
@@ -809,15 +837,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             this.exporterManager = null;
         }
 
-//        if(this.requestPlaceMarkManager != null) {
-//            this.requestPlaceMarkManager.release();
-//            this.requestPlaceMarkManager = null;
-//        }
-
-//        if(this.requestTrackManager != null) {
-//            this.requestTrackManager.release();
-//            this.requestTrackManager = null;
-//        }
         this.recordManager = null;
         this.bind = null;
         super.onDestroy();

@@ -263,6 +263,7 @@ public class TrackRecordManager {
         this.gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
         this.gpsApp.setRecording(false);
         this.gpsApp.setPlacemarkRequested(false);
+        this.isRecording = false;
 
         Track currentTrack = this.gpsApp.getCurrentTrack();
         if (currentTrack.getNumberOfLocations() + currentTrack.getNumberOfPlacemarks() > 0) {
@@ -282,7 +283,7 @@ public class TrackRecordManager {
             currentTrack.setDescription(courseName);
             currentTrack.setCourseType(isWoodDeck ? TRACK_COURSE_TYPE_WOOD_DECK : TRACK_COURSE_TYPE_DIRT);
             GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
-            this.isRecording = false;
+
 
             EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
             this.toast = Toast.makeText(this.gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);

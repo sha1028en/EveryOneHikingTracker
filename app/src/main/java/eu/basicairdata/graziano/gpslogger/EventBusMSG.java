@@ -53,5 +53,6 @@ public class EventBusMSG {
     static final short TRACKLIST_RANGE_SELECTION        =  44;  // Select/Deselect a range of tracks
     static final short ACTION_EDIT_TRACK                =  45;  // Edit the selected track
     public static final short TRACK_EXPORTED =          46;     // Track Export Successfully
+    public static final short TRACK_COURSE_SEND_SUCCESS = 47;   // course send to Server Successfully
 
 }

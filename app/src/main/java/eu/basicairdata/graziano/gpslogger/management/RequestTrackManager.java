@@ -124,21 +124,19 @@ public class RequestTrackManager {
                         trackRegion = rawJsonResponse.getString("sido");
 
                         ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion);
-                        if (recordManager != null) {
-                            LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
-                            boolean isTrackHasCourse = false;
-                            // is this track has Course Record???
-                            if (!courses.isEmpty()) {
-                                for (Track course : courses) {
-                                    // is this course has valid record???
-                                    if (course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1) {
-                                        isTrackHasCourse = true;
-                                        break;
-                                    }
+                        LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
+                        boolean isTrackHasCourse = false;
+                        // is this track has Course Record???
+                        if (!courses.isEmpty()) {
+                            for (Track course : courses) {
+                                // is this course has valid record???
+                                if (course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1) {
+                                    isTrackHasCourse = true;
+                                    break;
                                 }
                             }
-                            track.setDoneCourseInfo(isTrackHasCourse);
                         }
+                        track.setDoneCourseInfo(isTrackHasCourse);
                         trackList.add(track);
                     }
 
