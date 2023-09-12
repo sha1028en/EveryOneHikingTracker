@@ -55,23 +55,28 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".recording.enhanced.RecordEnhancedActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
+
         <activity
             android:name=".tracklist.TrackListActivity"
             android:exported="false"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".splash.SplashActivity"
+            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".recording.RecordingActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:launchMode="singleTask" />
 
         <activity
