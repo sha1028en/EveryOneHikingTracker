@@ -27,11 +27,10 @@ public class TrackListActivity extends AppCompatActivity {
     private ActivityTrackListBinding bind; // View n Layout Instance
     private TrackRecordManager recordManager; // Track, Course, Placemark control Manager
     private RequestTrackManager requestTrackManager; // request and response Track Data from Server
-
     private TrackRecyclerAdapter trackListAdapter; // Track List View Adapter ( RecyclerView )
 
-   @Override
-   protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setTheme(R.style.MyMaterialTheme);
         super.onCreate(savedInstanceState);
@@ -41,15 +40,20 @@ public class TrackListActivity extends AppCompatActivity {
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
 
-       this.initViewListener();
 
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
-   }
+    }
 
-   private void initViewListener() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.initViewListener();
+    }
+
+    private void initViewListener() {
         this.bind.selectRegion.setOnClickListener(v -> {
             ChooseRegionListDialog selectRegionDialog = new ChooseRegionListDialog(this, (msg, viewId) -> {
                 if(this.bind == null || this.requestTrackManager == null) return;
