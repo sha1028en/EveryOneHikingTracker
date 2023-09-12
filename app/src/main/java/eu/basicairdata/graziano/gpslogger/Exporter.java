@@ -46,6 +46,7 @@ import androidx.documentfile.provider.DocumentFile;
 import org.greenrobot.eventbus.EventBus;
 
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 
 /**
@@ -1082,17 +1083,19 @@ class Exporter extends Thread {
                 trackGpxBW.close();
 
                 RequestTrackManager uploadManager = new RequestTrackManager();
-                uploadManager.requestUploadCourseFile(
+                uploadManager.requestAddCourse(
                         (int) this.track.getTrackId(),
                         track.getDescription(),
                         track.getCourseType(),
                         this.gpxFile,
-                        new RequestTrackManager.OnRequestResponse<ItemTrackData>() {
-                    @Override
-                    public void onRequestResponse(ItemTrackData response, boolean isSuccess) {
-                        uploadManager.release();
-                    }
-                });
+                        gpsApp.getFileName(track),
+                        new RequestTrackManager.OnRequestResponse<ItemCourseEnhancedData>() {
+                            @Override
+                            public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
+                                uploadManager.release();
+
+                            }
+                        });
 
                 // List of POI
                 trackWptBw.write("</gpx>" + newLine + " ");

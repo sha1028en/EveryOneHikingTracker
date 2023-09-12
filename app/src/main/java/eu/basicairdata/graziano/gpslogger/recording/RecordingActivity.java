@@ -171,9 +171,9 @@ public class RecordingActivity extends AppCompatActivity {
                 ImageManager.Companion.removeLastImage(bind.getRoot().getContext(), currentPoiType);
             }
         });
-        this.initCourseList();
+//        this.initCourseList();
         this.initPlaceMarkList();
-        this.initViewEvent();
+//        this.initViewEvent();
         this.initModifyTrackBottomSheet();
         this.initWebView();
     }
@@ -200,67 +200,67 @@ public class RecordingActivity extends AppCompatActivity {
 //        super.onActivityResult(resultCode, resultCode, resultData);
 //    }
 
-    private void initCourseList(/*ItemPlaceMarkData toRequestPlaceMarkType*/) {
-        if(this.recordManager == null || this.bind == null) return;
-        this.requestManager.requestPlaceMarkList((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
-            @Override
-            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
-                if(isSuccess) {
-                    for (ItemPlaceMarkData item : response) {
-                        Log.d("RequestPlaceMarkMgr", item.toString());
-                    }
-                }
-
-                // if never
-                if(response.isEmpty()) {
-                    RecordingActivity.this.runOnUiThread(() -> {
-                        LinkedList<PlaceMarkType> requestEmptyPoiList = new LinkedList<>(Arrays.asList(PlaceMarkType.values()));
-                        requestManager.requestAddEmptyPlaceMarkList((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
-                            @Override
-                            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
-                                if (isSuccess) {
-                                    for (ItemPlaceMarkData item : response) {
-                                        Log.d("RequestPlaceMarkMgr", "response placemark id : " + item.toString());
-                                    }
-                                }
-                            }
-                        });
-                    });
-                }
-            }
-        });
-
-        LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
-        if(rawCourseList.isEmpty()) {
-            this.recordManager.createBlankTables(this.currentTrackId, this.currentTrackName, "코스 1", this.currentTrackRegion);
-            rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
-        }
-
-        LinearLayoutManager courseRecyclerLayoutManager = new LinearLayoutManager(this);
-        courseRecyclerLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
-        this.bind.recordCourseList.setLayoutManager(courseRecyclerLayoutManager);
-
-        // set data into course list
-        this.courseRecyclerAdapter = new CourseNameRecyclerAdapter(new CourseNameRecyclerAdapter.OnItemSelectListener() {
-            @Override
-            public void onItemSelected(boolean isDeck, ItemCourseData item) {
-                // when course select, Check Box state has change
-                bind.checkDeckCheckbox.setChecked(isDeck);
-            }
-        });
-        this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
-
-        for(Track item : rawCourseList) {
-            final int coursePrimaryId = (int) item.getPrimaryId();
-            final String trackName = item.getName();
-            final String courseName = item.getDescription();
-            final int distance = (int) item.getDurationMoving();
-            final boolean isWoodDeck = item.getCourseType().equals("wood_deck");
-
-            ItemCourseData course = new ItemCourseData(trackName, courseName, coursePrimaryId, distance, isWoodDeck);
-            this.courseRecyclerAdapter.addCourseItem(course);
-        }
-    }
+//    private void initCourseList(/*ItemPlaceMarkData toRequestPlaceMarkType*/) {
+//        if(this.recordManager == null || this.bind == null) return;
+//        this.requestManager.requestPlaceMarkList((int) this.currentTrackId, this.currentTrackName, new RequestPlaceMarkManager.OnRequestResponse<>() {
+//            @Override
+//            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
+//                if(isSuccess) {
+//                    for (ItemPlaceMarkData item : response) {
+//                        Log.d("RequestPlaceMarkMgr", item.toString());
+//                    }
+//                }
+//
+//                // if never
+//                if(response.isEmpty()) {
+//                    RecordingActivity.this.runOnUiThread(() -> {
+//                        LinkedList<PlaceMarkType> requestEmptyPoiList = new LinkedList<>(Arrays.asList(PlaceMarkType.values()));
+//                        requestManager.requestAddEmptyPlaceMarkList((int) currentTrackId, currentTrackName, requestEmptyPoiList, new RequestPlaceMarkManager.OnRequestResponse<>() {
+//                            @Override
+//                            public void onRequestResponse(LinkedList<ItemPlaceMarkData> response, boolean isSuccess) {
+//                                if (isSuccess) {
+//                                    for (ItemPlaceMarkData item : response) {
+//                                        Log.d("RequestPlaceMarkMgr", "response placemark id : " + item.toString());
+//                                    }
+//                                }
+//                            }
+//                        });
+//                    });
+//                }
+//            }
+//        });
+//
+//        LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
+//        if(rawCourseList.isEmpty()) {
+//            this.recordManager.createBlankTables(this.currentTrackId, this.currentTrackName, "코스 1", this.currentTrackRegion);
+//            rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
+//        }
+//
+//        LinearLayoutManager courseRecyclerLayoutManager = new LinearLayoutManager(this);
+//        courseRecyclerLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
+//        this.bind.recordCourseList.setLayoutManager(courseRecyclerLayoutManager);
+//
+//        // set data into course list
+//        this.courseRecyclerAdapter = new CourseNameRecyclerAdapter(new CourseNameRecyclerAdapter.OnItemSelectListener() {
+//            @Override
+//            public void onItemSelected(boolean isDeck, ItemCourseData item) {
+//                // when course select, Check Box state has change
+//                bind.checkDeckCheckbox.setChecked(isDeck);
+//            }
+//        });
+//        this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
+//
+//        for(Track item : rawCourseList) {
+//            final int coursePrimaryId = (int) item.getPrimaryId();
+//            final String trackName = item.getName();
+//            final String courseName = item.getDescription();
+//            final int distance = (int) item.getDurationMoving();
+//            final boolean isWoodDeck = item.getCourseType().equals("wood_deck");
+//
+//            ItemCourseData course = new ItemCourseData(trackName, courseName, coursePrimaryId, distance, isWoodDeck);
+//            this.courseRecyclerAdapter.addCourseItem(course);
+//        }
+//    }
 
     private void initPlaceMarkList() {
         if(this.bind == null || this.recordManager == null) return;
@@ -346,136 +346,136 @@ public class RecordingActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe (threadMode = ThreadMode.MAIN)
-    public void onEvent(Short msg) {
-        if(msg == EventBusMSG.UPDATE_FIX) { // GPS SIGNAL RECEIVE
-            Log.d("dspark", "Recording: UPDATE_FIX");
-            this.updateUpsideControlButtonState();
+//    @Subscribe (threadMode = ThreadMode.MAIN)
+//    public void onEvent(Short msg) {
+//        if(msg == EventBusMSG.UPDATE_FIX) { // GPS SIGNAL RECEIVE
+//            Log.d("dspark", "Recording: UPDATE_FIX");
+//            this.updateUpsideControlButtonState();
+//
+//        } else if (msg == EventBusMSG.UPDATE_TRACK) { // RECORDING COURSE
+//            Log.d("dspark", "Recording: UPDATE_TRACK");
+//
+//        } else if (msg == EventBusMSG.NEW_TRACK) { // A NEW NEW TRACK INCOMING!!!
+//            if(this.courseRecyclerAdapter != null && this.recordManager != null) {
+//                LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+//
+//                if(!rawCourseList.isEmpty()) {
+//                    Track rawCourse = rawCourseList.getLast();
+//                    // update course list's item
+//                    ItemCourseData toUpdateCourse = new ItemCourseData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getPrimaryId(), (int) rawCourse.getDurationMoving(), rawCourse.getCourseType().equals("wood_deck"));
+//                    this.courseRecyclerAdapter.replaceCourseItem(toUpdateCourse);
+//                }
+//            }
+//            Log.d("dspark", "Recording: NEW_TRACK");
+//        }
+//    }
 
-        } else if (msg == EventBusMSG.UPDATE_TRACK) { // RECORDING COURSE
-            Log.d("dspark", "Recording: UPDATE_TRACK");
-
-        } else if (msg == EventBusMSG.NEW_TRACK) { // A NEW NEW TRACK INCOMING!!!
-            if(this.courseRecyclerAdapter != null && this.recordManager != null) {
-                LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
-
-                if(!rawCourseList.isEmpty()) {
-                    Track rawCourse = rawCourseList.getLast();
-                    // update course list's item
-                    ItemCourseData toUpdateCourse = new ItemCourseData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getPrimaryId(), (int) rawCourse.getDurationMoving(), rawCourse.getCourseType().equals("wood_deck"));
-                    this.courseRecyclerAdapter.replaceCourseItem(toUpdateCourse);
-                }
-            }
-            Log.d("dspark", "Recording: NEW_TRACK");
-        }
-    }
-
-    private void initViewEvent() {
-        // upside "Add Course+" btn
-        this.bind.courseAddBtn.setOnClickListener(view -> {
-            AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
-            inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
-                @Override
-                public void onReceiveMessage(String receiveMessage) {
-                    if(receiveMessage.isBlank()) return;
-                    LinkedList<ItemCourseData> courseList = courseRecyclerAdapter.getCloneCourseList();
-
-                    boolean alreadyHas = false;
-                    for(ItemCourseData buffer : courseList) {
-                        if(buffer.getCourseName().equals(receiveMessage)) {
-                            alreadyHas = true;
-                            break;
-                        }
-                    }
-
-                    if(alreadyHas) {
-                        Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다", Toast.LENGTH_SHORT).show();
-
-                    } else {
-                        courseRecyclerAdapter.addCourseItem(new ItemCourseData(currentTrackName, receiveMessage, -1,0, true));
-                    }
-                }
-            });
-            inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input POI Type Dialog");
-        });
-
-        // upside "Remove CourseX" btn
-        this.bind.courseRemoveBtn.setOnClickListener(view -> {
-            if(this.courseRecyclerAdapter.getItemCount() > 1) {
-                final String toRemoveCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
-                this.recordManager.removeCourse(this.currentTrackName, toRemoveCourseName);
-                this.courseRecyclerAdapter.removeCourse(this.currentTrackName, toRemoveCourseName);
-
-            } else {
-                if(toast != null) toast.cancel();
-                toast = Toast.makeText(this.bind.getRoot().getContext(), "최소 1개 이상의 코스가 있어야 합니다.", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
-
-        // upside "Start Record / Pause Record" btn
-        this.bind.recordControlBtn.setOnClickListener(view -> {
-            if(this.bind == null || this.courseRecyclerAdapter == null || this.recordManager == null) return;
-            if(!this.recordManager.isAvailableRecord()) {
-                this.toast.cancel();
-                this.toast = Toast.makeText(this, "코스를 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
-                this.toast.show();
-                return;
-            }
-
-            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
-            if(!selectedCourseName.isBlank()) {
-                if(!this.recordManager.isRecordingCourse() && !this.isPauseCourseRecording) {
-                    // start Record Course
-                    this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
-                    this.isPauseCourseRecording = false;
-
-                } else if (isPauseCourseRecording) {
-                    // resume Record Course
-                    this.recordManager.resumeRecordCourse();
-                    this.isPauseCourseRecording = false;
-
-                } else {
-                    // pause Record Course
-                    this.recordManager.pauseRecordTrack();
-                    this.isPauseCourseRecording = true;
-                }
-                this.updateUpsideControlButtonState();
-
-            } else {
-                Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // upside "Stop Record" btn
-        this.bind.stopRecordBtn.setOnClickListener(v -> {
-            if(this.bind == null || this.courseRecyclerAdapter == null) return;
-            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
-
-            if(!selectedCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
-                this.isPauseCourseRecording = false;
-                this.updateUpsideControlButtonState();
-            }
-        });
-
-        // upside "is Deck" checkBox
-        this.bind.checkDeckCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            ItemCourseData toUpdateCourse = this.courseRecyclerAdapter.getSelectCourse();
-            if(toUpdateCourse != null) {
-                toUpdateCourse.setWoodDeck(isChecked);
-                this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
-                this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.isWoodDeck());
-            }
-        });
-
-        // downside "^" BottomSheet Control Button
-        this.bind.modifySheetControlBtn.setOnClickListener(v -> {
-            BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
-            modifyTrackSheet.setState(this.isModifyTrackExpended? STATE_COLLAPSED: STATE_EXPANDED);
-            modifyTrackSheet = null;
-        });
-    }
+//    private void initViewEvent() {
+//        // upside "Add Course+" btn
+//        this.bind.courseAddBtn.setOnClickListener(view -> {
+//            AddCourseNameDialog inputCourseNameDialog = new AddCourseNameDialog();
+//            inputCourseNameDialog.setOnReceiveMessage(new AddCourseNameDialog.MessageReceiveListener() {
+//                @Override
+//                public void onReceiveMessage(String receiveMessage) {
+//                    if(receiveMessage.isBlank()) return;
+//                    LinkedList<ItemCourseData> courseList = courseRecyclerAdapter.getCloneCourseList();
+//
+//                    boolean alreadyHas = false;
+//                    for(ItemCourseData buffer : courseList) {
+//                        if(buffer.getCourseName().equals(receiveMessage)) {
+//                            alreadyHas = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if(alreadyHas) {
+//                        Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다", Toast.LENGTH_SHORT).show();
+//
+//                    } else {
+//                        courseRecyclerAdapter.addCourseItem(new ItemCourseData(currentTrackName, receiveMessage, -1,0, true));
+//                    }
+//                }
+//            });
+//            inputCourseNameDialog.show(this.getSupportFragmentManager(), "Input POI Type Dialog");
+//        });
+//
+//        // upside "Remove CourseX" btn
+//        this.bind.courseRemoveBtn.setOnClickListener(view -> {
+//            if(this.courseRecyclerAdapter.getItemCount() > 1) {
+//                final String toRemoveCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+//                this.recordManager.removeCourse(this.currentTrackName, toRemoveCourseName);
+//                this.courseRecyclerAdapter.removeCourse(this.currentTrackName, toRemoveCourseName);
+//
+//            } else {
+//                if(toast != null) toast.cancel();
+//                toast = Toast.makeText(this.bind.getRoot().getContext(), "최소 1개 이상의 코스가 있어야 합니다.", Toast.LENGTH_SHORT);
+//                toast.show();
+//            }
+//        });
+//
+//        // upside "Start Record / Pause Record" btn
+//        this.bind.recordControlBtn.setOnClickListener(view -> {
+//            if(this.bind == null || this.courseRecyclerAdapter == null || this.recordManager == null) return;
+//            if(!this.recordManager.isAvailableRecord()) {
+//                this.toast.cancel();
+//                this.toast = Toast.makeText(this, "코스를 기록할수 없습니다. GPS 상태를 확인해 주세요", Toast.LENGTH_SHORT);
+//                this.toast.show();
+//                return;
+//            }
+//
+//            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+//            if(!selectedCourseName.isBlank()) {
+//                if(!this.recordManager.isRecordingCourse() && !this.isPauseCourseRecording) {
+//                    // start Record Course
+//                    this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
+//                    this.isPauseCourseRecording = false;
+//
+//                } else if (isPauseCourseRecording) {
+//                    // resume Record Course
+//                    this.recordManager.resumeRecordCourse();
+//                    this.isPauseCourseRecording = false;
+//
+//                } else {
+//                    // pause Record Course
+//                    this.recordManager.pauseRecordTrack();
+//                    this.isPauseCourseRecording = true;
+//                }
+//                this.updateUpsideControlButtonState();
+//
+//            } else {
+//                Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//
+//        // upside "Stop Record" btn
+//        this.bind.stopRecordBtn.setOnClickListener(v -> {
+//            if(this.bind == null || this.courseRecyclerAdapter == null) return;
+//            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+//
+//            if(!selectedCourseName.isBlank()) {
+//                this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().isWoodDeck());
+//                this.isPauseCourseRecording = false;
+//                this.updateUpsideControlButtonState();
+//            }
+//        });
+//
+//        // upside "is Deck" checkBox
+//        this.bind.checkDeckCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            ItemCourseData toUpdateCourse = this.courseRecyclerAdapter.getSelectCourse();
+//            if(toUpdateCourse != null) {
+//                toUpdateCourse.setWoodDeck(isChecked);
+//                this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
+//                this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.isWoodDeck());
+//            }
+//        });
+//
+//        // downside "^" BottomSheet Control Button
+//        this.bind.modifySheetControlBtn.setOnClickListener(v -> {
+//            BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
+//            modifyTrackSheet.setState(this.isModifyTrackExpended? STATE_COLLAPSED: STATE_EXPANDED);
+//            modifyTrackSheet = null;
+//        });
+//    }
 
     private void initModifyTrackBottomSheet() {
         BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
@@ -626,104 +626,104 @@ public class RecordingActivity extends AppCompatActivity {
 
     private JSONObject parseCourseLocations() {
         JSONObject requestCourseList = new JSONObject();
-        try {
-            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
-            if(clonedCourseList.isEmpty()) return null;
-
-            requestCourseList = new JSONObject(); // Header
-            JSONArray requestCourseBody = new JSONArray(); // Body
-
-            // Header
-            requestCourseList.put("trackName", this.currentTrackName);
-            requestCourseList.put("cmrdId", this.currentTrackId);
-            requestCourseList.put("sido", this.currentTrackRegion);
-            double lat;
-            double lng;
-            int index = 0;
-
-            // Body
-            for (ItemCourseData courseData : clonedCourseList) {
-                LinkedList<LocationExtended> courseList = this.recordManager.getCourseLocationList(courseData.getTrackName(), courseData.getCourseName());
-
-                if (!courseList.isEmpty()) {
-                    try {
-                        JSONArray toSendCourseLocations = new JSONArray();
-                        JSONObject toSendCourseData = new JSONObject();
-                        toSendCourseData.put("courseName", courseData.getCourseName());
-
-                        for (LocationExtended courseLocation : courseList) {
-                            lat = courseLocation.getLatitude();
-                            lng = courseLocation.getLongitude();
-                            JSONObject courseLocationBuffer = new JSONObject();
-
-                            courseLocationBuffer.put("lat", lat);
-                            courseLocationBuffer.put("lng", lng);
-                            toSendCourseLocations.put(courseLocationBuffer);
-                        }
-                        toSendCourseData.put("courseLocations", toSendCourseLocations);
-                        requestCourseBody.put(index++, toSendCourseData);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            requestCourseList.put("data", requestCourseBody);
-            Log.d("dspark", requestCourseList.toString());
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
+//            if(clonedCourseList.isEmpty()) return null;
+//
+//            requestCourseList = new JSONObject(); // Header
+//            JSONArray requestCourseBody = new JSONArray(); // Body
+//
+//            // Header
+//            requestCourseList.put("trackName", this.currentTrackName);
+//            requestCourseList.put("cmrdId", this.currentTrackId);
+//            requestCourseList.put("sido", this.currentTrackRegion);
+//            double lat;
+//            double lng;
+//            int index = 0;
+//
+//            // Body
+//            for (ItemCourseData courseData : clonedCourseList) {
+//                LinkedList<LocationExtended> courseList = this.recordManager.getCourseLocationList(courseData.getTrackName(), courseData.getCourseName());
+//
+//                if (!courseList.isEmpty()) {
+//                    try {
+//                        JSONArray toSendCourseLocations = new JSONArray();
+//                        JSONObject toSendCourseData = new JSONObject();
+//                        toSendCourseData.put("courseName", courseData.getCourseName());
+//
+//                        for (LocationExtended courseLocation : courseList) {
+//                            lat = courseLocation.getLatitude();
+//                            lng = courseLocation.getLongitude();
+//                            JSONObject courseLocationBuffer = new JSONObject();
+//
+//                            courseLocationBuffer.put("lat", lat);
+//                            courseLocationBuffer.put("lng", lng);
+//                            toSendCourseLocations.put(courseLocationBuffer);
+//                        }
+//                        toSendCourseData.put("courseLocations", toSendCourseLocations);
+//                        requestCourseBody.put(index++, toSendCourseData);
+//
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//            requestCourseList.put("data", requestCourseBody);
+//            Log.d("dspark", requestCourseList.toString());
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         return requestCourseList;
     }
 
     private JSONObject parsePlacemark() {
         JSONObject requestPlaceMarkList = new JSONObject();
 
-        try {
-            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
-            if(clonedCourseList.isEmpty()) return null;
-
-            requestPlaceMarkList = new JSONObject(); // Header
-            JSONArray requestPlaceMarkBody = new JSONArray(); // Body
-
-            // Header
-            requestPlaceMarkList.put("trackName", this.currentTrackName);
-            requestPlaceMarkList.put("cmrdId", this.currentTrackId);
-            requestPlaceMarkList.put("sido", this.currentTrackRegion);
-            int placeMarkId;
-            double lat;
-            double lng;
-            boolean isEnablePlaceMark;
-            int index = 0;
-
-            LinkedList<LocationExtended> placemarkList = this.recordManager.getPlaceMarkByTrackName(this.currentTrackName);
-            for(LocationExtended placemarkData : placemarkList) {
-                JSONObject placeMarkItem = new JSONObject();
-                placeMarkId = placemarkData.getPrimaryId();
-                isEnablePlaceMark = placemarkData.isEnable();
-                lat = placemarkData.getLatitude();
-                lng = placemarkData.getLongitude();
-                String placeMarkName = placemarkData.getName();
-                String placeMarkType = placemarkData.getType();
-
-
-                // this Data is not valid
-                if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
-
-                placeMarkItem.put("placeMarkId", placeMarkId);
-                placeMarkItem.put("placeMarkName", placeMarkName);
-                placeMarkItem.put("placeMarkType", placeMarkType);
-                placeMarkItem.put("lat", lat);
-                placeMarkItem.put("lng", lng);
-                requestPlaceMarkBody.put(index++, placeMarkItem);
-            }
-            requestPlaceMarkList.put("data", requestPlaceMarkBody);
-            Log.d("dspark", requestPlaceMarkList.toString());
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            LinkedList<ItemCourseData> clonedCourseList = this.courseRecyclerAdapter.getCloneCourseList();
+//            if(clonedCourseList.isEmpty()) return null;
+//
+//            requestPlaceMarkList = new JSONObject(); // Header
+//            JSONArray requestPlaceMarkBody = new JSONArray(); // Body
+//
+//            // Header
+//            requestPlaceMarkList.put("trackName", this.currentTrackName);
+//            requestPlaceMarkList.put("cmrdId", this.currentTrackId);
+//            requestPlaceMarkList.put("sido", this.currentTrackRegion);
+//            int placeMarkId;
+//            double lat;
+//            double lng;
+//            boolean isEnablePlaceMark;
+//            int index = 0;
+//
+//            LinkedList<LocationExtended> placemarkList = this.recordManager.getPlaceMarkByTrackName(this.currentTrackName);
+//            for(LocationExtended placemarkData : placemarkList) {
+//                JSONObject placeMarkItem = new JSONObject();
+//                placeMarkId = placemarkData.getPrimaryId();
+//                isEnablePlaceMark = placemarkData.isEnable();
+//                lat = placemarkData.getLatitude();
+//                lng = placemarkData.getLongitude();
+//                String placeMarkName = placemarkData.getName();
+//                String placeMarkType = placemarkData.getType();
+//
+//
+//                // this Data is not valid
+//                if(!isEnablePlaceMark || lat <= 0.0f || lng <= 0.0f) continue;
+//
+//                placeMarkItem.put("placeMarkId", placeMarkId);
+//                placeMarkItem.put("placeMarkName", placeMarkName);
+//                placeMarkItem.put("placeMarkType", placeMarkType);
+//                placeMarkItem.put("lat", lat);
+//                placeMarkItem.put("lng", lng);
+//                requestPlaceMarkBody.put(index++, placeMarkItem);
+//            }
+//            requestPlaceMarkList.put("data", requestPlaceMarkBody);
+//            Log.d("dspark", requestPlaceMarkList.toString());
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         return requestPlaceMarkList;
     }
 

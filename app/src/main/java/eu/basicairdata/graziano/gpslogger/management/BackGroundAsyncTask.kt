@@ -97,7 +97,6 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
         val exceptionHandler = CoroutineExceptionHandler {
                 coroutineContext, throwable -> listener.failTask(throwable)
         }
-
         try {
             this.currentTask = this.taskExecutor.async(exceptionHandler) {
                 listener.doTask()

@@ -10,9 +10,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -21,13 +25,19 @@ import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.Track;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 import kotlinx.coroutines.Dispatchers;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RequestTrackManager {
     private BackGroundAsyncTask<LinkedList<ItemTrackData>> requestTrackListTask;
-
     private BackGroundAsyncTask<ItemTrackData> requestTrackUploadTask;
+    private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseAddTask;
 
 //    private WeakReference<Context> localContext;
     public interface OnRequestResponse<V> {
@@ -36,6 +46,7 @@ public class RequestTrackManager {
 
     public RequestTrackManager(/*@NonNull final Context context*/) {
 //        this.localContext = new WeakReference<>(context);
+        this.requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
@@ -43,6 +54,11 @@ public class RequestTrackManager {
 //            this.localContext.clear();
 //            this.localContext = null;
 //        }
+
+        if(this.requestCourseAddTask != null) {
+            this.requestCourseAddTask.cancelTask();
+            this.requestCourseAddTask = null;
+        }
 
         if(this.requestTrackListTask != null) {
             this.requestTrackListTask.cancelTask();
@@ -151,6 +167,14 @@ public class RequestTrackManager {
         this.requestTrackListTask.executeTask(responseReceiver);
     }
 
+    /**
+     * @deprecated
+     * @param trackId
+     * @param courseName
+     * @param courseType
+     * @param courseFile
+     * @param listener
+     */
     public void requestUploadCourseFile(
             final int trackId,
             @NonNull final String courseName,
@@ -208,7 +232,6 @@ public class RequestTrackManager {
                         sendImageStream.write(fileBody.getBytes(StandardCharsets.UTF_8));
                         sendImageStream.writeBytes(crlf);
 
-
 //                        byte[] toSendImageBuffer = new byte[4 * 1024];
                         String buffer;
                         try (BufferedReader imageReadStream = new BufferedReader(new InputStreamReader(GPSApplication.getInstance().getContentResolver().openInputStream(courseFile.getUri())))) {
@@ -257,5 +280,67 @@ public class RequestTrackManager {
         };
         this.requestTrackUploadTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestTrackUploadTask.executeTask(responseReceiver);
+    }
+
+    // REQUEST ADD COURSE
+    public void requestAddCourse(
+            final int trackId,
+            @NonNull final String courseName,
+            @NonNull final String courseType,
+            @NonNull final DocumentFile courseFile,
+            @NonNull final String fileName,
+            @NonNull OnRequestResponse<ItemCourseEnhancedData> listener) {
+        if(this.requestCourseAddTask == null) return;
+        if(this.requestCourseAddTask.isTaskAlive()) this.requestCourseAddTask.cancelTask();
+
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            @Override
+            public void preTask() {}
+
+            @Override
+            public ItemCourseEnhancedData doTask() {
+                OkHttpClient connection = new OkHttpClient();
+                final String url = "http://cmrd-tracker.touring.city/api/cmrd/gpx/" + trackId + "/files";
+
+                try (BufferedReader readStream = new BufferedReader(new InputStreamReader(GPSApplication.getInstance().getContentResolver().openInputStream(courseFile.getUri())))) {
+                    StringBuilder courseFileBuffer = new StringBuilder();
+                    String buffer;
+                    while ((buffer = readStream.readLine()) != null) {
+                        courseFileBuffer.append(buffer);
+                    }
+
+                    RequestBody body = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("cmrdCourseDtos[0].courseName", courseName)
+                            .addFormDataPart("cmrdCourseDtos[0].courseType", courseType)
+                            .addFormDataPart("cmrdCourseDtos[0].courseGpx", fileName + ".", RequestBody.create(courseFileBuffer.toString().getBytes(StandardCharsets.UTF_8), MultipartBody.FORM))
+                            .build();
+
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .addHeader("Authorization", "anwkddosksnarlf")
+                            .addHeader("accept", "*/*")
+                            .post(body)
+                            .build();
+
+                    Response response = connection.newCall(request).execute();
+                    response.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+                return null;
+            }
+
+            @Override
+            public void endTask(ItemCourseEnhancedData value) {
+                listener.onRequestResponse(null, true);
+            }
+
+            @Override
+            public void failTask(@NonNull Throwable throwable) {}
+        };
+        this.requestCourseAddTask.executeTask(responseReceiver);
     }
 }

@@ -517,6 +517,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
 
+    public void updatePlacemark(@NonNull final String trackName, @NonNull final String courseName, final boolean isEnable) {
+        if(trackName.isBlank() || courseName.isBlank()) return;
+
+        ContentValues locvalues = new ContentValues();
+        locvalues.put(KEY_PLACEMARK_ENABLED, isEnable? 1: 0);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        try { // UPDATE
+            db.beginTransaction();
+            db.update(TABLE_PLACEMARKS, locvalues, KEY_TRACK_NAME + " LIKE ? AND " + KEY_PLACEMARK_NAME + " LIKE ? ", new String[] { trackName, courseName } );
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public void updatePlacemark(final int placemarkId, final double lat, final double lng) {
         if(placemarkId < 0 || lat <= 0.0f || lng <= 0.0f) return;
         ContentValues locvalues = new ContentValues();

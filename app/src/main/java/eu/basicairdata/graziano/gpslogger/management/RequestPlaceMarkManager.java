@@ -27,6 +27,9 @@ import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkEnhanc
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgData;
 import kotlinx.coroutines.Dispatchers;
 
+/**
+ * @deprecated new manager {@link RequestRecordManager}
+ */
 public class RequestPlaceMarkManager {
     private BackGroundAsyncTask<LinkedList<ItemPlaceMarkData>> requestTask; // LEGACY
     private BackGroundAsyncTask<LinkedList<ItemPlaceMarkEnhancedData>> requestEnhancedTask;
@@ -390,6 +393,13 @@ public class RequestPlaceMarkManager {
         this.requestTask.executeTask(responseReceiver);
     }
 
+    /**
+     * @deprecated
+     * @param trackId
+     * @param trackName
+     * @param placeMarKTypeList
+     * @param listener
+     */
     public void requestAddEmptyPlaceMarkListEnhanced(
             final int trackId,
             @NonNull final String trackName,

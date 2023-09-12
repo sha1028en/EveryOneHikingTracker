@@ -12,17 +12,18 @@ import java.util.LinkedList;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemCourseBinding;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 
 public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRecyclerAdapter.CourseNameViewHolder> {
     private ItemCourseBinding bind;
-    private LinkedList<ItemCourseData> courseList;
+    private LinkedList<ItemCourseEnhancedData> courseList;
     private String selectedCourseName; // Cursor
-    private ItemCourseData selectCourse; // Cursor
+    private ItemCourseEnhancedData selectCourse; // Cursor
 
     // when checkBox state changed, notify others
     private OnItemSelectListener listener;
     public interface OnItemSelectListener {
-        void onItemSelected(boolean isDeck, ItemCourseData item);
+        void onItemSelected(boolean isDeck, ItemCourseEnhancedData item);
     }
 
     public CourseNameRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
@@ -70,7 +71,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     private void updateItemSelect(int clickedCoursePosition) {
         if(this.courseList != null) {
             int index = 0;
-            for(ItemCourseData item : this.courseList) {
+            for(ItemCourseEnhancedData item : this.courseList) {
                 item.setClicked(clickedCoursePosition == index);
                 ++index;
             }
@@ -78,10 +79,17 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         }
     }
 
-    public void addCourseItem(@NonNull final ItemCourseData item) {
+    public void addCourseItem(@NonNull final ItemCourseEnhancedData item) {
         if(this.courseList != null) {
             this.courseList.add(item);
             this.notifyItemChanged(this.getItemCount());
+        }
+    }
+
+    public void addCourseItems(@NonNull final LinkedList<ItemCourseEnhancedData> item) {
+        if(this.courseList != null) {
+            this.courseList.addAll(item);
+            this.notifyDataSetChanged();
         }
     }
 
@@ -91,12 +99,12 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
      * @param toReplaceItem to Replace Item
      * @return is list has changed???
      */
-    public boolean replaceCourseItem(@NonNull final ItemCourseData toReplaceItem) {
+    public boolean replaceCourseItem(@NonNull final ItemCourseEnhancedData toReplaceItem) {
         boolean hasFound = false;
 
         if(this.courseList != null) {
             int index = 0;
-            for(ItemCourseData buffer : this.courseList) {
+            for(ItemCourseEnhancedData buffer : this.courseList) {
                 // is it has same TrackName, CourseName?
                 if(buffer.getTrackName().equals(toReplaceItem.getTrackName()) && buffer.getCourseName().equals(toReplaceItem.getCourseName())) {
                     hasFound = true;
@@ -113,8 +121,8 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return hasFound;
     }
 
-    public LinkedList<ItemCourseData> getCloneCourseList() {
-        LinkedList<ItemCourseData> clonedCourseList = (LinkedList<ItemCourseData>) this.courseList.clone();
+    public LinkedList<ItemCourseEnhancedData> getCloneCourseList() {
+        LinkedList<ItemCourseEnhancedData> clonedCourseList = (LinkedList<ItemCourseEnhancedData>) this.courseList.clone();
         return clonedCourseList;
     }
 
@@ -133,17 +141,17 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return this.selectedCourseName;
     }
 
-    public ItemCourseData getSelectCourse() {
+    public ItemCourseEnhancedData getSelectCourse() {
         if(this.selectCourse != null) return selectCourse;
         else return null;
     }
 
-    public void updateCourse(@NonNull final ItemCourseData course) {
+    public void updateCourse(@NonNull final ItemCourseEnhancedData course) {
         int i = 0;
         boolean isUpdate = false;
 
         if(this.courseList != null) {
-            for(ItemCourseData item : this.courseList) {
+            for(ItemCourseEnhancedData item : this.courseList) {
                 if(item.getCourseName().equals(course.getCourseName()) && item.getTrackName().equals(course.getTrackName())) {
                     isUpdate = true;
                     break;
@@ -160,9 +168,9 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
     public boolean removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         boolean isRemove = false;
-        ItemCourseData toRemoveCourse = null;
+        ItemCourseEnhancedData toRemoveCourse = null;
         if(this.courseList != null && this.bind != null) {
-            for(ItemCourseData course : this.courseList) {
+            for(ItemCourseEnhancedData course : this.courseList) {
                 if(course.getTrackName().equals(trackName) && course.getCourseName().equals(courseName)) {
                     toRemoveCourse = course;
                     break;
@@ -180,7 +188,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return isRemove;
     }
 
-    public boolean removeCourse(final ItemCourseData course) {
+    public boolean removeCourse(final ItemCourseEnhancedData course) {
         boolean isRemove = false;
 
         if(this.courseList != null && course != null && this.bind != null) {
@@ -200,10 +208,10 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
             this.bind = ItemCourseBinding.bind(itemView);
         }
 
-        public void onBind(ItemCourseData item) {
+        public void onBind(ItemCourseEnhancedData item) {
             if(this.bind != null) {
                 this.bind.courseTitle.setText(item.getCourseName());
-                this.bind.courseDistance.setText(String.format("%dm", item.getCourseDistance()));
+                this.bind.courseDistance.setText(String.format("%dm", (int) item.getCourseDistance()));
 
                 if(item.getIsClicked()) { // Clicked
                     this.bind.courseTitle.setTextColor(this.bind.getRoot().getContext().getColor(R.color.colorPrimaryDark));

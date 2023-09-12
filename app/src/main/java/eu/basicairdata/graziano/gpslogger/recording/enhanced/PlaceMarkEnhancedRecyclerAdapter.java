@@ -18,8 +18,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkEnhancedBinding;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
+import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder> {
     private LinkedList<ItemPlaceMarkEnhancedData> placeMarkDataList;
@@ -63,6 +65,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
 
             this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 holder.setViewEnableEvent(isChecked, false);
+
+                // update POI state
+                TrackRecordManager recordManager = TrackRecordManager.getInstance();
+                if(recordManager != null) {
+                    ItemPlaceMarkEnhancedData item = this.placeMarkDataList.get(position);
+                    recordManager.updatePlaceMark(item.getTrackName(), item.getPlaceMarkTitle(), isChecked);
+                }
             });
 
             this.bind.placemarkAddImg.setOnClickListener(v -> {
@@ -114,6 +123,30 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         this.notifyDataSetChanged();
     }
 
+    public void addPlaceMarkImg(@NonNull final LinkedList<ItemPlaceMarkImgData> items) {
+        if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
+
+        for(ItemPlaceMarkImgData item : items) {
+            ItemPlaceMarkEnhancedData toUpdatePlaceMark = null;
+            boolean hasFind = false;
+            int i = 0;
+
+            for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+                if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
+                    toUpdatePlaceMark = placemark;
+                    toUpdatePlaceMark.addPlaceMarkImgItemList(item);
+                    hasFind = true;
+                    break;
+                }
+                ++i;
+            }
+
+            if(hasFind) {
+                this.placeMarkDataList.set(i, toUpdatePlaceMark);
+                this.notifyItemChanged(i);
+            }
+        }
+    }
 
     public void addPlaceMarkImg(@NonNull final ItemPlaceMarkImgData item) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
@@ -122,7 +155,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         int i = 0;
 
         for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-            if(placemark.getPlaceMarkId() == item.getPlaceMarkId()) {
+            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
                 toUpdatePlaceMark = placemark;
                 toUpdatePlaceMark.addPlaceMarkImgItemList(item);
                 hasFind = true;
@@ -144,7 +177,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         int i = 0;
 
         for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-            if(placemark.getPlaceMarkId() == item.getPlaceMarkId()) {
+            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
                 toRemovePlaceMark = placemark;
                 toRemovePlaceMark.removePlaceMarkImgItemList(item);
                 hasFind = true;
@@ -214,6 +247,15 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
                 this.bind.placemarkEnabled.setFocusable(isEnableEvent);
                 this.bind.placemarkEnabled.setClickable(isEnableEvent);
             }
+
+            this.bind.placemarkEnhancedLayout.setBackgroundResource(isEnableEvent? R.drawable.background_round_border_16: R.drawable.gray_round_border_16);
+            this.bind.placemarkAddImg.setEnabled(isEnableEvent);
+            this.bind.placemarkAddImg.setFocusable(isEnableEvent);
+            this.bind.placemarkAddImg.setClickable(isEnableEvent);
+
+            this.bind.placemarkImgList.setEnabled(isEnableEvent);
+            this.bind.placemarkImgList.setFocusable(isEnableEvent);
+            this.bind.placemarkImgList.setClickable(isEnableEvent);
         }
 
         public PlacemarkTypeViewHolder(@NonNull View itemView) {

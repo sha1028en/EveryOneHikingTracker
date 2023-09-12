@@ -1,12 +1,16 @@
 package eu.basicairdata.graziano.gpslogger.tracklist;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -37,6 +41,13 @@ public class TrackListActivity extends AppCompatActivity {
 
         this.bind = ActivityTrackListBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            if(ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+//
+//            }
+        }
+
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
 

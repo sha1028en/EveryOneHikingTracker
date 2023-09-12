@@ -183,12 +183,11 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         ItemPlaceMarkEnhancedData that = (ItemPlaceMarkEnhancedData) o;
         return trackName.equals(that.trackName) &&
                 placeMarkTitle.equals(that.placeMarkTitle) &&
-                placeMarkType.equals(that.placeMarkType) &&
-                placeMarkDesc.equals(that.placeMarkDesc);
+                placeMarkType.equals(that.placeMarkType);
     }
     @Override
     public int hashCode() {
-        return Objects.hash(trackName, placeMarkTitle, placeMarkType, placeMarkDesc);
+        return Objects.hash(trackName, placeMarkTitle, placeMarkType);
     }
 
     @Override
