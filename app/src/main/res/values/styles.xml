@@ -42,14 +42,25 @@
         <!--  For Custom Action Mode Background Color/Drawable -->
         <item name="actionModeBackground">@color/colorPrimaryDark</item>
         <item name="android:textColor">@color/textColorPrimary</item>
+
+        <item name="toolbarNavigationButtonStyle">@style/ToolBarBackBtnStyle</item>
+        <item name="android:actionOverflowButtonStyle">@style/ActionBtnOverFlowStyle</item>
     </style>
 
     <style name="AppBarLayout" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="colorAccent">@android:color/white</item>
+
+        <item name="toolbarNavigationButtonStyle">@style/ToolBarBackBtnStyle</item>
+        <item name="android:actionOverflowButtonStyle">@style/ActionBtnOverFlowStyle</item>
     </style>
 
     <style name="ToolbarTitle" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/textColorTitle</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+
+        <item name="toolbarNavigationButtonStyle">@style/ToolBarBackBtnStyle</item>
     </style>
 
     <style name="ProgressBar" parent="@android:style/Widget.ProgressBar.Horizontal">
@@ -116,6 +127,7 @@
     </style>
 
 
+
     <!-- About Screen -->
     <style name="MyMaterialThemeAbout" parent="MyMaterialTheme.Base">
         <item name="android:windowBackground">@color/colorBackground</item>
@@ -128,6 +140,13 @@
         <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
     </style>
 
+    <style name="ToolBarBackBtnStyle" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="tint">@color/textColorTitle</item>
+    </style>
+
+    <style name="ActionBtnOverFlowStyle" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="tint">@color/textColorTitle</item>
+    </style>
 
     <!-- Launch Screen -->
     <style name="LaunchScreenTheme" parent="Theme.AppCompat">
@@ -135,15 +154,4 @@
         <item name="colorPrimary">@android:color/black</item>
         <item name="colorPrimaryDark">@android:color/black</item>
     </style>
-
-
-<!--    &lt;!&ndash; Modify Placemark Bottom Sheet &ndash;&gt;-->
-<!--    <style name="ModifyPlacemarkBottomSheetDialogTheme" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">-->
-<!--        <item name="bottomSheetStyle">@style/ModifyPlacemarkBottomSheetShapeTheme</item>-->
-<!--    </style>-->
-
-<!--    <style name="ModifyPlacemarkBottomSheetShapeTheme" parent="Widget.MaterialComponents.BottomSheet">-->
-<!--        <item name="android:background">@drawable/white_round_top_border_20</item>-->
-<!--    </style>-->
-
 </resources>

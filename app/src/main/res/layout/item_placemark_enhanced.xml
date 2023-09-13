@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:padding="12dp"
+            android:padding="16dp"
             android:background="@drawable/border_white_stroke"
             android:src="@drawable/ic_plus_white_24"
             android:adjustViewBounds="true"

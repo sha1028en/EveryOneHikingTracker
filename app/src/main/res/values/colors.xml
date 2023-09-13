@@ -34,6 +34,7 @@
     <color name="textColorPrimary">#eeeeee</color>
     <color name="textColorCardTitle">#111111</color>
     <color name="textColorSecondary">#111111</color>
+    <color name="textColorTitle">#707070</color>
     <color name="textColorWaring">#880000</color>
     <color name="textColorHighlight">#0078d7</color>
 

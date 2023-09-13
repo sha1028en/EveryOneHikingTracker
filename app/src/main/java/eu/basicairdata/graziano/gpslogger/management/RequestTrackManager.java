@@ -291,7 +291,7 @@ public class RequestTrackManager {
                             .setType(MultipartBody.FORM)
                             .addFormDataPart("cmrdCourseDtos[0].courseName", courseName)
                             .addFormDataPart("cmrdCourseDtos[0].courseType", courseType)
-                            .addFormDataPart("cmrdCourseDtos[0].courseGpx", fileName + ".", RequestBody.create(courseFileBuffer.toString().getBytes(StandardCharsets.UTF_8), MultipartBody.FORM))
+                            .addFormDataPart("cmrdCourseDtos[0].courseGpx", fileName + ".gpx", RequestBody.create(courseFileBuffer.toString().getBytes(StandardCharsets.UTF_8), MultipartBody.FORM))
                             .build();
 
                     Request request = new Request.Builder()

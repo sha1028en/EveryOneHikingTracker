@@ -34,6 +34,7 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
@@ -119,6 +120,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.currentTrackId = this.getIntent().getLongExtra(GPSApplication.ATV_EXTRA_TRACK_ID, -1);
         this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
         this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
+
+        this.bind.toolbarTitle.setText(this.currentTrackName);
+        this.setSupportActionBar(this.bind.idToolbar);
+        this.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        this.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // register GPS Event
         if (EventBus.getDefault().isRegistered(this)) {
@@ -846,8 +852,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            this.onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
