@@ -37,7 +37,7 @@ public class RequestRecordManager {
     public RequestRecordManager() {
         this.requestTrackRecordTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestCourseRemoveTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+//        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestRemoveImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestCourseTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
@@ -53,10 +53,10 @@ public class RequestRecordManager {
             this.requestCourseRemoveTask = null;
         }
 
-        if (this.requestAddImgTask != null) {
-            this.requestAddImgTask.cancelTask();
-            this.requestAddImgTask = null;
-        }
+//        if (this.requestAddImgTask != null) {
+//            this.requestAddImgTask.cancelTask();
+//            this.requestAddImgTask = null;
+//        }
 
         if(this.requestRemoveImgTask != null) {
             this.requestRemoveImgTask.cancelTask();
@@ -75,8 +75,8 @@ public class RequestRecordManager {
                               @NonNull final String fileName,
                               @NonNull final OnRequestResponse<ItemPlaceMarkImgData> listener) {
 
-        if(this.requestAddImgTask == null) return;
-        if(this.requestAddImgTask.isTaskAlive()) this.requestAddImgTask.cancelTask();
+//        if(this.requestAddImgTask == null) return;
+//        if(this.requestAddImgTask.isTaskAlive()) this.requestAddImgTask.cancelTask();
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
@@ -184,6 +184,7 @@ public class RequestRecordManager {
                 listener.onRequestResponse(null, false);
             }
         };
+        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestAddImgTask.executeTask(responseReceiver);
     }
 

@@ -9,6 +9,7 @@ import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -132,7 +133,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
             int i = 0;
 
             for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-                if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
+                if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                     toUpdatePlaceMark = placemark;
                     toUpdatePlaceMark.addPlaceMarkImgItemList(item);
                     hasFind = true;
@@ -155,7 +156,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         int i = 0;
 
         for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
+            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                 toUpdatePlaceMark = placemark;
                 toUpdatePlaceMark.addPlaceMarkImgItemList(item);
                 hasFind = true;
@@ -177,7 +178,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         int i = 0;
 
         for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType())) {
+            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && placemark.getPlaceMarkTitle().equals("label")) {
                 toRemovePlaceMark = placemark;
                 toRemovePlaceMark.removePlaceMarkImgItemList(item);
                 hasFind = true;
@@ -240,14 +241,12 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         public interface OnImageSelectedListener {
             void onImageSelect(ItemPlaceMarkImgData imgData, int pos);
         }
-
         public void setViewEnableEvent(final boolean isEnableEvent, final boolean alsoSwitchEventChange) {
             if(alsoSwitchEventChange) {
                 this.bind.placemarkEnabled.setEnabled(isEnableEvent);
                 this.bind.placemarkEnabled.setFocusable(isEnableEvent);
                 this.bind.placemarkEnabled.setClickable(isEnableEvent);
             }
-
             this.bind.placemarkEnhancedLayout.setBackgroundResource(isEnableEvent? R.drawable.background_round_border_16: R.drawable.gray_round_border_16);
             this.bind.placemarkAddImg.setEnabled(isEnableEvent);
             this.bind.placemarkAddImg.setFocusable(isEnableEvent);
@@ -279,7 +278,6 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
 
             this.bind.placemarkTypeTitle.setText(this.placeMarkData.getPlaceMarkTitle());
             this.bind.placemarkEnabled.setChecked(this.placeMarkData.getPlaceMarkEnable());
-
             this.imgRecyclerAdapter = new PlaceMarkImgRecyclerAdapter(new PlaceMarkImgRecyclerAdapter.OnImageClickListener() {
                 @Override
                 public void onImageClick(ItemPlaceMarkImgData placemarkItem, int pos) {
@@ -301,10 +299,10 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
 
             // when it hide by bottom sheet, DONT ACTIVE CLICK EVENT
             if(item.isPlaceMarkHidden()) {
-                this.setViewEnableEvent(false, true);
+                this.setViewEnableEvent(item.isPlaceMarkEnable(), true);
 
             } else {
-                this.setViewEnableEvent(item.isPlaceMarkEnable(), true);
+                this.setViewEnableEvent(item.isPlaceMarkEnable(), false);
             }
             this.imgSelectedListener = listener;
         }

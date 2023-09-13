@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -67,6 +68,8 @@ import eu.basicairdata.graziano.gpslogger.recording.AddCourseNameDialog;
 import eu.basicairdata.graziano.gpslogger.recording.CourseNameRecyclerAdapter;
 
 public class RecordEnhancedActivity extends AppCompatActivity {
+    private final String RESTORE_LATEST_IMG_URI = "LATEST_CAPTURE_IMG_URI";
+    private final String RESTORE_LATEST_IMG_TYPE = "LATEST_CAPTURE_IMG_TYPE";
     private ActivityRecordEnahnecdBinding bind; // this View n Layout Instance
     private boolean isModifyTrackExpended = false; // id Behavior Bottom Sheet has Expended? ( state )
     private Toast toast; // using this activity's toast
@@ -98,6 +101,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         setTheme(R.style.MyMaterialTheme);
         super.onCreate(savedInstanceState);
 
+//        if(savedInstanceState != null) {
+//            this.tmpFile = Uri.parse(savedInstanceState.getString(RESTORE_LATEST_IMG_URI, "EMPTY"));
+//            Log.w("dspark", "onCreate() LATEST IMG URI : " + this.tmpFile.toString());
+//        }
+
         this.bind = ActivityRecordEnahnecdBinding.inflate(this.getLayoutInflater());
         setContentView(this.bind.getRoot());
 
@@ -113,7 +121,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
         EventBus.getDefault().register(this);
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
-//        this.requestPlaceMarkManager = new RequestPlaceMarkManager(this.bind.getRoot().getContext());
         this.requestManager = new RequestRecordManager();
 
         // Request Perm to write GPX File
@@ -148,7 +155,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             if(bind == null || placeMarkListAdapter == null || recordManager == null) return;
             if (result.getResultCode() == RESULT_OK) {
                 String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
-
                 if (!fileName.isBlank()) {
                     try {
                         ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
@@ -157,7 +163,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                             public void onRequestResponse(ItemPlaceMarkImgData response, boolean isSuccess) {
                                 runOnUiThread(() -> {
                                     response.setTrackId(currentPoiId);
-                                    placeMarkListAdapter.addPlaceMarkImg(response);
+                                    if(placeMarkListAdapter != null) placeMarkListAdapter.addPlaceMarkImg(response);
                                 });
                             }
                         });
@@ -175,7 +181,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 ImageManager.Companion.removeLastImage(bind.getRoot().getContext(), currentPoiType);
             }
         });
-
         this.initCourseList(true);
         this.initPlaceMarkList();
         this.requestTrackRecords();
@@ -266,6 +271,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             final String placeMarkName = buffer.getName();
             final String placeMarkDesc = "";
             final boolean placeMarkEnable = buffer.isEnable();
+
+            // SOMETIMES, CORRUPTED VALUES ENTERED HERE!
+            if(placeMarkType.isBlank() || placeMarkName.isBlank()) continue;
 
             ItemPlaceMarkEnhancedData placeMark = new ItemPlaceMarkEnhancedData(trackName, placeMarkName, placeMarkType, placeMarkDesc, placeMarkEnable);
             toSortPlacemarkList.add(placeMark);
@@ -564,10 +572,10 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 dataString = parsePlaceMarkEnhanced().toString();
 //                dataString = parsePlacemark().toString();
-//                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
+                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
             }
         });
-        final String modifyTrackUrl = "http://cmrd-tracker.touring.city/index.html";
+        final String modifyTrackUrl = "http://cmrd-tracker.touring.city/";
         this.bind.modifyTrackWebview.loadUrl(modifyTrackUrl);
     }
 
@@ -752,32 +760,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         if(iconId != 0) button.setCompoundDrawablesWithIntrinsicBounds(iconId, 0, 0, 0);
     }
 
-    @Override
-    public void onBackPressed() {
-        if(this.bind == null || this.recordManager == null || toast == null) {
-            super.onBackPressed();
-        }
-
-        // when recording course, CANT run away.
-        // press "stop record" to stop recording, you can back to previous activity
-        if(this.recordManager.isRecordingCourse()) {
-            toast.cancel();
-            toast = Toast.makeText(this.bind.getRoot().getContext(), "코스 기록중에는 뒤로 돌아갈수 없습니다.", Toast.LENGTH_SHORT);
-            toast.show();
-
-        // when BottomSheet has Expended and press Back,
-        // BottomSheet Close
-        } else if (this.isModifyTrackExpended) {
-            BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
-            modifyTrackSheet.setState(STATE_COLLAPSED);
-            this.isModifyTrackExpended = false;
-            modifyTrackSheet = null;
-
-        // Exit Recording Activity
-        } else {
-            super.onBackPressed();
-        }
-    }
 
     private void releaseWebView() {
         if(this.bind != null) {
@@ -791,26 +773,64 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
     }
 
-//    private void checkCollectAllPlaceMarks() {
-//        if(this.recordManager == null || this.bind == null || this.placeMarkListAdapter == null) return;
-//
-//        LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = this.placeMarkListAdapter.getClonedList();
-//        boolean isCollectAllPlaceMark = true;
-//
-//        for(ItemPlaceMarkEnhancedData item : placeMarkList) {
-//
-//            // upside label and disable placemark type are IGNORE
-//            if(!item.isPlaceMarkEnable() || item.getPlaceMarkTitle().equals("label")) continue;
-//            if (item.getPlaceMarkImgItemList().isEmpty()) {
-//                isCollectAllPlaceMark = false;
-//                break;
-//            }
-//        }
-//
-//        if(isCollectAllPlaceMark) {
-//
-//        }
-//    }
+    @Override
+    public void onBackPressed() {
+        if(this.bind == null || this.recordManager == null || toast == null) {
+            super.onBackPressed();
+        }
+
+        // when recording course, CANT run away.
+        // press "stop record" to stop recording, you can back to previous activity
+        if(this.recordManager.isRecordingCourse()) {
+            toast.cancel();
+            toast = Toast.makeText(this.bind.getRoot().getContext(), "코스 기록중에는 뒤로 돌아갈수 없습니다.", Toast.LENGTH_SHORT);
+            toast.show();
+
+            // when BottomSheet has Expended and press Back,
+            // BottomSheet Close
+        } else if (this.isModifyTrackExpended) {
+            BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
+            modifyTrackSheet.setState(STATE_COLLAPSED);
+            this.isModifyTrackExpended = false;
+            modifyTrackSheet = null;
+
+            // Exit Recording Activity
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    // OFTEN GOTO CAPTURE IMG, CALLED onDestory()
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        if (this.tmpFile != null) {
+            outState.putString(RESTORE_LATEST_IMG_URI, this.tmpFile.toString());
+            Log.w("dspark", "SAVE LATEST IMG URI " + this.tmpFile.toString());
+        }
+
+        if(this.currentPoiType != null && !this.currentPoiType.isBlank()) {
+            outState.putString(RESTORE_LATEST_IMG_TYPE, this.currentPoiType);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    // OFTEN GOTO CAPTURE IMG, CALLED onDestory()
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        this.tmpFile = Uri.parse(savedInstanceState.getString(RESTORE_LATEST_IMG_URI, ""));
+        this.currentPoiType = savedInstanceState.getString(RESTORE_LATEST_IMG_TYPE, "");
+
+        if(this.tmpFile != null) {
+            Log.w("dspark", "RESTORE LATEST IMG URI " + this.tmpFile);
+        }
+        Log.w("dspark", "RESTORE LATEST IMG TYPE " + this.currentPoiType);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
     @Override
     protected void onDestroy() {

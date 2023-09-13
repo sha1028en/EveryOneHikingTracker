@@ -95,7 +95,6 @@ class ImageManager {
             return filePath;
         }
 
-
         fun parseNameFromUri(context: Context, uri: Uri?): String {
             if(uri == null) return ""
             var fileName = ""

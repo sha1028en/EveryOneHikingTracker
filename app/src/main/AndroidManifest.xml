@@ -56,8 +56,8 @@
         <activity
             android:name=".recording.enhanced.RecordEnhancedActivity"
             android:screenOrientation="portrait"
-            android:exported="false"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:exported="false"/>
 
         <activity
             android:name=".tracklist.TrackListActivity"
@@ -74,11 +74,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".recording.RecordingActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:launchMode="singleTask" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".GPSActivity"
