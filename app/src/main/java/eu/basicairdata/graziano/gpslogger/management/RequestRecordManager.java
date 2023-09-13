@@ -28,6 +28,7 @@ public class RequestRecordManager {
     private BackGroundAsyncTask<ItemTrackRecord> requestTrackRecordTask;
     private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseRemoveTask;
     private BackGroundAsyncTask<ItemTrackRecord> requestCourseTask;
+    private BackGroundAsyncTask<ItemPlaceMarkImgData> requestMoveImgPosTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestRemoveImgTask;
     public interface OnRequestResponse<V> {
@@ -37,9 +38,9 @@ public class RequestRecordManager {
     public RequestRecordManager() {
         this.requestTrackRecordTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestCourseRemoveTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-//        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestRemoveImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestCourseTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestMoveImgPosTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
@@ -66,6 +67,11 @@ public class RequestRecordManager {
         if(this.requestCourseTask != null) {
             this.requestCourseTask.cancelTask();
             this.requestCourseTask = null;
+        }
+
+        if(this.requestMoveImgPosTask != null) {
+            this.requestMoveImgPosTask.cancelTask();
+            this.requestMoveImgPosTask = null;
         }
     }
     // REQUEST ADD IMG
@@ -247,6 +253,35 @@ public class RequestRecordManager {
         this.requestRemoveImgTask.executeTask(responseReceiver);
     }
 
+    public void requestMoveImgPos(final int photoId, final double imgLat, final double imgLng, @NonNull RequestRecordManager.OnRequestResponse<ItemPlaceMarkImgData> listener) {
+        if(this.requestMoveImgPosTask == null) return;
+        if(this.requestMoveImgPosTask.isTaskAlive()) this.requestMoveImgPosTask.cancelTask();
+
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            @Override
+            public void preTask() {
+                // NOTHING TO DO
+            }
+
+
+            @Override
+            public ItemPlaceMarkImgData doTask() {
+                return null;
+            }
+
+
+            @Override
+            public void endTask(ItemPlaceMarkImgData value) {
+
+            }
+
+            @Override
+            public void failTask(@NonNull Throwable throwable) {
+
+            }
+        };
+        this.requestMoveImgPosTask.executeTask(responseReceiver);
+    }
 
     // REQUEST REMOVE COURSE
     public void requestRemoveCourse(@NonNull final ItemCourseEnhancedData item, @Nullable final OnRequestResponse<ItemCourseEnhancedData> listener) {
@@ -318,6 +353,7 @@ public class RequestRecordManager {
 //        return placemarkType;
 //    }
 
+    // REQUEST COURSE ONLY
     public void requestCourse(final int trackId, @NonNull final OnRequestResponse<ItemTrackRecord> listener) {
         if(this.requestCourseTask == null) return;
         if(this.requestCourseTask.isTaskAlive()) this.requestCourseTask.cancelTask();

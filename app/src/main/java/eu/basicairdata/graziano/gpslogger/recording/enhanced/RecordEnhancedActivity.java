@@ -698,6 +698,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 if(placeMarkName.equals("label")) continue;
                 if(imgList.isEmpty()) continue;
+
                 JSONArray itemSendPlaceMarkImg = new JSONArray();
                 int i = 0;
 

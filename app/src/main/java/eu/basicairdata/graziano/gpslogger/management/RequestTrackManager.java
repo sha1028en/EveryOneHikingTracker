@@ -39,22 +39,15 @@ public class RequestTrackManager {
     private BackGroundAsyncTask<ItemTrackData> requestTrackUploadTask;
     private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseAddTask;
 
-//    private WeakReference<Context> localContext;
     public interface OnRequestResponse<V> {
         void onRequestResponse(final V response, final boolean isSuccess);
     }
 
-    public RequestTrackManager(/*@NonNull final Context context*/) {
-//        this.localContext = new WeakReference<>(context);
+    public RequestTrackManager() {
         this.requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
-//        if(this.localContext != null) {
-//            this.localContext.clear();
-//            this.localContext = null;
-//        }
-
         if(this.requestCourseAddTask != null) {
             this.requestCourseAddTask.cancelTask();
             this.requestCourseAddTask = null;
@@ -116,27 +109,33 @@ public class RequestTrackManager {
                     String trackName;
                     String trackAddress;
                     String trackRegion;
+                    int courseCount;
+                    int placeMarkCount;
                     for (int i = 0; i < jsonTrackList.length(); i++) {
                         rawJsonResponse = jsonTrackList.getJSONObject(i);
                         trackId = rawJsonResponse.getInt("cmrdId");
                         trackName = rawJsonResponse.getString("name");
                         trackAddress = rawJsonResponse.getString("addr");
                         trackRegion = rawJsonResponse.getString("sido");
+                        courseCount = rawJsonResponse.optInt("courseCnt", 0);
+                        placeMarkCount = rawJsonResponse.optInt("courseCnt", 0);
 
                         ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion);
-                        LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
-                        boolean isTrackHasCourse = false;
-                        // is this track has Course Record???
-                        if (!courses.isEmpty()) {
-                            for (Track course : courses) {
-                                // is this course has valid record???
-                                if (course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1) {
-                                    isTrackHasCourse = true;
-                                    break;
-                                }
-                            }
-                        }
-                        track.setDoneCourseInfo(isTrackHasCourse);
+//                        LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
+//
+//                        boolean isTrackHasCourse = false;
+//                        // is this track has Course Record???
+//                        if (!courses.isEmpty()) {
+//                            for (Track course : courses) {
+//                                // is this course has valid record???
+//                                if (course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1) {
+//                                    isTrackHasCourse = true;
+//                                    break;
+//                                }
+//                            }
+//                        }
+                        track.setDoneCourseInfo(courseCount > 0);
+                        track.setDonePlacemarkPic(placeMarkCount > 0);
                         trackList.add(track);
                     }
 
