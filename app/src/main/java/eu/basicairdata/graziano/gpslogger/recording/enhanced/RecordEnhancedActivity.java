@@ -502,8 +502,8 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     case STATE_EXPANDED -> { // when BottomSheet Complete Appeared
                         modifyTrackSheet.setDraggable(false);
 
-                        bind.rootDisableLayout.bringToFront();
-                        bind.rootDisableLayout.setVisibility(View.VISIBLE);
+//                        bind.rootDisableLayout.bringToFront();
+//                        bind.rootDisableLayout.setVisibility(View.VISIBLE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(true);
                         bind.getRoot().setNestedScrollingEnabled(false);
                         bind.getRoot().setFocusable(false);
@@ -514,7 +514,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     }
 
                     case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED, STATE_SETTLING -> {
-                        bind.rootDisableLayout.setVisibility(View.GONE);
+//                        bind.rootDisableLayout.setVisibility(View.GONE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(false);
                         bind.getRoot().setFocusable(true);
                         bind.getRoot().setClickable(true);
@@ -688,10 +688,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             requestPlaceMarkHeader.put("cmrdId", this.currentTrackId);
             requestPlaceMarkHeader.put("sido", this.currentTrackRegion);
             JSONArray requestPlaceMarkBody = new JSONArray(); // PlaceMark Body
+            int dummyPlaceMarkId = 0;
 
             for(ItemPlaceMarkEnhancedData itemPlaceMark : clonedPlaceMarkList) {
                 final boolean isEnablePlaceMark = itemPlaceMark.isPlaceMarkEnable();
-                final int placeMarkId = itemPlaceMark.getPlaceMarkId();
+                final int placeMarkId = dummyPlaceMarkId++;
                 final String placeMarkName = itemPlaceMark.getPlaceMarkTitle();
                 final String placeMarkType = itemPlaceMark.getPlaceMarkType();
                 final LinkedList<ItemPlaceMarkImgData> imgList = itemPlaceMark.getPlaceMarkImgItemList();
@@ -734,8 +735,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     private void updateUpsideControlButtonState() {
         if (this.bind == null || this.recordManager == null) return;
-//        this.mBind.proofSatliteTxt.setText(String.format("%d/%d : %s", this.recordManager.getAvailableSatellitesCnt(), this.recordManager.getTotalSatellitesCnt(), this.getString(R.string.satellites)));
-
         final boolean isRecording = this.recordManager.isRecordingCourse();
 
         this.bind.stopRecordBtn.setFocusable(isRecording);

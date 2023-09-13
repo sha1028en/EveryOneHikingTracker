@@ -10,13 +10,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -24,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
-import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 import kotlinx.coroutines.Dispatchers;
@@ -68,10 +63,9 @@ public class RequestTrackManager {
      * request Track List to Server
      *
      * @param requestRegion what kind of Track Type? ( if it null, request All Tracks )
-     * @param recordManager TrackRecordManager
-     * @param listener Response CallBack Listener
+     * @param listener      Response CallBack Listener
      */
-    public void requestTrackList(@Nullable final String requestRegion, @NonNull final TrackRecordManager recordManager, @NonNull final OnRequestResponse<LinkedList<ItemTrackData>> listener) {
+    public void requestTrackList(@Nullable final String requestRegion, @NonNull final OnRequestResponse<LinkedList<ItemTrackData>> listener) {
         if(this.requestTrackListTask != null && this.requestTrackListTask.isTaskAlive()) this.requestTrackListTask.cancelTask();
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemTrackData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
@@ -118,22 +112,9 @@ public class RequestTrackManager {
                         trackAddress = rawJsonResponse.getString("addr");
                         trackRegion = rawJsonResponse.getString("sido");
                         courseCount = rawJsonResponse.optInt("courseCnt", 0);
-                        placeMarkCount = rawJsonResponse.optInt("courseCnt", 0);
+                        placeMarkCount = rawJsonResponse.optInt("poiCnt", 0);
 
                         ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion);
-//                        LinkedList<Track> courses = recordManager.getCourseListByTrackName(trackName);
-//
-//                        boolean isTrackHasCourse = false;
-//                        // is this track has Course Record???
-//                        if (!courses.isEmpty()) {
-//                            for (Track course : courses) {
-//                                // is this course has valid record???
-//                                if (course.getDurationMoving() > 1.0f && course.getNumberOfLocations() > 1) {
-//                                    isTrackHasCourse = true;
-//                                    break;
-//                                }
-//                            }
-//                        }
                         track.setDoneCourseInfo(courseCount > 0);
                         track.setDonePlacemarkPic(placeMarkCount > 0);
                         trackList.add(track);

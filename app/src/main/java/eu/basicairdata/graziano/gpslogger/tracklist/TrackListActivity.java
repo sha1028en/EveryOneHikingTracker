@@ -1,9 +1,6 @@
 package eu.basicairdata.graziano.gpslogger.tracklist;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -11,7 +8,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -24,8 +20,6 @@ import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityTrackListBinding;
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
-import eu.basicairdata.graziano.gpslogger.management.TrackRegionType;
-import eu.basicairdata.graziano.gpslogger.recording.RecordingActivity;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.RecordEnhancedActivity;
 
 public class TrackListActivity extends AppCompatActivity {
@@ -91,7 +85,7 @@ public class TrackListActivity extends AppCompatActivity {
 
    private void requestTrackList(@Nullable final String requestRegion) {
        if(this.requestTrackManager == null || this.bind == null || this.trackListAdapter == null) return;
-       this.requestTrackManager.requestTrackList(requestRegion, this.recordManager, new RequestTrackManager.OnRequestResponse<>() {
+       this.requestTrackManager.requestTrackList(requestRegion, new RequestTrackManager.OnRequestResponse<>() {
            @Override
            public void onRequestResponse(LinkedList<ItemTrackData> response, boolean isSuccess) {
                if (isSuccess) {
