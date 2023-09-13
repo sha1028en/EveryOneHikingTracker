@@ -1,5 +1,6 @@
 package eu.basicairdata.graziano.gpslogger.tracklist;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,6 +105,12 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
 
         public void onBind(ItemTrackData item) {
             if(this.bind == null || item == null) return;
+
+            final boolean allDone  = item.isDoneCourseInfo & item.isDonePlacemarkPic;
+            this.bind.gotoRecord.setBackgroundResource(allDone? R.drawable.background_round_stroke_border_32 : R.drawable.blue_round_border_32);
+            this.bind.gotoRecord.setText(allDone? "수정 >" : "정보 입력 >");
+            this.bind.gotoRecord.setTextColor(allDone? Color.parseColor("#0078d7"): Color.parseColor("#eeeeee"));
+            this.bind.getRoot().setBackgroundResource(allDone? R.drawable.lightgray_round_border_8: R.drawable.background_round_border_8);
 
             this.bind.trackName.setText(item.getTrackName());
             this.bind.trackAddress.setText(item.getTrackAddress());
