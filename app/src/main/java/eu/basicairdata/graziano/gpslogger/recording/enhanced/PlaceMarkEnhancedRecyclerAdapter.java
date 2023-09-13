@@ -178,7 +178,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         int i = 0;
 
         for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
-            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && placemark.getPlaceMarkTitle().equals("label")) {
+            if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                 toRemovePlaceMark = placemark;
                 toRemovePlaceMark.removePlaceMarkImgItemList(item);
                 hasFind = true;
