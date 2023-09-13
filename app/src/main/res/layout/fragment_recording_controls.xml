@@ -117,7 +117,7 @@
             android:layout_height="wrap_content"
             android:freezesText="true"
             android:gravity="center_horizontal"
-            app:drawableTopCompat="@drawable/ic_stop_24"
+            app:drawableTopCompat="@drawable/ic_stop_enable_24"
             android:text="@string/stop"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textSize="12sp"

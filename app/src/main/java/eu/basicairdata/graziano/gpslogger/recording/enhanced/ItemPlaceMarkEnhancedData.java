@@ -124,12 +124,24 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         this.placeMarkImgItemList = placeMarkImgItemList;
     }
 
-    public void addPlaceMarkImgItemList(@NonNull final ItemPlaceMarkImgData item) {
+    public void addPlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
         this.placeMarkImgItemList.add(item);
     }
 
-    public void removePlaceMarkImgItemList(@NonNull final ItemPlaceMarkImgData item) {
+    public void removePlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
         this.placeMarkImgItemList.remove(item);
+    }
+
+    public void setPlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
+        if(this.getPlaceMarkImgItemList().isEmpty()) return;
+
+        int i = 0;
+        for(ItemPlaceMarkImgData buffer : this.getPlaceMarkImgItemList()) {
+            if(buffer.equals(item)) {
+                this.getPlaceMarkImgItemList().set(i, item);
+            }
+            ++i;
+        }
     }
 
     /**

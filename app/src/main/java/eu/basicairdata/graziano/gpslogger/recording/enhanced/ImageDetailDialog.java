@@ -30,10 +30,27 @@ public class ImageDetailDialog extends Dialog {
         this.listener = listener;
     }
 
+    private String convertPlacemarkTypeToName(String type) {
+        if(type == null) return "기타 시설물";
+        final String placemarkType;
+
+        switch (type) {
+            case "ENTRANCE" -> placemarkType = "나눔길 입구";
+            case "PARKING" -> placemarkType = "주차장";
+            case "TOILET" -> placemarkType = "화장실";
+            case "REST_AREA" -> placemarkType = "쉼터";
+            case "BUS_STOP" -> placemarkType = "버스";
+            case "OBSERVATION_DECK" -> placemarkType = "전망대";
+            case "ETC" -> placemarkType = "기타 시설물";
+            default -> placemarkType = "기타 시설물";
+        }
+        return placemarkType;
+    }
+
     @Override
     public void show() {
         this.setContentView(this.bind.getRoot());
-        this.bind.imgTitle.setText(this.imgData.getPlaceMarkType());
+        this.bind.imgTitle.setText(this.convertPlacemarkTypeToName(this.imgData.getPlaceMarkType()));
 
         Glide.with(this.bind.imgview)
                 .load(this.imgData.getImageUrl())

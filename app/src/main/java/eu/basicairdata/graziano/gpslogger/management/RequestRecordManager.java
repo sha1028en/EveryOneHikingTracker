@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StyleableRes;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +24,11 @@ import java.util.LinkedList;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgData;
 import kotlinx.coroutines.Dispatchers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RequestRecordManager {
     private BackGroundAsyncTask<ItemTrackRecord> requestTrackRecordTask;
@@ -263,21 +269,54 @@ public class RequestRecordManager {
                 // NOTHING TO DO
             }
 
-
             @Override
             public ItemPlaceMarkImgData doTask() {
-                return null;
-            }
+                OkHttpClient connection = new OkHttpClient();
+                final String serverUrl = "http://cmrd-tracker.touring.city:80/api/cmrd/poi/31" + photoId;
+                final JSONObject toSendPhotoLocation = new JSONObject();
+                ItemPlaceMarkImgData resultImg = null;
 
+                try {
+                    toSendPhotoLocation.put("lat", imgLat);
+                    toSendPhotoLocation.put("lng", imgLng);
+
+                    Request request = new Request.Builder()
+                            .url(serverUrl)
+                            .addHeader("Authorization", "anwkddosksnarlf")
+                            .post(RequestBody.create(MediaType.parse("application/json"), toSendPhotoLocation.toString()))
+                            .build();
+
+                    Response response = connection.newCall(request).execute();
+                    JSONObject rawResponse = new JSONObject(response.body().string());
+                    rawResponse = rawResponse.getJSONObject("data");
+
+                    final int trackId = rawResponse.getInt("cmrdId");
+                    final int photoId = rawResponse.getInt("poiId");
+                    final String poiType = rawResponse.getString("poiType");
+                    final String imgUrl = rawResponse.getString("imgUrl");
+                    final double modifyImgLat = rawResponse.getDouble("imgLat");
+                    final double modifyImgLng = rawResponse.getDouble("imgLng");
+
+                    resultImg = new ItemPlaceMarkImgData(trackId, photoId, poiType, imgUrl);
+                    resultImg.setImgLat(modifyImgLat);
+                    resultImg.setImgLng(modifyImgLng);
+
+                } catch (JSONException | IOException | NullPointerException e) {
+                    e.printStackTrace();
+                }
+                return resultImg;
+            }
 
             @Override
             public void endTask(ItemPlaceMarkImgData value) {
-
+                if(value == null) listener.onRequestResponse(null, false);
+                else listener.onRequestResponse(value, true);
             }
 
             @Override
             public void failTask(@NonNull Throwable throwable) {
-
+                throwable.printStackTrace();
+                listener.onRequestResponse(null, false);
             }
         };
         this.requestMoveImgPosTask.executeTask(responseReceiver);
@@ -367,7 +406,6 @@ public class RequestRecordManager {
                 ItemTrackRecord trackRecord = new ItemTrackRecord();
                 HttpURLConnection connection = null;
 
-                LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
                 LinkedList<ItemCourseEnhancedData> courseList;
 
                 try {
@@ -392,10 +430,8 @@ public class RequestRecordManager {
                     final String trackName = rawJsonResponse.getString("name");
                     final int trackId = rawJsonResponse.getInt("cmrdId");
 
-//                    placeMarkImgList = parsePlacemarkList(trackName, trackId, rawJsonResponse);
                     courseList = parseCourseList(trackName, trackId, rawJsonResponse);
 
-//                    trackRecord.setItemPlacemarkImgList(placeMarkImgList);
                     trackRecord.setItemCourseList(courseList);
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {

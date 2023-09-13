@@ -49,7 +49,7 @@
     <color name="colorIconDisabledOnDialog">#d0d0d0</color>
 
     <color name="colorCardBackground_Title">#ffffff</color>
-    <color name="colorCardBackground_Line">#f7f7f7</color>
+    <color name="colorCardBackground_Line">#b0b0b0</color>
     <color name="colorCardBackground_Data">#fbfbfb</color>
     <color name="colorCardBackground">#f7f7f7</color>
     <color name="colorCardBackground_Selected">#5fff8888</color>

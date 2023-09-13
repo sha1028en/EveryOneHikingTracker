@@ -44,7 +44,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:background="@drawable/background_round_border_16"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@drawable/background_round_border_8"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -71,15 +73,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:track="@drawable/switch_track_selector" />
 
-        <Button
+        <ImageView
             android:id="@+id/placemark_add_img"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            android:text="+"
-            android:textSize="24sp"
-            android:maxHeight="50dp"
+            android:padding="12dp"
+            android:background="@drawable/border_white_stroke"
+            android:src="@drawable/ic_plus_white_24"
+            android:adjustViewBounds="true"
             app:layout_constraintEnd_toStartOf="@id/placemark_img_list"
             app:layout_constraintStart_toStartOf="@+id/placemark_type_title"
             app:layout_constraintTop_toBottomOf="@+id/placemark_type_title" />

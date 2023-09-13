@@ -16,9 +16,11 @@
             android:id="@+id/record_control_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/colorItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
+
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/id_toolbar"
@@ -26,12 +28,6 @@
                 android:layout_height="?attr/actionBarSize"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
                 app:titleTextAppearance="@style/ToolbarTitle">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_gravity="bottom"
-                    android:background="@color/colorCardBackground_Line" />
             </androidx.appcompat.widget.Toolbar>
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -47,6 +43,15 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_gravity="bottom"
+                        android:background="@color/colorCardBackground_Line"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/record_course_list"
@@ -84,8 +89,9 @@
                             android:paddingTop="6dp"
                             android:paddingEnd="12dp"
                             android:paddingBottom="6dp"
-                            android:text="          "
-                            android:textColor="@color/textColorPrimary" />
+                            android:drawableStart="@drawable/ic_stop_disable_24"
+                            android:text="종료"
+                            android:textColor="#0099d7" />
 
                         <TextView
                             android:id="@+id/record_control_btn"
@@ -104,11 +110,21 @@
                             android:id="@+id/check_deck_checkbox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
                             android:buttonTint="@color/colorPrimary"
                             android:checked="true"
-                            android:text="데크 바닥"
+                            android:text="데크"
                             android:textColor="@color/textColorSecondary" />
+
+                        <CheckBox
+                            android:id="@+id/check_dirt_checkbox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="@color/colorPrimary"
+                            android:checked="true"
+                            android:text="황토"
+                            android:textColor="@color/textColorSecondary"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -126,7 +142,7 @@
                             android:id="@+id/course_add_btn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="#aaaaaa"
+                            android:backgroundTint="#e1e1e1"
                             android:text="코스 추가+"
                             android:textColor="@color/textColorSecondary" />
 
@@ -134,7 +150,7 @@
                             android:id="@+id/course_remove_btn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="#aaaaaa"
+                            android:backgroundTint="#e1e1e1"
                             android:text="코스 삭제X"
                             android:textColor="@color/textColorSecondary" />
                     </LinearLayout>

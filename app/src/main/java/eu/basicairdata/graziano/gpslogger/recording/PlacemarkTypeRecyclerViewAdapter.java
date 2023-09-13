@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
@@ -198,7 +197,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
 
         public void setViewEnableEvent(final boolean isEnableEvent, final boolean alsoSwitchEventChange) {
             this.bind.placemarkDisabledLayout.setVisibility(isEnableEvent? View.GONE: View.VISIBLE);
-            this.bind.placemarkLayout.setBackgroundResource(isEnableEvent? R.drawable.background_round_border_16: R.drawable.gray_round_border_16);
+            this.bind.placemarkLayout.setBackgroundResource(isEnableEvent? R.drawable.background_round_border_8 : R.drawable.gray_round_border_16);
 
             this.bind.placeamrkAddMore.setEnabled(isEnableEvent);
             this.bind.placeamrkAddMore.setFocusable(isEnableEvent);

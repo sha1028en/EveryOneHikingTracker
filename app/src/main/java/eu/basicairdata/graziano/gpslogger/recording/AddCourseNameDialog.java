@@ -21,7 +21,7 @@ import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class AddCourseNameDialog  extends DialogFragment {
     private DialogAddCourseBinding bind;
-    private MessageReceiveListener callBackMessagelistener;
+    private MessageReceiveListener callBackMessageListener;
 
     public interface MessageReceiveListener {
         void onReceiveMessage(final String receiveMessage);
@@ -44,9 +44,9 @@ public class AddCourseNameDialog  extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         TrackRecordManager recordManager = TrackRecordManager.getInstance();
-                        if(isAdded() && recordManager != null && callBackMessagelistener != null) {
+                        if(isAdded() && recordManager != null && callBackMessageListener != null) {
                             String addedCourseName = bind.courseNameDescription.getText().toString();
-                            callBackMessagelistener.onReceiveMessage(addedCourseName);
+                            callBackMessageListener.onReceiveMessage(addedCourseName);
                         }
                     }
                 });
@@ -62,12 +62,12 @@ public class AddCourseNameDialog  extends DialogFragment {
 
     @Override
     public void onDestroyView() {
-        this.callBackMessagelistener = null;
+        this.callBackMessageListener = null;
         this.bind = null;
         super.onDestroyView();
     }
 
     public void setOnReceiveMessage(@NonNull final MessageReceiveListener listener) {
-        this.callBackMessagelistener = listener;
+        this.callBackMessageListener = listener;
     }
 }

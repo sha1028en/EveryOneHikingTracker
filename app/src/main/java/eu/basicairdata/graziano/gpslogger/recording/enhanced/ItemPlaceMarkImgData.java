@@ -2,12 +2,14 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import androidx.annotation.NonNull;
 
+import java.util.Objects;
+
 public class ItemPlaceMarkImgData {
     private int TrackId;
     private final String placeMarkType;
 
-    private int imgId;
-    private String imageUrl;
+    private int imgId; // IMG PRIMARY KEY
+    private String imageUrl; // IMG URL
     private double imgLat = 0.0f;
     private double imgLng = 0.0f;
 
@@ -70,5 +72,18 @@ public class ItemPlaceMarkImgData {
                 ", imgLat=" + imgLat +
                 ", imgLng=" + imgLng +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPlaceMarkImgData imgData = (ItemPlaceMarkImgData) o;
+        return imgId == imgData.imgId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(imgId);
     }
 }

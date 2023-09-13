@@ -20,14 +20,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PersistableBundle;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
@@ -502,8 +507,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     case STATE_EXPANDED -> { // when BottomSheet Complete Appeared
                         modifyTrackSheet.setDraggable(false);
 
-//                        bind.rootDisableLayout.bringToFront();
-//                        bind.rootDisableLayout.setVisibility(View.VISIBLE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(true);
                         bind.getRoot().setNestedScrollingEnabled(false);
                         bind.getRoot().setFocusable(false);
@@ -514,7 +517,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     }
 
                     case STATE_COLLAPSED, STATE_HIDDEN, STATE_HALF_EXPANDED, STATE_SETTLING -> {
-//                        bind.rootDisableLayout.setVisibility(View.GONE);
                         placeMarkListAdapter.setPlaceMarksIsHidden(false);
                         bind.getRoot().setFocusable(true);
                         bind.getRoot().setClickable(true);
@@ -572,7 +574,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 dataString = parsePlaceMarkEnhanced().toString();
 //                dataString = parsePlacemark().toString();
-                view.loadUrl("javascript:window.AndroidToWeb('place', '" + dataString +"')");
+                view.loadUrl("javascript:window.AndroidToWeb('placemark', '" + dataString +"')");
             }
         });
         final String modifyTrackUrl = "http://cmrd-tracker.touring.city/";
@@ -608,14 +610,24 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 } else if (key.equals("modifyPlace")) {
                     try {
+                        if(requestManager == null ) return;
+
                         JSONObject receiveModifyPlaceMarkJson = new JSONObject(value);
-                        final int placeMarkId = receiveModifyPlaceMarkJson.getInt("placeMarkId");
+                        final int photoId = receiveModifyPlaceMarkJson.getInt("photoId");
                         final double lat = receiveModifyPlaceMarkJson.getDouble("lat");
                         final double lng = receiveModifyPlaceMarkJson.getDouble("lng");
-                        recordManager.updatePlaceMark(placeMarkId, lat, lng);
+                        requestManager.requestMoveImgPos(photoId, lat, lng, new RequestRecordManager.OnRequestResponse<ItemPlaceMarkImgData>() {
+                            @Override
+                            public void onRequestResponse(ItemPlaceMarkImgData response, boolean isSuccess) {
+                                runOnUiThread(() -> {
+                                    if(bind == null || placeMarkListAdapter == null || !isSuccess) return;
+                                    placeMarkListAdapter.setPlaceMarkImg(response);
 
-                        String toSendPlaceMarkList =  parsePlaceMarkEnhanced().toString(); //parsePlacemark().toString();
-                        bind.modifyTrackWebview.loadUrl("javascript:window.AndroidToWeb('place', '" + toSendPlaceMarkList +"')");
+                                    String toSendPlaceMarkList = parsePlaceMarkEnhanced().toString();
+                                    bind.modifyTrackWebview.loadUrl("javascript:window.AndroidToWeb('placemark', '" + toSendPlaceMarkList + "')");
+                                });
+                            }
+                        });
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -674,6 +686,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            requestCourseList = new JSONObject();
         }
         return requestCourseList;
     }
@@ -740,8 +753,13 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         this.bind.stopRecordBtn.setFocusable(isRecording);
         this.bind.stopRecordBtn.setClickable(isRecording);
         this.bind.stopRecordBtn.setEnabled(isRecording);
-        this.bind.stopRecordBtn.setText(isRecording ? "종료" : "            ");
-        this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording ? R.drawable.ic_stop_24 : 0, 0, 0, 0);
+
+        SpannableString emphaticInformation = new SpannableString("종료");
+        emphaticInformation.setSpan(new ForegroundColorSpan(isRecording? Color.parseColor("#ededed"): Color.parseColor("#0099d7")), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        emphaticInformation.setSpan(new StyleSpan(Typeface.BOLD), 0, 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        this.bind.stopRecordBtn.setText(emphaticInformation);
+        this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording ? R.drawable.ic_stop_enable_24 : R.drawable.ic_stop_disable_24, 0, 0, 0);
 
         if(!isRecording && !this.isPauseCourseRecording) {
             this.setButtonState(this.bind.recordControlBtn, R.drawable.blue_round_border_32, R.drawable.ic_play_24, R.string.record);
