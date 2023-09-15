@@ -6,14 +6,16 @@
         android:name="android.hardware.camera"
         android:required="true" />
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -25,17 +27,14 @@
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-
             <data android:mimeType="application/gpx+xml" />
         </intent>
         <intent>
             <action android:name="android.intent.action.VIEW" />
-
             <data android:mimeType="application/vnd.google-earth.kml+xml" />
         </intent>
         <intent>
             <action android:name="android.intent.action.SEND_MULTIPLE" />
-
             <data android:mimeType="text/xml" />
         </intent>
     </queries>
@@ -125,6 +124,7 @@
             android:name=".GPSService"
             android:enabled="true"
             android:exported="false"
+            android:permission="android.permission.FOREGROUND_SERVICE_LOCATION"
             android:foregroundServiceType="location">
             <intent-filter>
                 <action android:name="eu.basicairdata.graziano.gpslogger.GPSService" />

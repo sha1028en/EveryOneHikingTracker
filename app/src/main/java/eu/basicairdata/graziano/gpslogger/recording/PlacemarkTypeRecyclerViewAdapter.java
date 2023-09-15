@@ -22,6 +22,9 @@ import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkTypeBinding;
 
+/**
+ * @deprecated
+ */
 public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<PlacemarkTypeRecyclerViewAdapter.PlacemarkTypeViewHolder> {
     private LinkedList<ItemPlaceMarkData> placeMarkDataList;
     private ItemPlacemarkTypeBinding bind;

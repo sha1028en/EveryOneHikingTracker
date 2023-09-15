@@ -76,7 +76,7 @@ public class TrackListActivity extends AppCompatActivity {
            Intent intent = new Intent(bind.getRoot().getContext(), RecordEnhancedActivity.class);
            intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
            intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
-           intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, item.getTrackId());
+           intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, (int) item.getTrackId());
            startActivity(intent);
        });
        this.bind.trackList.setAdapter(trackListAdapter);

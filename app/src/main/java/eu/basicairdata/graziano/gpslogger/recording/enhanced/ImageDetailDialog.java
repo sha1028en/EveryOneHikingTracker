@@ -7,11 +7,12 @@ import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 
 import eu.basicairdata.graziano.gpslogger.databinding.DialogImageDetailBinding;
 
-public class ImageDetailDialog extends Dialog {
+public class ImageDetailDialog extends Dialog implements Serializable {
     private DialogImageDetailBinding bind;
     private WeakReference<Context> localContext;
 

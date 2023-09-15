@@ -28,6 +28,8 @@ import java.util.Locale;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
+import eu.basicairdata.graziano.gpslogger.management.CourseRoadType;
+
 
 /**
  * Describes and manages a Track.
@@ -49,8 +51,8 @@ public class Track {
     public static final int TRACK_TYPE_FLIGHT   = 6;
     public static final int TRACK_TYPE_ND       = NOT_AVAILABLE;
 
-    public static final String TRACK_COURSE_TYPE_WOOD_DECK = "wood_deck";
-    public static final String TRACK_COURSE_TYPE_DIRT = "dirt";
+//    public static final String TRACK_COURSE_TYPE_WOOD_DECK = "wood_deck";
+//    public static final String TRACK_COURSE_TYPE_DIRT = "dirt";
 
     public static final int[] ACTIVITY_DRAWABLE_RESOURCE = {    // The indexes must match the Track Types previously defined:
             R.drawable.ic_tracktype_place_24dp,                 // Track.TRACK_TYPE_STEADY   = 0;
@@ -135,7 +137,7 @@ public class Track {
     // 0 = Do not generate thumb (track crosses anti-meridian)
 
     private int     type                        = TRACK_TYPE_ND;    // Saved in DB
-    private String courseType                   = TRACK_COURSE_TYPE_WOOD_DECK;
+    private String courseType                   = CourseRoadType.WOOD_DECK.name();
     private String trackRegion                  = "";
 
     // True if the card view is selected

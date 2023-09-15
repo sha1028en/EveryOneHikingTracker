@@ -2,25 +2,25 @@ package eu.basicairdata.graziano.gpslogger.management;
 
 import static android.os.Environment.DIRECTORY_DCIM;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
+import kotlinx.coroutines.Dispatchers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ExporterManager {
     private GPSApplication gpsApp;
@@ -81,4 +81,46 @@ public class ExporterManager {
             this.gpsApp.deselectAllTracks();
         }
     }
+
+//    public void parseGpx(@NonNull final String gpxFileUrl) {
+//        BackGroundAsyncTask<JSONArray> requestGpxFileParse = new BackGroundAsyncTask<>(Dispatchers.getIO());
+//        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<JSONArray> responseListener = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+//            @Override
+//            public void preTask() {
+//
+//            }
+//
+//            @Override
+//            public JSONArray doTask() {
+//                JSONArray trackPoint = new JSONArray();
+//                try {
+//                    OkHttpClient client = new OkHttpClient();
+//                    Request request = new Request.Builder()
+//                            .addHeader("accept", "*/*")
+//                            .url(gpxFileUrl)
+//                            .build();
+//
+//                    Response response = client.newCall(request).execute();
+//                    String result = response.body().string();
+//                    String[] rawPoints = result.split("^<trkpt lat=\"[0-9]+\\.[0-9]+\" lon=\"[0-9]+\\.[0-9]+\">$");
+//                    Log.d("dspark", rawPoints.toString());
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                return trackPoint;
+//            }
+//
+//            @Override
+//            public void failTask(@NonNull Throwable throwable) {
+//
+//            }
+//
+//            @Override
+//            public void endTask(JSONArray value) {
+//
+//            }
+//        };
+//        requestGpxFileParse.executeTask(responseListener);
+//    }
 }

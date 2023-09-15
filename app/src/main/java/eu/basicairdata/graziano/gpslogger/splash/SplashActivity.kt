@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -129,21 +130,33 @@ class SplashActivity : AppCompatActivity() {
     private fun checkLocationPermission() {
         Log.w("myApp", "[#] GPSActivity.java - Check Location Permission...")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission granted")
 
             // Permission Granted
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-                    val intent = Intent(this, TrackListActivity::class.java)
-                    this.startActivity(intent)
-                    this.finish()
+//                    val intent = Intent(this, TrackListActivity::class.java)
+//                    this.startActivity(intent)
+//                    this.finish()
 
                 } else {
                     val listPermissionsNeeded: MutableList<String> = ArrayList()
                     listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
                     ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
                     return
+                }
+
+            } else {
+                // FOR LOW ANDROID OS
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+
+                    val listPermissionsNeeded: MutableList<String> = ArrayList()
+                    listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
                 }
             }
             val intent = Intent(this, TrackListActivity::class.java)
@@ -169,6 +182,10 @@ class SplashActivity : AppCompatActivity() {
                 // TO READ MEDIA_IMG, AUDIO, VIDEO
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
+
+                } else {
+                    listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
                 ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
             }

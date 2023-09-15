@@ -7,8 +7,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.ExifInterface
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.os.Environment.DIRECTORY_DCIM
+import android.os.Environment.DIRECTORY_PICTURES
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import java.io.ByteArrayOutputStream
@@ -38,17 +40,17 @@ class ImageManager {
          *
          * @return to save Image Uri or Null ( failed )
          * @throws NullPointerException wrong param state
+         * 
          * @throws IllegalArgumentException wrong param value
          */
         @Throws(NullPointerException::class, IllegalArgumentException::class)
         fun createTmpFile(context: Context, fileName: String, filePath: String) : Uri? {
             val localContext = WeakReference(context)
             val value = ContentValues()
-//            val fileDir = localContext.get()!!.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
-            value.put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
             value.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
             value.put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/$filePath")
+            value.put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
 
             val imageResolver = localContext.get()!!.contentResolver
             return imageResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, value)

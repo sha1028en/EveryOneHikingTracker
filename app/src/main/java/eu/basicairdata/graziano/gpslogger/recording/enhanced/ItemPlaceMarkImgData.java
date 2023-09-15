@@ -2,9 +2,10 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class ItemPlaceMarkImgData {
+public class ItemPlaceMarkImgData implements Serializable {
     private int TrackId;
     private final String placeMarkType;
 

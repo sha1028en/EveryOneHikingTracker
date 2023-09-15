@@ -22,7 +22,7 @@
   -->
 
 <resources>
-    <string name="app_name" translatable="false">GPX Traker</string>
+    <string name="app_name" translatable="false">무장애 나눔길</string>
 
     <!-- Tabs -->
     <string name="tab_gpsfix">보정 GPS</string>
@@ -114,6 +114,8 @@
     <string name="dlg_add_annotation">방문지 추가</string>
     <string name="dlg_enter_the_description">설명을 추가하세요.</string>
     <string name="dlg_button_add">추가</string>
+    <string name="dlg_enter_the_course_name">알파벳 대문자 1글자 (예 T, A, E…)</string>
+    <string name="dlg_add_course">코스 추가</string>
 
     <!-- Tracklist -->
     <string name="tracklist_empty">기록된 트랙이 없습니다.</string>

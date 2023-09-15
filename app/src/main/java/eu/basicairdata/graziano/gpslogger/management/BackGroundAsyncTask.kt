@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 import java.lang.RuntimeException
@@ -23,6 +24,7 @@ import java.util.concurrent.CancellationException
 class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatcher) {
     private val taskExecutor: CoroutineScope = CoroutineScope(this.scopeType)
     private var currentTask: Deferred<V>? = null
+    private var delayMilliSecond = 0L
 
     companion object {
         /**
@@ -72,6 +74,11 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
         }
     }
 
+    fun setDelay(delayMilliSecond: Long) {
+        if(delayMilliSecond < 0L) this.delayMilliSecond = 0L
+        else this.delayMilliSecond = delayMilliSecond
+    }
+
     /**
      * cancel Task when running
      */
@@ -97,8 +104,10 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
         val exceptionHandler = CoroutineExceptionHandler {
                 coroutineContext, throwable -> listener.failTask(throwable)
         }
+
         try {
             this.currentTask = this.taskExecutor.async(exceptionHandler) {
+                delay(delayMilliSecond)
                 listener.doTask()
             }
             val result = this.currentTask!!.await()

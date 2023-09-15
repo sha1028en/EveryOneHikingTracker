@@ -23,7 +23,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     // when checkBox state changed, notify others
     private OnItemSelectListener listener;
     public interface OnItemSelectListener {
-        void onItemSelected(boolean isDeck, ItemCourseEnhancedData item);
+        void onItemSelected(String courseType, ItemCourseEnhancedData item);
     }
 
     public CourseNameRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
@@ -37,32 +37,36 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         this.bind = ItemCourseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
 
         CourseNameViewHolder holder = new CourseNameViewHolder(this.bind.getRoot());
-        this.bind.courseRoot.setOnClickListener(v -> {
-            TrackRecordManager recordManager = TrackRecordManager.getInstance();
-            if(recordManager == null || recordManager.isRecordingCourse()) {
-                // DO NOTHING
-
-            } else {
-                // when Recording Course, CAN NOT SELECT other course
-                this.selectCourse = this.courseList.get(holder.getBindingAdapterPosition());
-                this.selectedCourseName = this.selectCourse.getCourseName();
-                this.updateItemSelect(holder.getBindingAdapterPosition());
-                if(this.listener != null) listener.onItemSelected(this.selectCourse.isWoodDeck(), this.selectCourse);
-            }
-            recordManager = null; // GC HURRY!
-        });
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull CourseNameViewHolder holder, int position) {
         holder.onBind(this.courseList.get(position));
+        this.bind.courseRoot.setOnClickListener(v -> {
+            TrackRecordManager recordManager = TrackRecordManager.getInstance();
+
+            if (recordManager != null && !recordManager.isRecordingCourse()) {
+                // when Recording Course, CAN NOT SELECT other course
+                this.updateItemSelect(position);
+                this.selectCourse = this.courseList.get(position);
+                this.selectedCourseName = this.selectCourse.getCourseName();
+                if(this.listener != null) listener.onItemSelected(this.selectCourse.getCourseType(), this.selectCourse);
+            }
+            recordManager = null; // GC HURRY!
+        });
     }
 
     @Override
     public int getItemCount() {
         if(this.courseList != null) return this.courseList.size();
         else return 0;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+//        return super.getItemViewType(position);
+        return position;
     }
 
     /**
@@ -218,8 +222,8 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                     this.bind.courseDistance.setTextColor(this.bind.getRoot().getContext().getColor(R.color.colorPrimaryDark));
 
                 } else { // isnt Clicked
-                    this.bind.courseTitle.setTextColor(this.bind.getRoot().getContext().getColor(R.color.textColorSecondary));
-                    this.bind.courseDistance.setTextColor(this.bind.getRoot().getContext().getColor(R.color.textColorSecondary));
+                    this.bind.courseTitle.setTextColor(this.bind.getRoot().getContext().getColor(R.color.textColorDisable));
+                    this.bind.courseDistance.setTextColor(this.bind.getRoot().getContext().getColor(R.color.textColorDisable));
                 }
             }
         }

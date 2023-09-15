@@ -2,8 +2,6 @@ package eu.basicairdata.graziano.gpslogger.management;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_DISABLED;
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_OK;
-import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_DIRT;
-import static eu.basicairdata.graziano.gpslogger.Track.TRACK_COURSE_TYPE_WOOD_DECK;
 
 import android.content.Context;
 import android.location.Location;
@@ -16,7 +14,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 
@@ -254,10 +251,10 @@ public class TrackRecordManager {
      * @param trackName   to save track Name
      * @param courseName  to save track Description
      * @param trackRegion to save track Region
-     * @param isWoodDeck  to save track Type ( Wooden or Dirty )
+     * @param courseType  to save track Type ( Wooden or Dirty )
      * @see GPSApplication::onRequestStop(bool, bool)
      */
-    public void stopRecordTrack(final long trackId, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, boolean isWoodDeck) {
+    public void stopRecordTrack(final long trackId, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, String courseType) {
         if(this.gpsApp == null || !this.isRecording) return;
 
         this.gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -281,7 +278,7 @@ public class TrackRecordManager {
             currentTrack.setTrackRegion(trackRegion);
             currentTrack.setName(trackName);
             currentTrack.setDescription(courseName);
-            currentTrack.setCourseType(isWoodDeck ? TRACK_COURSE_TYPE_WOOD_DECK : TRACK_COURSE_TYPE_DIRT);
+            currentTrack.setCourseType(courseType);
             GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
 
 
@@ -375,9 +372,8 @@ public class TrackRecordManager {
         }
     }
 
-    public void updateCourseType(@NonNull final String trackName, @NonNull final String courseName, boolean isWoodDeck) {
+    public void updateCourseType(@NonNull final String trackName, @NonNull final String courseName, String courseType) {
         if(this.gpsApp != null) {
-            final String courseType = isWoodDeck? "wood_deck": "dirty";
             this.gpsApp.gpsDataBase.updateCourseType(trackName, courseName, courseType);
         }
     }
@@ -390,7 +386,7 @@ public class TrackRecordManager {
         emptyTrack.setTrackId(trackId);
         emptyTrack.setName(trackName);
         emptyTrack.setDescription(trackDesc);
-        emptyTrack.setCourseType(TRACK_COURSE_TYPE_WOOD_DECK);
+        emptyTrack.setCourseType(CourseRoadType.UNDEFINED.name());
         emptyTrack.setTrackRegion(trackRegion);
         this.gpsApp.gpsDataBase.addTrack(emptyTrack);
 

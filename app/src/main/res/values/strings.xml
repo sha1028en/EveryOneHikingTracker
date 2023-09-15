@@ -22,7 +22,7 @@
   -->
 
 <resources>
-    <string name="app_name" translatable="false">GPX Traker</string>
+    <string name="app_name" translatable="false">무장애 나눔길</string>
 
     <!-- Tabs -->
     <string name="tab_gpsfix">GPS Fix</string>
@@ -244,23 +244,25 @@
     <string name="UM_kn">kn</string>
     <string name="UM_s">s</string>
 
-    <!--Region of South Korea which record track    -->
-    <string name="track_region_seoul">Seoul</string>
-    <string name="track_region_incheon">Incheon</string>
-    <string name="track_region_gueonggi">Gyeonggi</string>
-    <string name="track_region_gangwon">Gangwon</string>
-    <string name="track_region_sejong">Sejong</string>
-    <string name="track_region_daejeon">Daejeon</string>
-    <string name="track_region_south_chungcheong">Chungcheongnam-do</string>
-    <string name="track_region_north_chungcheong">Chungcheongbuk-do</string>
-    <string name="track_region_daegu">Daegu</string>
-    <string name="track_region_north_gyeongsang">Gyeongsangbuk-do</string>
-    <string name="track_region_south_gyeongsang">Gyeongsangnam-do</string>
-    <string name="track_region_ulsan">Ulsan</string>
-    <string name="track_region_busan">Busan</string>
-    <string name="track_region_north_jeolla">Jeollabuk-do</string>
-    <string name="track_region_south_jeolla">Jeollanam-do</string>
-    <string name="track_region_gwangju">Gwangju</string>
-    <string name="track_region_jeju">Jeju</string>
 
+    <!--Region of South Korea which record track    -->
+    <string name="track_region_seoul">서울</string>
+    <string name="track_region_incheon">인천</string>
+    <string name="track_region_gueonggi">경기</string>
+    <string name="track_region_gangwon">강원</string>
+    <string name="track_region_sejong">세종</string>
+    <string name="track_region_daejeon">대전</string>
+    <string name="track_region_south_chungcheong">충남</string>
+    <string name="track_region_north_chungcheong">충북</string>
+    <string name="track_region_daegu">대구</string>
+    <string name="track_region_north_gyeongsang">경북</string>
+    <string name="track_region_south_gyeongsang">경남</string>
+    <string name="track_region_ulsan">울산</string>
+    <string name="track_region_busan">부산</string>
+    <string name="track_region_north_jeolla">전북</string>
+    <string name="track_region_south_jeolla">전남</string>
+    <string name="track_region_gwangju">광주</string>
+    <string name="track_region_jeju">제주</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

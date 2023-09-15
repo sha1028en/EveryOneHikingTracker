@@ -11,20 +11,19 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.request.RequestOptions;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkImgBinding;
 
-public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkImgRecyclerAdapter.PlaceMarkImgViewHolder> {
+public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkImgRecyclerAdapter.PlaceMarkImgViewHolder> implements Serializable {
     private LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
     private ItemPlacemarkImgBinding bind;
-
     private OnImageClickListener listener;
 
     interface OnImageClickListener {
         void onImageClick(ItemPlaceMarkImgData placemarkItem, int pos);
     }
-
 
     private PlaceMarkImgRecyclerAdapter() {
         this.placeMarkImgList = new LinkedList<>();
@@ -49,11 +48,11 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
         holder.onBind(this.placeMarkImgList.get(position));
     }
 
-    @Override
-    public void onViewRecycled(@NonNull PlaceMarkImgViewHolder holder) {
-        holder.reBind(); //onBind(this.placeMarkImgList.get(holder.getBindingAdapterPosition()));
-        super.onViewRecycled(holder);
-    }
+//    @Override
+//    public void onViewRecycled(@NonNull PlaceMarkImgViewHolder holder) {
+//        holder.reBind(); //onBind(this.placeMarkImgList.get(holder.getBindingAdapterPosition()));
+//        super.onViewRecycled(holder);
+//    }
 
     @Override
     public int getItemCount() {
@@ -66,11 +65,11 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
         this.notifyDataSetChanged();
     }
 
-
-    public static class PlaceMarkImgViewHolder extends RecyclerView.ViewHolder {
+    public static class PlaceMarkImgViewHolder extends RecyclerView.ViewHolder implements Serializable {
         private final ItemPlacemarkImgBinding bind;
         private ItemPlaceMarkImgData itemImg;
         private OnImageClickListener listener;
+        private boolean isEnable = true;
 
         public PlaceMarkImgViewHolder(@NonNull View itemView, @NonNull final OnImageClickListener listener) {
             super(itemView);
@@ -86,26 +85,16 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
                     .load(this.itemImg.getImageUrl())
                     .into(this.bind.placemarkImgView);
 
-
             this.bind.placemarkImgView.setOnClickListener(v -> {
                 listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
             });
         }
 
-        void reBind() {
-            if(this.bind == null || this.itemImg == null) return;
-
-            this.bind.placemarkImgView.destroyDrawingCache();
-            Glide.with(this.bind.placemarkImgView.getContext())
-                    .setDefaultRequestOptions(RequestOptions.noAnimation())
-                    .setDefaultRequestOptions(RequestOptions.formatOf(DecodeFormat.PREFER_RGB_565))
-                    .load(this.itemImg.getImageUrl())
-                    .into(this.bind.placemarkImgView);
-
-
-            this.bind.placemarkImgView.setOnClickListener(v -> {
-                listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
-            });
+        public void setIsEnable(boolean isEnable) {
+            this.isEnable = isEnable;
+            this.bind.placemarkImgView.setEnabled(isEnable);
+            this.bind.placemarkImgView.setClickable(isEnable);
+            this.bind.placemarkImgView.setFocusable(isEnable);
         }
     }
 }

@@ -2,14 +2,15 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 
-public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhancedData>, Comparable<ItemPlaceMarkEnhancedData> {
-    private int placeMarkId = -1;           // this placemark's UNIQUE id
+public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhancedData>, Comparable<ItemPlaceMarkEnhancedData>, Serializable {
+//    private int placeMarkId = -1;           // this placemark's UNIQUE id
     private String trackName;               // this placemark's Parent Track Name
     private String placeMarkTitle;          // this placemark Name by placemark type
     private String placeMarkType;           // this placemark type ( REST, ETC... )
@@ -21,7 +22,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     private double lng = 0.0f;
 
     private boolean isPlaceMarkEnable;      // it is not collectable placemark
-    private boolean isPlaceMarkHidden;      // when it hide from Window
+    private boolean isPlaceMarkStateChange;      // when this placemark state has changed???
 
 
     public ItemPlaceMarkEnhancedData(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
@@ -30,18 +31,18 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         this.placeMarkType = placeMarkType;
         this.placeMarkDesc = placeMarkDesc;
         this.isPlaceMarkEnable = isPlaceMarkEnable;
-        this.isPlaceMarkHidden = false;
+        this.isPlaceMarkStateChange = false;
 
         this.placeMarkImgItemList = new LinkedList<>();
     }
 
-    public int getPlaceMarkId() {
-        return placeMarkId;
-    }
-
-    public void setPlaceMarkId(int placeMarkId) {
-        this.placeMarkId = placeMarkId;
-    }
+//    public int getPlaceMarkId() {
+//        return placeMarkId;
+//    }
+//
+//    public void setPlaceMarkId(int placeMarkId) {
+//        this.placeMarkId = placeMarkId;
+//    }
 
     public String getTrackName() {
         return this.trackName;
@@ -92,14 +93,6 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         this.lng = lng;
     }
 
-    public boolean getPlaceMarkEnable() {
-        return isPlaceMarkEnable;
-    }
-
-    public void setPlaceMarkEnable(Boolean placeMarkEnable) {
-        isPlaceMarkEnable = placeMarkEnable;
-    }
-
     public boolean isPlaceMarkEnable() {
         return isPlaceMarkEnable;
     }
@@ -108,18 +101,21 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         isPlaceMarkEnable = placeMarkEnable;
     }
 
-    public boolean isPlaceMarkHidden() {
-        return isPlaceMarkHidden;
+    public boolean isPlaceMarkStateChange() {
+        return isPlaceMarkStateChange;
     }
 
-    public void setPlaceMarkHidden(boolean placeMarkHidden) {
-        isPlaceMarkHidden = placeMarkHidden;
+    public void setPlaceMarkStateChange() {
+        isPlaceMarkStateChange = true;
     }
 
     public LinkedList<ItemPlaceMarkImgData> getPlaceMarkImgItemList() {
         return placeMarkImgItemList;
     }
 
+    public void addPlaceMarkImgItemList(ItemPlaceMarkImgData placeMarkImgItem) {
+        this.placeMarkImgItemList.add(placeMarkImgItem);
+    }
     public void setPlaceMarkImgItemList(LinkedList<ItemPlaceMarkImgData> placeMarkImgItemList) {
         this.placeMarkImgItemList = placeMarkImgItemList;
     }
@@ -160,12 +156,6 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         final PlaceMarkType o2Type = PlaceMarkType.valueOf(o2.getPlaceMarkType());
         final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
 
-//        // is same placemark TYPE???
-//        if(isDiffType == 0) {
-//            // compare by Placemark visbilty NAME!
-//            return o2.placeMarkTitle.hashCode() - o1.placeMarkTitle.hashCode();
-//        }
-//        // diff type? return them!
         return isDiffType;
     }
 
@@ -179,12 +169,6 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         final PlaceMarkType o2Type = PlaceMarkType.valueOf(this.getPlaceMarkType());
         final int isDiffType = o1Type.convertIntType() - o2Type.convertIntType();
 
-//        // is same placemark TYPE???
-//        if(isDiffType == 0) {
-//            // compare by Placemark visbilty NAME!
-//            return this.placeMarkTitle.hashCode() - o.placeMarkTitle.hashCode();
-//        }
-//        // diff type? return them!
         return isDiffType;
     }
 
@@ -205,7 +189,6 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     @Override
     public String toString() {
         return "ItemPlaceMarkData{" +
-                "toServerId=" + placeMarkId +
                 ", trackName='" + trackName + '\'' +
                 ", placeMarkTitle='" + placeMarkTitle + '\'' +
                 ", placeMarkType='" + placeMarkType + '\'' +

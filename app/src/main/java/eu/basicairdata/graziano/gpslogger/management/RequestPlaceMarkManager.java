@@ -169,97 +169,97 @@ public class RequestPlaceMarkManager {
         this.requestTask.executeTask(responseReceiver);
     }
 
-    public void requestPlaceMarkListEnhanced(
-            final int trackId,
-            @NonNull final String trackName,
-            @NonNull final RequestPlaceMarkManager.OnRequestResponse<LinkedList<ItemPlaceMarkEnhancedData>> listener) {
-
-        if(this.requestEnhancedTask != null && this.requestEnhancedTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemPlaceMarkEnhancedData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
-            @Override
-            public void preTask() {}
-
-            @Override
-            public LinkedList<ItemPlaceMarkEnhancedData> doTask() {
-                HttpURLConnection connection = null;
-                LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = new LinkedList<>();
-
-                try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId + "/poi");
-                    connection = (HttpURLConnection) serverUrl.openConnection();
-                    connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
-                    connection.setRequestMethod("GET");
-                    connection.connect();
-
-                    BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
-                    String buffer;
-                    StringBuilder response = new StringBuilder();
-                    try (readStream) {
-                        while ((buffer = readStream.readLine()) != null) {
-                            response.append(buffer);
-                        }
-                    }
-                    JSONObject rawJsonResponse = new JSONObject(response.toString());
-                    JSONArray rawPlaceMarkJsonArray = rawJsonResponse.getJSONArray("data");
-                    JSONArray rawPlaceMarkImgJsonArray;
-
-                    int placeMarkId; // placemark UNIQUE id
-                    String placeMarkType; // placemark facility Type
-
-                    // Parse Data
-                    for(int i = 0; i < rawPlaceMarkJsonArray.length(); i++) {
-                        LinkedList<ItemPlaceMarkImgData> imgDataList = new LinkedList<>();
-                        rawJsonResponse = rawPlaceMarkJsonArray.getJSONObject(i);
-                        placeMarkId = rawJsonResponse.getInt("poiId");
-                        placeMarkType = rawJsonResponse.getString("poiType");
-                        rawPlaceMarkImgJsonArray = rawJsonResponse.getJSONArray("poiPhotos");
-
-                        // parse Images
-                        for(int j = 0; j < rawPlaceMarkImgJsonArray.length(); j++) {
-                            rawJsonResponse = rawPlaceMarkImgJsonArray.getJSONObject(j);
-                            final int imageId = rawJsonResponse.getInt("photoId");
-                            final String imageUrl = rawJsonResponse.optString("imgUrl", "");
-                            final double imageLat = rawJsonResponse.optDouble("imgLat", 0.0f);
-                            final double imageLng = rawJsonResponse.optDouble("imgLng", 0.0f);
-
-                            // when not valid placemark record? ignore them!
-                            if(imageLat == 0.0f && imageLng == 0.0f) continue;
-                            ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(placeMarkId, imageId, placeMarkType, imageUrl);
-                            imgData.setImgLat(imageLat);
-                            imgData.setImgLng(imageLng);
-                            imgDataList.add(imgData);
-                        }
-
-                        ItemPlaceMarkEnhancedData rawPlaceMarkItem = new ItemPlaceMarkEnhancedData(trackName, getNameByPlacemarkTypeEnhanced(placeMarkType), placeMarkType, "", true);
-                        rawPlaceMarkItem.setPlaceMarkId(placeMarkId);
-                        rawPlaceMarkItem.setPlaceMarkImgItemList(imgDataList);
-                        placeMarkList.add(rawPlaceMarkItem);
-                    }
-
-                } catch (IOException | JSONException | IndexOutOfBoundsException e) {
-                    e.printStackTrace();
-
-                } finally {
-                    if (connection != null) connection.disconnect();
-                }
-                return placeMarkList;
-            }
-
-            @Override
-            public void endTask(LinkedList<ItemPlaceMarkEnhancedData> value) {
-                listener.onRequestResponse(value, true);
-            }
-
-            @Override
-            public void failTask(@NonNull Throwable throwable) {
-                throwable.printStackTrace();
-                listener.onRequestResponse(new LinkedList<>(), false);
-
-            }
-        };
-        this.requestEnhancedTask.executeTask(responseReceiver);
-    }
+//    public void requestPlaceMarkListEnhanced(
+//            final int trackId,
+//            @NonNull final String trackName,
+//            @NonNull final RequestPlaceMarkManager.OnRequestResponse<LinkedList<ItemPlaceMarkEnhancedData>> listener) {
+//
+//        if(this.requestEnhancedTask != null && this.requestEnhancedTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
+//        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemPlaceMarkEnhancedData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+//            @Override
+//            public void preTask() {}
+//
+//            @Override
+//            public LinkedList<ItemPlaceMarkEnhancedData> doTask() {
+//                HttpURLConnection connection = null;
+//                LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = new LinkedList<>();
+//
+//                try {
+//                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId + "/poi");
+//                    connection = (HttpURLConnection) serverUrl.openConnection();
+//                    connection.setRequestProperty("Accept", "application/json");
+//                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+//                    connection.setRequestMethod("GET");
+//                    connection.connect();
+//
+//                    BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+//                    String buffer;
+//                    StringBuilder response = new StringBuilder();
+//                    try (readStream) {
+//                        while ((buffer = readStream.readLine()) != null) {
+//                            response.append(buffer);
+//                        }
+//                    }
+//                    JSONObject rawJsonResponse = new JSONObject(response.toString());
+//                    JSONArray rawPlaceMarkJsonArray = rawJsonResponse.getJSONArray("data");
+//                    JSONArray rawPlaceMarkImgJsonArray;
+//
+//                    int placeMarkId; // placemark UNIQUE id
+//                    String placeMarkType; // placemark facility Type
+//
+//                    // Parse Data
+//                    for(int i = 0; i < rawPlaceMarkJsonArray.length(); i++) {
+//                        LinkedList<ItemPlaceMarkImgData> imgDataList = new LinkedList<>();
+//                        rawJsonResponse = rawPlaceMarkJsonArray.getJSONObject(i);
+//                        placeMarkId = rawJsonResponse.getInt("poiId");
+//                        placeMarkType = rawJsonResponse.getString("poiType");
+//                        rawPlaceMarkImgJsonArray = rawJsonResponse.getJSONArray("poiPhotos");
+//
+//                        // parse Images
+//                        for(int j = 0; j < rawPlaceMarkImgJsonArray.length(); j++) {
+//                            rawJsonResponse = rawPlaceMarkImgJsonArray.getJSONObject(j);
+//                            final int imageId = rawJsonResponse.getInt("photoId");
+//                            final String imageUrl = rawJsonResponse.optString("imgUrl", "");
+//                            final double imageLat = rawJsonResponse.optDouble("imgLat", 0.0f);
+//                            final double imageLng = rawJsonResponse.optDouble("imgLng", 0.0f);
+//
+//                            // when not valid placemark record? ignore them!
+//                            if(imageLat == 0.0f && imageLng == 0.0f) continue;
+//                            ItemPlaceMarkImgData imgData = new ItemPlaceMarkImgData(placeMarkId, imageId, placeMarkType, imageUrl);
+//                            imgData.setImgLat(imageLat);
+//                            imgData.setImgLng(imageLng);
+//                            imgDataList.add(imgData);
+//                        }
+//
+//                        ItemPlaceMarkEnhancedData rawPlaceMarkItem = new ItemPlaceMarkEnhancedData(trackName, getNameByPlacemarkTypeEnhanced(placeMarkType), placeMarkType, "", true);
+//                        rawPlaceMarkItem.setPlaceMarkId(placeMarkId);
+//                        rawPlaceMarkItem.setPlaceMarkImgItemList(imgDataList);
+//                        placeMarkList.add(rawPlaceMarkItem);
+//                    }
+//
+//                } catch (IOException | JSONException | IndexOutOfBoundsException e) {
+//                    e.printStackTrace();
+//
+//                } finally {
+//                    if (connection != null) connection.disconnect();
+//                }
+//                return placeMarkList;
+//            }
+//
+//            @Override
+//            public void endTask(LinkedList<ItemPlaceMarkEnhancedData> value) {
+//                listener.onRequestResponse(value, true);
+//            }
+//
+//            @Override
+//            public void failTask(@NonNull Throwable throwable) {
+//                throwable.printStackTrace();
+//                listener.onRequestResponse(new LinkedList<>(), false);
+//
+//            }
+//        };
+//        this.requestEnhancedTask.executeTask(responseReceiver);
+//    }
 
     private String getNameByPlacemarkType(PlaceMarkType type) {
         String placemarkType = "기타 시설물 1";
@@ -393,91 +393,91 @@ public class RequestPlaceMarkManager {
         this.requestTask.executeTask(responseReceiver);
     }
 
-    /**
-     * @deprecated
-     * @param trackId
-     * @param trackName
-     * @param placeMarKTypeList
-     * @param listener
-     */
-    public void requestAddEmptyPlaceMarkListEnhanced(
-            final int trackId,
-            @NonNull final String trackName,
-            @NonNull final LinkedList<PlaceMarkType> placeMarKTypeList,
-            @NonNull final RequestPlaceMarkManager.OnRequestResponse<LinkedList<ItemPlaceMarkEnhancedData>> listener) {
-
-        if(this.requestEnhancedTask != null && this.requestEnhancedTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemPlaceMarkEnhancedData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
-            @Override
-            public void preTask() {}
-
-            @Override
-            public LinkedList<ItemPlaceMarkEnhancedData> doTask() {
-                HttpURLConnection connection = null;
-                LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = new LinkedList<>();
-
-                for(PlaceMarkType type : placeMarKTypeList) {
-                    try {
-                        JSONObject toSendEmptyPlaceMark = new JSONObject();
-                        toSendEmptyPlaceMark.put("brief", "string");
-                        toSendEmptyPlaceMark.put("contents", new JSONObject());
-                        toSendEmptyPlaceMark.put("poiType", type);
-
-                        URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId + "/poi");
-                        connection = (HttpURLConnection) serverUrl.openConnection();
-                        connection.setRequestMethod("POST");
-                        connection.setRequestProperty("Authorization", "anwkddosksnarlf");
-                        connection.setRequestProperty("Content-Type", "application/json;");
-                        connection.setRequestProperty("accept", "*/*");
-                        connection.setDoOutput(true);
-                        connection.setDoInput(true);
-
-                        try(OutputStream requestStream = connection.getOutputStream()) {
-                            requestStream.write(toSendEmptyPlaceMark.toString().getBytes(StandardCharsets.UTF_8));
-                            requestStream.flush();
-                        }
-                        Log.d("dspark", connection.getResponseMessage() + " response Code " + connection.getResponseCode());
-
-                        BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
-                        String buffer;
-                        StringBuilder response = new StringBuilder();
-                        try (readStream) {
-                            while ((buffer = readStream.readLine()) != null) {
-                                response.append(buffer);
-                            }
-                        }
-                        JSONObject responseJson = new JSONObject(response.toString());
-                        responseJson = responseJson.getJSONObject("data");
-                        final int poiId = responseJson.getInt("poiId");
-                        final String placeMarkTitle = getNameByPlacemarkTypeEnhanced(type);
-
-                        ItemPlaceMarkEnhancedData rawPlaceMarkItem = new ItemPlaceMarkEnhancedData(trackName, placeMarkTitle, type.name(), "", true);
-                        rawPlaceMarkItem.setPlaceMarkId(poiId);
-                        placeMarkList.add(rawPlaceMarkItem);
-
-                    } catch (IOException | JSONException | IndexOutOfBoundsException e) {
-                        e.printStackTrace();
-
-                    } finally {
-                        if (connection != null) connection.disconnect();
-                    }
-                }
-                return placeMarkList;
-            }
-
-            @Override
-            public void endTask(LinkedList<ItemPlaceMarkEnhancedData> value) {
-                if (!value.isEmpty()) listener.onRequestResponse(value, true);
-                else listener.onRequestResponse(new LinkedList<>(), false);
-            }
-
-            @Override
-            public void failTask(@NonNull Throwable throwable) {
-
-            }
-        };
-        this.requestEnhancedTask.executeTask(responseReceiver);
-    }
+//    /**
+//     * @deprecated
+//     * @param trackId
+//     * @param trackName
+//     * @param placeMarKTypeList
+//     * @param listener
+//     */
+//    public void requestAddEmptyPlaceMarkListEnhanced(
+//            final int trackId,
+//            @NonNull final String trackName,
+//            @NonNull final LinkedList<PlaceMarkType> placeMarKTypeList,
+//            @NonNull final RequestPlaceMarkManager.OnRequestResponse<LinkedList<ItemPlaceMarkEnhancedData>> listener) {
+//
+//        if(this.requestEnhancedTask != null && this.requestEnhancedTask.isTaskAlive()) this.requestEnhancedTask.cancelTask();
+//        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemPlaceMarkEnhancedData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+//            @Override
+//            public void preTask() {}
+//
+//            @Override
+//            public LinkedList<ItemPlaceMarkEnhancedData> doTask() {
+//                HttpURLConnection connection = null;
+//                LinkedList<ItemPlaceMarkEnhancedData> placeMarkList = new LinkedList<>();
+//
+//                for(PlaceMarkType type : placeMarKTypeList) {
+//                    try {
+//                        JSONObject toSendEmptyPlaceMark = new JSONObject();
+//                        toSendEmptyPlaceMark.put("brief", "string");
+//                        toSendEmptyPlaceMark.put("contents", new JSONObject());
+//                        toSendEmptyPlaceMark.put("poiType", type);
+//
+//                        URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId + "/poi");
+//                        connection = (HttpURLConnection) serverUrl.openConnection();
+//                        connection.setRequestMethod("POST");
+//                        connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+//                        connection.setRequestProperty("Content-Type", "application/json;");
+//                        connection.setRequestProperty("accept", "*/*");
+//                        connection.setDoOutput(true);
+//                        connection.setDoInput(true);
+//
+//                        try(OutputStream requestStream = connection.getOutputStream()) {
+//                            requestStream.write(toSendEmptyPlaceMark.toString().getBytes(StandardCharsets.UTF_8));
+//                            requestStream.flush();
+//                        }
+//                        Log.d("dspark", connection.getResponseMessage() + " response Code " + connection.getResponseCode());
+//
+//                        BufferedReader readStream = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+//                        String buffer;
+//                        StringBuilder response = new StringBuilder();
+//                        try (readStream) {
+//                            while ((buffer = readStream.readLine()) != null) {
+//                                response.append(buffer);
+//                            }
+//                        }
+//                        JSONObject responseJson = new JSONObject(response.toString());
+//                        responseJson = responseJson.getJSONObject("data");
+//                        final int poiId = responseJson.getInt("poiId");
+//                        final String placeMarkTitle = getNameByPlacemarkTypeEnhanced(type);
+//
+//                        ItemPlaceMarkEnhancedData rawPlaceMarkItem = new ItemPlaceMarkEnhancedData(trackName, placeMarkTitle, type.name(), "", true);
+//                        rawPlaceMarkItem.setPlaceMarkId(poiId);
+//                        placeMarkList.add(rawPlaceMarkItem);
+//
+//                    } catch (IOException | JSONException | IndexOutOfBoundsException e) {
+//                        e.printStackTrace();
+//
+//                    } finally {
+//                        if (connection != null) connection.disconnect();
+//                    }
+//                }
+//                return placeMarkList;
+//            }
+//
+//            @Override
+//            public void endTask(LinkedList<ItemPlaceMarkEnhancedData> value) {
+//                if (!value.isEmpty()) listener.onRequestResponse(value, true);
+//                else listener.onRequestResponse(new LinkedList<>(), false);
+//            }
+//
+//            @Override
+//            public void failTask(@NonNull Throwable throwable) {
+//
+//            }
+//        };
+//        this.requestEnhancedTask.executeTask(responseReceiver);
+//    }
 
 
     /**

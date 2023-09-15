@@ -21,6 +21,8 @@
 
 package eu.basicairdata.graziano.gpslogger;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -28,6 +30,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
@@ -82,7 +85,15 @@ public class GPSService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        startForeground(ID, getNotification());
+
+        // for ANDROID 14
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(ID, getNotification(), FOREGROUND_SERVICE_TYPE_LOCATION);
+
+        } else {
+            startForeground(ID, getNotification());
+        }
+
         Log.w("myApp", "[#] GPSService.java - START = onStartCommand");
         return START_NOT_STICKY;
     }
