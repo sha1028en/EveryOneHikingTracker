@@ -372,7 +372,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     public void onEvent(Short msg) {
         if(msg == EventBusMSG.UPDATE_FIX) { // GPS SIGNAL RECEIVE
             Log.i("GPS_STATE", "UPDATE_FIX");
-            this.updateUpsideControlButtonState();
+            this.updateUpsideControlPanelState();
 
         } else if (msg == EventBusMSG.UPDATE_TRACK) { // RECORDING COURSE
             Log.i("GPS_STATE", "UPDATE_TRACK");
@@ -502,7 +502,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     this.recordManager.pauseRecordTrack();
                     this.isPauseCourseRecording = true;
                 }
-                this.updateUpsideControlButtonState();
+                this.updateUpsideControlPanelState();
 
             } else {
                 Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
@@ -517,7 +517,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             if(!selectedCourseName.isBlank()) {
                 this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().getCourseType());
                 this.isPauseCourseRecording = false;
-                this.updateUpsideControlButtonState();
+                this.updateUpsideControlPanelState();
             }
         });
 
@@ -812,7 +812,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         return requestPlaceMarkHeader;
     }
 
-    private void updateUpsideControlButtonState() {
+    private void updateUpsideControlPanelState() {
         if (this.bind == null || this.recordManager == null) return;
         final boolean isRecording = this.recordManager.isRecordingCourse();
 
@@ -826,6 +826,16 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         this.bind.stopRecordBtn.setText(emphaticInformation);
         this.bind.stopRecordBtn.setCompoundDrawablesWithIntrinsicBounds(isRecording ? R.drawable.ic_stop_enable_24 : R.drawable.ic_stop_disable_24, 0, 0, 0);
+
+        // update Upside "DECK" Course Type CheckBox
+        this.bind.checkDeckCheckbox.setEnabled(isRecording);
+        this.bind.checkDeckCheckbox.setClickable(isRecording);
+        this.bind.checkDeckCheckbox.setFocusable(isRecording);
+
+        // update Upside "DIRT" Course Type CheckBox
+        this.bind.checkDirtCheckbox.setEnabled(isRecording);
+        this.bind.checkDirtCheckbox.setClickable(isRecording);
+        this.bind.checkDirtCheckbox.setFocusable(isRecording);
 
         if(!isRecording && !this.isPauseCourseRecording) {
             this.setButtonState(this.bind.recordControlBtn, R.drawable.blue_round_border_32, R.drawable.ic_play_24, R.string.record);
