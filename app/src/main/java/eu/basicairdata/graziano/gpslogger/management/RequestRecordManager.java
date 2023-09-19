@@ -781,7 +781,20 @@ public class RequestRecordManager {
                 } catch (IOException | NullPointerException e) {
                     e.printStackTrace();
                 }
-                courseList.add(course);
+
+                int j = 0;
+                boolean isNotFindDeprecate = true;
+                for(ItemCourseEnhancedData toCheckDeprecate : courseList) {
+                    if (toCheckDeprecate.equals(course)) {
+                        courseList.set(j, course);
+                        isNotFindDeprecate = false;
+                        break;
+                    }
+                }
+
+                if(isNotFindDeprecate) {
+                    courseList.add(course);
+                }
             }
 
         } catch (JSONException e) {

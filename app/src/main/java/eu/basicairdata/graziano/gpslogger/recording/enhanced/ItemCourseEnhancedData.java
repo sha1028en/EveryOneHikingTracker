@@ -2,6 +2,7 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.CourseRoadType;
 
@@ -120,5 +121,18 @@ public class ItemCourseEnhancedData implements Serializable {
 
     public void setLngList(ArrayList<Double> lngList) {
         this.lngList = lngList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemCourseEnhancedData that = (ItemCourseEnhancedData) o;
+        return courseName.equals(that.courseName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseName);
     }
 }
