@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording;
+package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemCourseBinding;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
 
 public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRecyclerAdapter.CourseNameViewHolder> {
     private ItemCourseBinding bind;

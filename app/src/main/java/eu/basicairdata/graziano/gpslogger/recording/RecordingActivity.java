@@ -55,6 +55,7 @@ import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.RequestPlaceMarkManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.CourseNameRecyclerAdapter;
 
 /**
  * @deprecated {@link eu.basicairdata.graziano.gpslogger.recording.enhanced.RecordEnhancedActivity}

@@ -31,7 +31,7 @@ import eu.basicairdata.graziano.gpslogger.Track;
  * handling to start / stop record track. add placemark
  */
 public class TrackRecordManager {
-    private static TrackRecordManager instance = null; // this SINGLETON INSTANCE. never use outside
+    private static TrackRecordManager instance = null; // this SINGLETON INSTANCE. never use outside DIRECTLY
     private WeakReference<Context> mLocalContext;
     private GPSApplication gpsApp = GPSApplication.getInstance(); // GPS Observer, Track Recorder Instance
     private LocationExtended locationExt = null; // current LocationExtends

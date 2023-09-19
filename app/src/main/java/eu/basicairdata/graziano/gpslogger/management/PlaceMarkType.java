@@ -1,7 +1,8 @@
 package eu.basicairdata.graziano.gpslogger.management;
 
-
-
+/**
+ * PlaceMark Type Define
+ */
 public enum PlaceMarkType {
     ENTRANCE,
     PARKING,

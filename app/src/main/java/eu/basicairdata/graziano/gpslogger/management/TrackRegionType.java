@@ -1,5 +1,8 @@
 package eu.basicairdata.graziano.gpslogger.management;
 
+/**
+ * @deprecated not use anymore
+ */
 public enum TrackRegionType {
     SEOUL("서울"),
     INCHEON("인천"),

@@ -9,6 +9,7 @@ import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkEnhanc
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgData;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkTypeData;
 
+
 public class ItemTrackRecord implements Serializable {
     private LinkedList<ItemCourseEnhancedData> itemCourseList;
     private LinkedList<ItemPlaceMarkImgData> itemPlacemarkImgList;
