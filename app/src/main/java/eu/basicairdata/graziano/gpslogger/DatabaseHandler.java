@@ -68,7 +68,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "GPSLogger";
 
-    private static final String DATABASE_NAME_EXTENDS = "TrekkingRecord";
+//    private static final String DATABASE_NAME_EXTENDS = "TrekkingRecord";
 
     // -------------------------------------------------------------------------------- Table names
     private static final String TABLE_LOCATIONS = "locations";

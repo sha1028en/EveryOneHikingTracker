@@ -34,26 +34,29 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     @NonNull @Override
     public CourseNameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         this.bind = ItemCourseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-
         CourseNameViewHolder holder = new CourseNameViewHolder(this.bind.getRoot());
+
+        this.bind.courseItemRoot.setOnClickListener(v -> {
+            TrackRecordManager recordManager = TrackRecordManager.getInstance();
+            if (recordManager != null && !recordManager.isRecordingCourse()) {
+                // when Recording Course, CAN NOT SELECT other course
+                this.updateItemSelect(holder.getBindingAdapterPosition());
+                this.selectCourse = this.courseList.get(holder.getBindingAdapterPosition());
+                this.selectedCourseName = this.selectCourse.getCourseName();
+                if(this.listener != null) listener.onItemSelected(this.selectCourse.getCourseType(), this.selectCourse);
+            }
+        });
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull CourseNameViewHolder holder, int position) {
-        holder.onBind(this.courseList.get(position));
-        this.bind.courseItemRoot.setOnClickListener(v -> {
-            TrackRecordManager recordManager = TrackRecordManager.getInstance();
+        holder.onBind(this.courseList.get(holder.getBindingAdapterPosition()));
+    }
 
-            if (recordManager != null && !recordManager.isRecordingCourse()) {
-                // when Recording Course, CAN NOT SELECT other course
-                this.updateItemSelect(position);
-                this.selectCourse = this.courseList.get(position);
-                this.selectedCourseName = this.selectCourse.getCourseName();
-                if(this.listener != null) listener.onItemSelected(this.selectCourse.getCourseType(), this.selectCourse);
-            }
-            recordManager = null; // GC HURRY!
-        });
+    @Override
+    public void onViewRecycled(@NonNull CourseNameViewHolder holder) {
+        holder.onBind(this.courseList.get(holder.getBindingAdapterPosition()));
     }
 
     @Override
@@ -64,7 +67,6 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
     @Override
     public int getItemViewType(int position) {
-//        return super.getItemViewType(position);
         return position;
     }
 
@@ -78,7 +80,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                 item.setClicked(clickedCoursePosition == index);
                 ++index;
             }
-            this.notifyDataSetChanged();
+            this.notifyItemRangeChanged(0, this.courseList.size());
         }
     }
 
@@ -172,12 +174,15 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     public boolean removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         boolean isRemove = false;
         ItemCourseEnhancedData toRemoveCourse = null;
+        int i = 0;
+
         if(this.courseList != null && this.bind != null) {
             for(ItemCourseEnhancedData course : this.courseList) {
                 if(course.getTrackName().equals(trackName) && course.getCourseName().equals(courseName)) {
                     toRemoveCourse = course;
                     break;
                 }
+                ++i;
             }
             isRemove = this.removeCourse(toRemoveCourse);
 
@@ -186,6 +191,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
             if(isRemove) {
                 this.selectCourse = null;
                 this.selectedCourseName = "";
+                this.notifyItemRemoved(i);
             }
         }
         return isRemove;
@@ -195,8 +201,12 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         boolean isRemove = false;
 
         if(this.courseList != null && course != null && this.bind != null) {
-            isRemove = this.courseList.remove(course);
-            this.notifyDataSetChanged();
+            final int position = this.courseList.indexOf(course);
+
+            if(position > -1) {
+                isRemove = this.courseList.remove(course);
+                this.notifyItemRemoved(position);
+            }
         }
         return isRemove;
     }
@@ -216,7 +226,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
                 this.bind.courseTitle.setText(item.getCourseName());
                 this.bind.courseDistance.setText(String.format("%dm", (int) item.getCourseDistance()));
 
-                if(item.getIsClicked()) { // Clicked
+                if(item.isClicked()) { // Clicked
                     this.bind.courseTitle.setTextColor(this.bind.getRoot().getContext().getColor(R.color.colorPrimaryDark));
                     this.bind.courseDistance.setTextColor(this.bind.getRoot().getContext().getColor(R.color.colorPrimaryDark));
 

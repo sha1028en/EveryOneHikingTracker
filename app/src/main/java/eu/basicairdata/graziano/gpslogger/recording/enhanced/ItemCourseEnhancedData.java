@@ -94,7 +94,7 @@ public class ItemCourseEnhancedData implements Serializable {
 //        this.isClicked = !this.isClicked;
 //    }
 
-    public boolean getIsClicked() {
+    public boolean isClicked() {
         return this.isClicked;
     }
 
