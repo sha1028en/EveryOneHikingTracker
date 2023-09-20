@@ -35,7 +35,7 @@ public class ConfirmDialog extends Dialog {
         this.setContentView(this.bind.getRoot());
 
         // Custom Comment
-        if(this.userCustomComment == null || !this.userCustomComment.isBlank()) {
+        if(this.userCustomComment != null && !this.userCustomComment.isBlank()) {
             this.bind.comment.setText(this.userCustomComment);
         }
 

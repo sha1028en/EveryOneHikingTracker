@@ -45,14 +45,8 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
 
     @Override
     public void onBindViewHolder(@NonNull PlaceMarkImgViewHolder holder, int position) {
-        holder.onBind(this.placeMarkImgList.get(position), position);
+        holder.onBind(this.placeMarkImgList.get(position), position +1);
     }
-
-//    @Override
-//    public void onViewRecycled(@NonNull PlaceMarkImgViewHolder holder) {
-//        holder.reBind(); //onBind(this.placeMarkImgList.get(holder.getBindingAdapterPosition()));
-//        super.onViewRecycled(holder);
-//    }
 
     @Override
     public int getItemCount() {
@@ -68,7 +62,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
     public static class PlaceMarkImgViewHolder extends RecyclerView.ViewHolder implements Serializable {
         private final ItemPlacemarkImgBinding bind;
         private ItemPlaceMarkImgData itemImg;
-        private OnImageClickListener listener;
+        private final OnImageClickListener listener;
 //        private boolean isEnable = true;
 
         public PlaceMarkImgViewHolder(@NonNull View itemView, @NonNull final OnImageClickListener listener) {
@@ -92,12 +86,5 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
 
             this.bind.imgNumberTxt.setText(String.valueOf(position));
         }
-
-//        public void setIsEnable(boolean isEnable) {
-//            this.isEnable = isEnable;
-//            this.bind.placemarkImgView.setEnabled(isEnable);
-//            this.bind.placemarkImgView.setClickable(isEnable);
-//            this.bind.placemarkImgView.setFocusable(isEnable);
-//        }
     }
 }

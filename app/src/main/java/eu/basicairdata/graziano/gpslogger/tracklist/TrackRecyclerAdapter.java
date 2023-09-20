@@ -106,24 +106,24 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
         public void onBind(ItemTrackData item) {
             if(this.bind == null || item == null) return;
 
-            final boolean allDone  = item.isDoneCourseInfo & item.isDonePlacemarkPic;
+            final boolean allDone = item.isCompleteTrack;
             this.bind.gotoRecord.setBackgroundResource(allDone? R.drawable.background_round_stroke_border_32 : R.drawable.blue_round_border_32);
-            this.bind.gotoRecord.setText(allDone? "수정 >" : "정보 입력 >");
+            this.bind.gotoRecord.setText(allDone? "기록 완료" : "정보 입력 >");
             this.bind.gotoRecord.setTextColor(allDone? Color.parseColor("#0078d7"): Color.parseColor("#eeeeee"));
             this.bind.getRoot().setBackgroundResource(allDone? R.drawable.lightgray_round_border_8: R.drawable.background_round_border_8);
 
             this.bind.trackName.setText(item.getTrackName());
             this.bind.trackAddress.setText(item.getTrackAddress());
 
-            this.bind.trackCourseState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDoneCourseInfo? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
-            this.bind.trackCourseState.setTextColor(item.isDoneCourseInfo?
-                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
-                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
-
-            this.bind.trackPictureState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDonePlacemarkPic? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
-            this.bind.trackPictureState.setTextColor(item.isDonePlacemarkPic?
-                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
-                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
+//            this.bind.trackCourseState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDoneCourseInfo? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
+//            this.bind.trackCourseState.setTextColor(item.isDoneCourseInfo?
+//                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
+//                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
+//
+//            this.bind.trackPictureState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDonePlacemarkPic? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
+//            this.bind.trackPictureState.setTextColor(item.isDonePlacemarkPic?
+//                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
+//                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
         }
     }
 }

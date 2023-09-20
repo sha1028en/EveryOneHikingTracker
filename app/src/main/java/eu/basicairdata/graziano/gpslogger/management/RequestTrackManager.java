@@ -110,7 +110,7 @@ public class RequestTrackManager {
                         trackName = rawJsonResponse.getString("name");
                         trackAddress = rawJsonResponse.getString("addr");
                         trackRegion = rawJsonResponse.getString("sido");
-                        isCompleteTrack = rawJsonResponse.optBoolean("completed", true);
+                        isCompleteTrack = rawJsonResponse.optString("completed", "Y").equals("Y");
                         courseCount = rawJsonResponse.optInt("courseCnt", 0);
                         placeMarkCount = rawJsonResponse.optInt("poiCnt", 0);
 

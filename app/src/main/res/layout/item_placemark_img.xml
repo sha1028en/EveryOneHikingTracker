@@ -17,13 +17,12 @@
         app:layout_constraintEnd_toEndOf="@id/placemark_img_view"/>
 
     <ImageView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/placemark_img_view"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_marginEnd="16dp"
         android:adjustViewBounds="true"
-        android:maxHeight="60dp"
+        android:minHeight="60dp"
         android:scaleType="fitXY"
         android:src="@drawable/deepgray_round_border_16"
         app:layout_constraintTop_toBottomOf="@id/img_number_txt"

@@ -491,7 +491,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 // is course already Uploaded? ask before remove course
                 if(toRemoveCourse.getCourseId() > -1) {
-                    ConfirmDialog confirmDialog = new ConfirmDialog(this.bind.getRoot().getContext(), "기록된 코스를 삭제하시겠습니까?\n해당 작업은 취소할수 없습니다.", new ConfirmDialog.OnDialogActionListener() {
+                    ConfirmDialog confirmDialog = new ConfirmDialog(this.bind.getRoot().getContext(), "코스 기록을 삭제할까요?\n(삭제된 기록은 복구할 수 없습니다.)", new ConfirmDialog.OnDialogActionListener() {
                         @Override
                         public void onConfirmClick() {
                             final String toRemoveCourseName = courseRecyclerAdapter.getSelectedCourseName();

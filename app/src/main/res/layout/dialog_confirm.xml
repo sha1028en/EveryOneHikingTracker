@@ -35,7 +35,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="기존의 코스를 덮어 쓰시겠습니까?\n해당 작업은 되돌릴수 없습니다."
+        android:text="기록된 정보가 존재합니다.\n덮어쓰기 할까요?"
         android:textColor="@color/textColorSecondary"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"

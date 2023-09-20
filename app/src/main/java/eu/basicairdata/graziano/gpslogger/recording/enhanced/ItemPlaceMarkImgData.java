@@ -6,13 +6,13 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class ItemPlaceMarkImgData implements Serializable {
-    private int TrackId;
-    private final String placeMarkType;
+    private int TrackId; // this img's track Id ( parent )
+    private final String placeMarkType; // this img's Type ( ETC, PARKING... )
 
     private int imgId; // IMG PRIMARY KEY
     private String imageUrl; // IMG URL
-    private double imgLat = 0.0f;
-    private double imgLng = 0.0f;
+    private double imgLat = 0.0f; // img Lat
+    private double imgLng = 0.0f; // img Lng
 
     public ItemPlaceMarkImgData(final int TrackId, final int imageId, @NonNull final  String placeMarkType, @NonNull final String imageUrl) {
         this.TrackId = TrackId;

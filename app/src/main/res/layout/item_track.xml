@@ -27,33 +27,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:text="서울 강남구 일원동 산52-14일대"
         android:textColor="@color/textColorSecondary"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/track_name" />
+        app:layout_constraintTop_toBottomOf="@+id/track_name"
+        app:layout_constraintBottom_toTopOf="@+id/goto_record"/>
 
-    <TextView
-        android:id="@+id/track_course_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="코스 정보"
-        android:textColor="@color/textColorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/track_address" />
+<!--    <TextView-->
+<!--        android:id="@+id/track_course_state"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:visibility="invisible"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:text="코스 정보"-->
+<!--        android:textColor="@color/textColorSecondary"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/track_address" />-->
 
-    <TextView
-        android:id="@+id/track_picture_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="시설물 사진"
-        android:textColor="@color/textColorSecondary"
-        app:layout_constraintBottom_toBottomOf="@+id/track_course_state"
-        app:layout_constraintEnd_toStartOf="@+id/goto_record"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/track_course_state"
-        app:layout_constraintTop_toTopOf="@+id/track_course_state" />
+<!--    <TextView-->
+<!--        android:id="@+id/track_picture_state"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="시설물 사진"-->
+<!--        android:textColor="@color/textColorSecondary"-->
+<!--        android:visibility="invisible"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/track_course_state"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/goto_record"-->
+<!--        app:layout_constraintHorizontal_bias="0.5"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/track_course_state"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/track_course_state" />-->
 
     <TextView
         android:id="@+id/goto_record"
@@ -65,7 +69,7 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:text="정보 입력 >"
-        app:layout_constraintBottom_toBottomOf="@+id/track_picture_state"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/track_picture_state" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/track_address"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
