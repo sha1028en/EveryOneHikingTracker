@@ -103,16 +103,18 @@ public class RequestTrackManager {
                     String trackRegion;
                     int courseCount;
                     int placeMarkCount;
+                    boolean isCompleteTrack;
                     for (int i = 0; i < jsonTrackList.length(); i++) {
                         rawJsonResponse = jsonTrackList.getJSONObject(i);
                         trackId = rawJsonResponse.getInt("cmrdId");
                         trackName = rawJsonResponse.getString("name");
                         trackAddress = rawJsonResponse.getString("addr");
                         trackRegion = rawJsonResponse.getString("sido");
+                        isCompleteTrack = rawJsonResponse.optBoolean("completed", true);
                         courseCount = rawJsonResponse.optInt("courseCnt", 0);
                         placeMarkCount = rawJsonResponse.optInt("poiCnt", 0);
 
-                        ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion);
+                        ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion, isCompleteTrack);
                         track.setDoneCourseInfo(courseCount > 0);
                         track.setDonePlacemarkPic(placeMarkCount > 0);
                         trackList.add(track);
@@ -144,6 +146,7 @@ public class RequestTrackManager {
     }
 
     // REQUEST ADD COURSE
+    // for Exporter.
     public void requestAddCourse(
             final int trackId,
             @NonNull final String courseName,

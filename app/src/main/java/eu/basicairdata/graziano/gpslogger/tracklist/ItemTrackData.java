@@ -9,14 +9,16 @@ public class ItemTrackData {
     private final String trackAddress; // Track Address
     private final String trackRegion;
 
+    final boolean isCompleteTrack; // is this Track Already Complete ( IF ITS TRUE, NEVER MODIFY THIS TRACK )
     boolean isDoneCourseInfo = false; // is CourseInfo has ???
     boolean isDonePlacemarkPic = false; // is placemark picture has ???
 
-    public ItemTrackData(final long trackId, @NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion) {
+    public ItemTrackData(final long trackId, @NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion, final boolean isCompleteTrack) {
         this.trackId = trackId;
         this.trackName = trackName;
         this.trackAddress = trackAddress;
         this.trackRegion = trackRegion;
+        this.isCompleteTrack = isCompleteTrack;
     }
 
 

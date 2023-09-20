@@ -73,11 +73,16 @@ public class TrackListActivity extends AppCompatActivity {
        this.bind.trackList.setLayoutManager(linearLayoutManager);
 
        this.trackListAdapter = new TrackRecyclerAdapter((item, pos) -> {
-           Intent intent = new Intent(bind.getRoot().getContext(), RecordEnhancedActivity.class);
-           intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
-           intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
-           intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, (int) item.getTrackId());
-           startActivity(intent);
+           if(!item.isCompleteTrack) {
+               Intent intent = new Intent(bind.getRoot().getContext(), RecordEnhancedActivity.class);
+               intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
+               intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
+               intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, (int) item.getTrackId());
+               startActivity(intent);
+
+           } else {
+               Toast.makeText(this.bind.selectRegion.getContext(), "이미 기록이 완료된 무장애 나눔길 입니다.", Toast.LENGTH_SHORT).show();
+           }
        });
        this.bind.trackList.setAdapter(trackListAdapter);
 //       this.requestTrackList(TrackRegionType.SEOUL.getRegionName());
