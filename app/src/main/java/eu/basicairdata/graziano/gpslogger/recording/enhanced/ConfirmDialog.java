@@ -10,6 +10,7 @@ import eu.basicairdata.graziano.gpslogger.databinding.DialogConfirmBinding;
 public class ConfirmDialog extends Dialog {
     private final DialogConfirmBinding bind;
     private final OnDialogActionListener dialogActionListener;
+    private String userCustomComment;
 
     public interface OnDialogActionListener {
         void onConfirmClick();
@@ -22,9 +23,21 @@ public class ConfirmDialog extends Dialog {
         this.dialogActionListener = listener;
     }
 
+    public ConfirmDialog(@NonNull Context context, @NonNull final String comment, @NonNull final OnDialogActionListener listener) {
+        super(context);
+        this.bind = DialogConfirmBinding.inflate(this.getLayoutInflater());
+        this.dialogActionListener = listener;
+        this.userCustomComment = comment;
+    }
+
     @Override
     public void show() {
         this.setContentView(this.bind.getRoot());
+
+        // Custom Comment
+        if(this.userCustomComment == null || !this.userCustomComment.isBlank()) {
+            this.bind.comment.setText(this.userCustomComment);
+        }
 
         this.bind.confirmButton.setOnClickListener(v -> {
             this.dialogActionListener.onConfirmClick();

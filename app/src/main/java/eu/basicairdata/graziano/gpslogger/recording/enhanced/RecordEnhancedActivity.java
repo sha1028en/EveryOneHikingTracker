@@ -482,19 +482,52 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         // upside "Remove CourseX" btn
         this.bind.courseRemoveBtn.setOnClickListener(view -> {
             if(this.courseRecyclerAdapter.getItemCount() > 1) {
-                final String toRemoveCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
-                this.requestManager.requestRemoveCourse(this.courseRecyclerAdapter.getSelectCourse(), new RequestRecordManager.OnRequestResponse<ItemCourseEnhancedData>() {
-                    @Override
-                    public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
-                        if(isSuccess && isModifyTrackExpended) {
-                            runOnUiThread(() -> {
-                                loadMapFromWebView();
+
+                // Before Remove Course, Ask User Confirm
+                final ItemCourseEnhancedData toRemoveCourse = this.courseRecyclerAdapter.getSelectCourse();
+
+                // Avoid NPE
+                if(toRemoveCourse == null) return;
+
+                // is course already Uploaded? ask before remove course
+                if(toRemoveCourse.getCourseId() > -1) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog(this.bind.getRoot().getContext(), "기록된 코스를 삭제하시겠습니까?\n해당 작업은 취소할수 없습니다.", new ConfirmDialog.OnDialogActionListener() {
+                        @Override
+                        public void onConfirmClick() {
+                            final String toRemoveCourseName = courseRecyclerAdapter.getSelectedCourseName();
+                            requestManager.requestRemoveCourse(courseRecyclerAdapter.getSelectCourse(), new RequestRecordManager.OnRequestResponse<ItemCourseEnhancedData>() {
+                                @Override
+                                public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
+                                    if(isSuccess && isModifyTrackExpended) {
+                                        runOnUiThread(RecordEnhancedActivity.this::loadMapFromWebView);
+                                    }
+                                }
                             });
+                            recordManager.removeCourse(currentTrackName, toRemoveCourseName);
+                            courseRecyclerAdapter.removeCourse(currentTrackName, toRemoveCourseName);
                         }
-                    }
-                });
-                this.recordManager.removeCourse(this.currentTrackName, toRemoveCourseName);
-                this.courseRecyclerAdapter.removeCourse(this.currentTrackName, toRemoveCourseName);
+
+                        @Override
+                        public void onCancelClick() {
+                            // Do Nothing...
+                        }
+                    });
+                    confirmDialog.show();
+
+                // is this course not Uploaded? REMOVE NOW!
+                } else {
+                    final String toRemoveCourseName = courseRecyclerAdapter.getSelectedCourseName();
+                    requestManager.requestRemoveCourse(courseRecyclerAdapter.getSelectCourse(), new RequestRecordManager.OnRequestResponse<ItemCourseEnhancedData>() {
+                        @Override
+                        public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
+                            if(isSuccess && isModifyTrackExpended) {
+                                runOnUiThread(RecordEnhancedActivity.this::loadMapFromWebView);
+                            }
+                        }
+                    });
+                    recordManager.removeCourse(currentTrackName, toRemoveCourseName);
+                    courseRecyclerAdapter.removeCourse(currentTrackName, toRemoveCourseName);
+                }
 
             } else {
                 if(toast != null) toast.cancel();
@@ -579,7 +612,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             }
         });
 
-        // upside "is Deck" checkBox
+        // upside "Deck" checkBox
         this.bind.checkDeckCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if(this.recordManager == null || !this.recordManager.isRecordingCourse() || this.courseRecyclerAdapter == null) return;
 
@@ -588,10 +621,10 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 toUpdateCourse.calcCourseType(isChecked, this.bind.checkDirtCheckbox.isChecked());
                 this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
-//                this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.getCourseType());
             }
         });
 
+        // upside "Dirt" checkBox
         this.bind.checkDirtCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if(this.recordManager == null || !this.recordManager.isRecordingCourse() || this.courseRecyclerAdapter == null) return;
 
