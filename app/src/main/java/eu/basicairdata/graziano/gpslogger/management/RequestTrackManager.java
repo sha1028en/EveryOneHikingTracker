@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
@@ -163,12 +164,18 @@ public class RequestTrackManager {
 
             @Override
             public ItemCourseEnhancedData doTask() {
-                OkHttpClient connection = new OkHttpClient();
+                OkHttpClient connection = new OkHttpClient.Builder()
+                        .connectTimeout(5, TimeUnit.SECONDS)
+                        .writeTimeout(15, TimeUnit.SECONDS)
+                        .readTimeout(2, TimeUnit.SECONDS)
+                        .build();
+
                 final String url = "http://cmrd-tracker.touring.city/api/cmrd/gpx/" + trackId + "/files";
 
                 try (BufferedReader readStream = new BufferedReader(new InputStreamReader(GPSApplication.getInstance().getContentResolver().openInputStream(courseFile.getUri())))) {
                     StringBuilder courseFileBuffer = new StringBuilder();
                     String buffer;
+
                     while ((buffer = readStream.readLine()) != null) {
                         courseFileBuffer.append(buffer);
                     }
