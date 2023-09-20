@@ -54,8 +54,22 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
     public PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         this.bind = ItemPlacemarkEnhancedBinding.inflate(layoutInflater, parent, false);
-
         PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder holder = new PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder(this.bind.getRoot());
+
+        this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            holder.setViewEnableEvent(isChecked, false);
+
+            // update POI state
+            ItemPlaceMarkEnhancedData item = this.placeMarkDataList.get(holder.getBindingAdapterPosition());
+            item.setPlaceMarkEnable(isChecked);
+            item.setPlaceMarkStateChange();
+            this.placeMarkDataList.set(holder.getBindingAdapterPosition(), item);
+        });
+
+        this.bind.placemarkAddImg.setOnClickListener(v -> {
+            this.imgAddListener.onAddImageClick(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), holder.getBindingAdapterPosition());
+        });
+
         return holder;
     }
 
@@ -64,23 +78,19 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         if(holder.getBindingAdapterPosition() != 0) {
             holder.onBind(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), this.imgSelectedListener);
 
-            this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                holder.setViewEnableEvent(isChecked, false);
-
-                // update POI state
-                ItemPlaceMarkEnhancedData item = this.placeMarkDataList.get(position);
-                item.setPlaceMarkEnable(isChecked);
-                item.setPlaceMarkStateChange();
-                this.placeMarkDataList.set(position, item);
-            });
-
-            this.bind.placemarkAddImg.setOnClickListener(v -> {
-                this.imgAddListener.onAddImageClick(this.placeMarkDataList.get(position), position);
-            });
-
         } else {
             holder.onAddPlaceMarkInfoBind();
         }
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull PlacemarkTypeViewHolder holder) {
+        final int position = holder.getBindingAdapterPosition();
+
+        if(position > -1) {
+            holder.onBind(this.placeMarkDataList.get(position), this.imgSelectedListener);
+        }
+//        super.onViewRecycled(holder);
     }
 
     public LinkedList<ItemPlaceMarkEnhancedData> getClonedList() {
