@@ -11,6 +11,7 @@ import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -69,6 +70,7 @@ import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
 import eu.basicairdata.graziano.gpslogger.management.ImageManager;
 import eu.basicairdata.graziano.gpslogger.management.ItemTrackRecord;
 import eu.basicairdata.graziano.gpslogger.management.RequestRecordManager;
+import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 import eu.basicairdata.graziano.gpslogger.recording.AddCourseNameDialog;
 import eu.basicairdata.graziano.gpslogger.recording.LoadingDialog;
@@ -83,12 +85,15 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     private boolean isModifyTrackExpended = false; // id Behavior Bottom Sheet has Expended? ( state )
     private Toast toast; // using this activity's toast
 
+    private RequestTrackManager requestTrackManager;
     private RequestRecordManager requestManager;
     private PlaceMarkEnhancedRecyclerAdapter placeMarkListAdapter; // POI list
     private CourseNameRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
     private ActivityResultLauncher<Intent> requestCamera; // Camera
     private ActivityResultLauncher<Intent> requestExportDir; // RW Document;
+
+    private ItemCourseEnhancedData removeCourseBeforeAddCourse = null;
     private Uri tmpFile; // taken a Picture's File Instance
 
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
@@ -140,6 +145,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         EventBus.getDefault().register(this);
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
         this.requestManager = new RequestRecordManager();
+        this.requestTrackManager = new RequestTrackManager();
 
         // Request Perm to write GPX File
         this.requestExportDir = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -301,9 +307,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     /**
      * request Course List to Server
      */
-    private void requestCourseRecord() {
+    private void requestCourseRecord(final boolean isDelay) {
         if(this.bind == null || this.recordManager == null || this.requestManager == null || this.courseRecyclerAdapter == null) return;
-        this.requestManager.requestCourse((int) this.currentTrackId, new RequestRecordManager.OnRequestResponse<>() {
+        this.requestManager.requestCourse((int) this.currentTrackId, isDelay? 1000L: 0L, new RequestRecordManager.OnRequestResponse<>() {
             @Override
             public void onRequestResponse(ItemTrackRecord response, boolean isSuccess) {
                 runOnUiThread(() -> {
@@ -316,8 +322,19 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     }
 
     /**
+     * request Course Item to Server
+     *
+     * @param toRemoveCourse to Remove Course Item
+     * @param listener CallBack Listener Nullable
+     */
+    private void removeCourseRecord(@NonNull final ItemCourseEnhancedData toRemoveCourse, @Nullable RequestRecordManager.OnRequestResponse<ItemCourseEnhancedData> listener) {
+        if(this.bind == null || this.recordManager == null || this.requestManager == null || this.courseRecyclerAdapter == null) return;
+        this.requestManager.requestRemoveCourse(toRemoveCourse, listener);
+    }
+
+    /**
      * request Track Record From Server
-     * @param isRestored is it true, pause 3sec and request
+     * @param isRestored is it true, pause 3sec and request course List
      */
     private void requestTrackRecords(boolean isRestored) {
         if(this.bind == null || this.recordManager == null || this.requestManager == null) return;
@@ -374,12 +391,13 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
 
                 if(!rawCourseList.isEmpty()) {
-                    Track rawCourse = rawCourseList.getLast();
+//                    Track rawCourse = rawCourseList.getLast();
                     // update course list's item
-                    ItemCourseEnhancedData toUpdateCourse = new ItemCourseEnhancedData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getPrimaryId(), -1, (int) rawCourse.getDurationMoving(), rawCourse.getCourseType());
-                    this.courseRecyclerAdapter.replaceCourseItem(toUpdateCourse);
+//                    ItemCourseEnhancedData toInsertCourse = new ItemCourseEnhancedData(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName(), (int) rawCourse.getPrimaryId(), -1, (int) rawCourse.getDurationMoving(), rawCourse.getCourseType());
+//                    this.courseRecyclerAdapter.replaceCourseItem(toInsertCourse);
 
                     // when new TRACK has, create *.gpx File
+                    this.removeCourseBeforeAddCourse = this.courseRecyclerAdapter.getSelectCourse();
                     if(this.exporterManager.isExportDirHas()) {
 
                         // if already has Perm? Export NOW!
@@ -410,8 +428,21 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) { // when TRACK EXPORT SUCCESSFULLY
             Log.i("GPS_STATE", "TRACK_COURSE_SEND_SUCCESS");
+
+            // if already uploaded Course, remove First
+            if(this.requestManager != null && this.removeCourseBeforeAddCourse != null && this.removeCourseBeforeAddCourse.getCourseId() > -1) {
+                this.requestManager.requestRemoveCourse(this.removeCourseBeforeAddCourse, (response, isSuccess) -> {
+                    if(!isSuccess && toast != null) {
+                        runOnUiThread(() -> {
+                            if(toast != null) toast.cancel();
+                            toast = Toast.makeText(bind.getRoot().getContext(), "코스 덮어쓰기에 실패 했습니다.", Toast.LENGTH_SHORT);
+                            toast.show();
+                        });
+                    }
+                });
+            }
             this.initCourseList(false);
-            this.requestCourseRecord();
+            this.requestCourseRecord(true);
         }
     }
 
@@ -436,7 +467,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         }
                     }
                     if(alreadyHas) {
-                        Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다", Toast.LENGTH_SHORT).show();
+                        if(toast != null) toast.cancel();
+                        toast = Toast.makeText(bind.getRoot().getContext(), "이미 존재하는 코스입니다.", Toast.LENGTH_SHORT);
+                        toast.show();
 
                     } else {
                         courseRecyclerAdapter.addCourseItem(new ItemCourseEnhancedData(currentTrackName, receiveMessage, -1,-1, 0.0f, CourseRoadType.WOOD_DECK.name()));
@@ -500,14 +533,18 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 this.updateUpsideControlPanelState();
 
             } else {
-                Toast.makeText(this.bind.getRoot().getContext(), "코스를 선택해 주세요", Toast.LENGTH_SHORT).show();
+                if(toast != null) toast.cancel();
+                toast = Toast.makeText(bind.getRoot().getContext(), "코스를 선택해 주세요.", Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
 
         // upside "Stop Record" btn
         this.bind.stopRecordBtn.setOnClickListener(v -> {
             if(this.bind == null || this.courseRecyclerAdapter == null) return;
-            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+
+            final ItemCourseEnhancedData toRecordCourse = this.courseRecyclerAdapter.getSelectCourse();
+            final String selectedCourseName = toRecordCourse.getCourseName();
 
             if(!selectedCourseName.isBlank()) {
                 this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().getCourseType());
@@ -536,7 +573,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             if(toUpdateCourse != null) {
                 toUpdateCourse.calcCourseType(this.bind.checkDeckCheckbox.isChecked(), isChecked);
                 this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
-//                this.recordManager.updateCourseType(toUpdateCourse.getTrackName(), toUpdateCourse.getCourseName(), toUpdateCourse.getCourseType());
             }
         });
 
@@ -775,6 +811,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     /**
      * @return Json Object when Placeamrk Data Exists
      */
+
     private JSONObject parsePlaceMarkEnhanced() {
         JSONObject requestPlaceMarkHeader = new JSONObject(); // PlaceMark Header
         try {
@@ -836,6 +873,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         return requestPlaceMarkHeader;
     }
 
+    /**
+     * update upside panel's views visibility state
+     */
     private void updateUpsideControlPanelState() {
         if (this.bind == null || this.recordManager == null) return;
         final boolean isRecording = this.recordManager.isRecordingCourse();
@@ -872,12 +912,23 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * update Button's visiblity state
+     *
+     * @param button Button View Instance
+     * @param backgroundId to show Img Id
+     * @param iconId to show Img Id
+     * @param stringId to show Text Id
+     */
     private void setButtonState(final TextView button, final int backgroundId, final int iconId, final int stringId) {
         if(stringId != 0) button.setText(stringId);
         if(backgroundId != 0) button.setBackground(AppCompatResources.getDrawable(this.bind.getRoot().getContext(), backgroundId));
         if(iconId != 0) button.setCompoundDrawablesWithIntrinsicBounds(iconId, 0, 0, 0);
     }
 
+    /**
+     * release WebView instance
+     */
     private void releaseWebView() {
         if(this.bind != null) {
             this.bind.modifyTrackWebview.removeJavascriptInterface("HybridApp");
@@ -909,9 +960,8 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             BottomSheetBehavior<LinearLayout> modifyTrackSheet = BottomSheetBehavior.from(this.bind.modifyTrackRoot);
             modifyTrackSheet.setState(STATE_COLLAPSED);
             this.isModifyTrackExpended = false;
-            modifyTrackSheet = null;
 
-            // Exit Recording Activity
+        // Exit Recording Enhanced Activity
         } else {
             super.onBackPressed();
         }
@@ -929,31 +979,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             outState.putString(RESTORE_LATEST_IMG_TYPE, this.currentPoiType);
             Log.w("RECORDING", "SAVE LATEST POI TYPE " + this.currentPoiType);
         }
-
-//        if(this.placeMarkListAdapter != null && this.courseRecyclerAdapter != null) {
-//            ItemTrackRecord toSaveTrackRecord = new ItemTrackRecord();
-//            toSaveTrackRecord.setItemPlaceMarkList(this.placeMarkListAdapter.getClonedList());
-//            toSaveTrackRecord.setItemCourseList(this.courseRecyclerAdapter.getCloneCourseList());
-//            outState.putSerializable(RESTORE_TRACK_RECORD, toSaveTrackRecord);
-//        }
         super.onSaveInstanceState(outState);
     }
 
-//    // OFTEN GOTO CAPTURE IMG, CALLED onDestory()
-//    @Override
-//    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        this.tmpFile = Uri.parse(savedInstanceState.getString(RESTORE_LATEST_IMG_URI, ""));
-//        this.currentPoiType = savedInstanceState.getString(RESTORE_LATEST_IMG_TYPE, "");
-//
-//        if(this.tmpFile != null) {
-//            Log.w("RECORDING", "RESTORE LATEST IMG URI " + this.tmpFile);
-//        }
-//        Log.w("RECORDING", "RESTORE LATEST IMG TYPE " + this.currentPoiType);
-//    }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // toolbar "<-" button
         if (item.getItemId() == android.R.id.home) {
             this.onBackPressed();
             return true;
@@ -992,6 +1023,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         if(this.exporterManager != null) {
             this.exporterManager.release();
             this.exporterManager = null;
+        }
+
+        if(this.requestTrackManager != null) {
+            this.requestTrackManager.release();
+            this.requestTrackManager = null;
         }
 
         this.requestManager = null;

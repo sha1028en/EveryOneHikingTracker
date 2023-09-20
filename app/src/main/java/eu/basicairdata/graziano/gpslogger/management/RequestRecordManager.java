@@ -41,7 +41,6 @@ public class RequestRecordManager {
     private BackGroundAsyncTask<ItemTrackRecord> requestCourseTask;
     private BackGroundAsyncTask<ItemTrackRecord> requestPlaceMarkTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestMoveImgPosTask;
-    private BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask;
     private BackGroundAsyncTask<ItemPlaceMarkImgData> requestRemoveImgTask;
 
     // callback Listener
@@ -217,8 +216,8 @@ public class RequestRecordManager {
                 listener.onRequestResponse(null, false);
             }
         };
-        this.requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-        this.requestAddImgTask.executeTask(responseReceiver);
+        BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        requestAddImgTask.executeTask(responseReceiver);
     }
 
     //
@@ -479,7 +478,7 @@ public class RequestRecordManager {
      * @param trackId to Request Track Id
      * @param listener CallBackListener
      */
-    public void requestCourse(final int trackId, @NonNull final OnRequestResponse<ItemTrackRecord> listener) {
+    public void requestCourse(final int trackId, final long delayMilliSecond, @NonNull final OnRequestResponse<ItemTrackRecord> listener) {
         if(this.requestCourseTask == null) return;
         if(this.requestCourseTask.isTaskAlive()) this.requestCourseTask.cancelTask();
 
@@ -540,6 +539,7 @@ public class RequestRecordManager {
                 listener.onRequestResponse(null, false);
             }
         };
+        this.requestCourseTask.setDelay(delayMilliSecond);
         this.requestCourseTask.executeTask(responseReceiver);
     }
 
@@ -789,19 +789,7 @@ public class RequestRecordManager {
                     e.printStackTrace();
                 }
 
-                int j = 0;
-                boolean isNotFindDeprecate = true;
-                for(ItemCourseEnhancedData toCheckDeprecate : courseList) {
-                    if (toCheckDeprecate.equals(course)) {
-                        courseList.set(j, course);
-                        isNotFindDeprecate = false;
-                        break;
-                    }
-                }
-
-                if(isNotFindDeprecate) {
-                    courseList.add(course);
-                }
+                courseList.add(course);
             }
 
         } catch (JSONException e) {

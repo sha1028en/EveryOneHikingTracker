@@ -42,7 +42,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     @Override
     public void onBindViewHolder(@NonNull CourseNameViewHolder holder, int position) {
         holder.onBind(this.courseList.get(position));
-        this.bind.courseRoot.setOnClickListener(v -> {
+        this.bind.courseItemRoot.setOnClickListener(v -> {
             TrackRecordManager recordManager = TrackRecordManager.getInstance();
 
             if (recordManager != null && !recordManager.isRecordingCourse()) {
