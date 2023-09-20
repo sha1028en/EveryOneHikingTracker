@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/placemark_img_view"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:layout_marginEnd="16dp"
-    android:adjustViewBounds="true"
-    android:maxHeight="60dp"
-    android:scaleType="fitXY"
-    android:src="@drawable/deepgray_round_border_16"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent">
-</ImageView>
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/img_number_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textColor="@color/textColorSecondary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/placemark_img_view"
+        app:layout_constraintStart_toStartOf="@id/placemark_img_view"
+        app:layout_constraintEnd_toEndOf="@id/placemark_img_view"/>
+
+    <ImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/placemark_img_view"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="60dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/deepgray_round_border_16"
+        app:layout_constraintTop_toBottomOf="@id/img_number_txt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </ImageView>
+</androidx.constraintlayout.widget.ConstraintLayout>
+

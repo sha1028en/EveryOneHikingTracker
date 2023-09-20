@@ -72,7 +72,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
     @Override
     public void onBindViewHolder(@NonNull PlacemarkTypeViewHolder holder, int position) {
         if(holder.getBindingAdapterPosition() != 0) {
-            holder.onBind(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), this.imgSelectedListener);
+            holder.onBind(this.placeMarkDataList.get(holder.getBindingAdapterPosition()), position, this.imgSelectedListener);
 
             this.bind.placemarkEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> holder.setViewEnableEvent(isChecked, false));
 
@@ -250,7 +250,7 @@ public class PlacemarkTypeRecyclerViewAdapter extends RecyclerView.Adapter<Place
         }
 
 
-        public void onBind(@NonNull final ItemPlaceMarkData item, OnImageSelectedListener listener) {
+        public void onBind(@NonNull final ItemPlaceMarkData item, final int position, OnImageSelectedListener listener) {
             this.placeMarkData = item;
             this.bind.placemarkTypeTitle.setText(this.placeMarkData.getPlaceMarkTitle());
             this.bind.placemarkEnabled.setChecked(this.placeMarkData.getPlaceMarkEnable());

@@ -512,13 +512,39 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 this.toast.show();
                 return;
             }
+            final ItemCourseEnhancedData toRecordCourseItem = this.courseRecyclerAdapter.getSelectCourse();
 
-            final String selectedCourseName = this.courseRecyclerAdapter.getSelectedCourseName();
+            // AVOID NPE! if not select anything, will return NULL
+            if (toRecordCourseItem == null) {
+                if(toast != null) toast.cancel();
+                toast = Toast.makeText(bind.getRoot().getContext(), "코스를 선택해 주세요.", Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
+            final String selectedCourseName = toRecordCourseItem.getCourseName();
+
             if(!selectedCourseName.isBlank()) {
                 if(!this.recordManager.isRecordingCourse() && !this.isPauseCourseRecording) {
-                    // start Record Course
-                    this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
-                    this.isPauseCourseRecording = false;
+                    if(toRecordCourseItem.getCourseId() < 0) { // start NEW Record Course
+                        this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
+                        this.isPauseCourseRecording = false;
+
+                    } else { // show warning Override Course Dialog
+                        ConfirmDialog confirmDialog = new ConfirmDialog(this.bind.getRoot().getContext(), new ConfirmDialog.OnDialogActionListener() {
+                            @Override
+                            public void onConfirmClick() {
+                                // override Course
+                                recordManager.startRecordCourse(currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
+                                isPauseCourseRecording = false;
+                            }
+
+                            @Override
+                            public void onCancelClick() {
+                                // Do Nothing...
+                            }
+                        });
+                        confirmDialog.show();
+                    }
 
                 } else if (isPauseCourseRecording) {
                     // resume Record Course

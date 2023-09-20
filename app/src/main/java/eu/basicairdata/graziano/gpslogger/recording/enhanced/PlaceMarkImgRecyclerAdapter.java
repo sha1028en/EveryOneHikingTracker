@@ -45,7 +45,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
 
     @Override
     public void onBindViewHolder(@NonNull PlaceMarkImgViewHolder holder, int position) {
-        holder.onBind(this.placeMarkImgList.get(position));
+        holder.onBind(this.placeMarkImgList.get(position), position);
     }
 
 //    @Override
@@ -69,7 +69,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
         private final ItemPlacemarkImgBinding bind;
         private ItemPlaceMarkImgData itemImg;
         private OnImageClickListener listener;
-        private boolean isEnable = true;
+//        private boolean isEnable = true;
 
         public PlaceMarkImgViewHolder(@NonNull View itemView, @NonNull final OnImageClickListener listener) {
             super(itemView);
@@ -77,8 +77,9 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
             this.listener = listener;
         }
 
-        public void onBind(@NonNull final ItemPlaceMarkImgData itemImg) {
+        public void onBind(@NonNull final ItemPlaceMarkImgData itemImg, final int position) {
             this.itemImg = itemImg;
+
             Glide.with(this.bind.placemarkImgView.getContext())
                     .setDefaultRequestOptions(RequestOptions.noAnimation())
                     .setDefaultRequestOptions(RequestOptions.formatOf(DecodeFormat.PREFER_RGB_565))
@@ -88,13 +89,15 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
             this.bind.placemarkImgView.setOnClickListener(v -> {
                 listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
             });
+
+            this.bind.imgNumberTxt.setText(String.valueOf(position));
         }
 
-        public void setIsEnable(boolean isEnable) {
-            this.isEnable = isEnable;
-            this.bind.placemarkImgView.setEnabled(isEnable);
-            this.bind.placemarkImgView.setClickable(isEnable);
-            this.bind.placemarkImgView.setFocusable(isEnable);
-        }
+//        public void setIsEnable(boolean isEnable) {
+//            this.isEnable = isEnable;
+//            this.bind.placemarkImgView.setEnabled(isEnable);
+//            this.bind.placemarkImgView.setClickable(isEnable);
+//            this.bind.placemarkImgView.setFocusable(isEnable);
+//        }
     }
 }
