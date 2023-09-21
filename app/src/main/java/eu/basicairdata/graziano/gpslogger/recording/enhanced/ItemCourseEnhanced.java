@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.CourseRoadType;
 
-public class ItemCourseEnhancedData implements Serializable {
+public class ItemCourseEnhanced implements Serializable {
     private final String trackName;
     private String courseName;
 
@@ -23,7 +23,7 @@ public class ItemCourseEnhancedData implements Serializable {
     private String courseType;
     private boolean isClicked;
 
-    public ItemCourseEnhancedData(final String trackName, String courseName, final int trackId, final int courseId, double distance, String courseType) {
+    public ItemCourseEnhanced(final String trackName, String courseName, final int trackId, final int courseId, double distance, String courseType) {
         this.trackName = trackName;
         this.courseName = courseName;
         this.courseId = courseId;
@@ -71,7 +71,7 @@ public class ItemCourseEnhancedData implements Serializable {
         return courseType;
     }
     public void setCourseType(String courseType) {
-        courseType = courseType;
+        this.courseType = courseType;
     }
 
     public void calcCourseType(boolean isWoodDeck, boolean isDirt) {
@@ -82,8 +82,8 @@ public class ItemCourseEnhancedData implements Serializable {
     }
 
     public boolean calcIsCheck(String toCheckBoxType) {
-        if(this.courseType.equalsIgnoreCase(CourseRoadType.WOOD_DECK_N_DIRT.name())) return true;
-        else if(this.courseType.equalsIgnoreCase(CourseRoadType.UNDEFINED.name())) return false;
+        if(this.courseType.equalsIgnoreCase(CourseRoadType.WOOD_DECK_N_DIRT.name())) return true; // ALL SELECTED!
+        else if(this.courseType.equalsIgnoreCase(CourseRoadType.UNDEFINED.name())) return false; // ALL DESELECTED!
         return this.courseType.equalsIgnoreCase(toCheckBoxType);
     }
 
@@ -127,7 +127,7 @@ public class ItemCourseEnhancedData implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ItemCourseEnhancedData that = (ItemCourseEnhancedData) o;
+        ItemCourseEnhanced that = (ItemCourseEnhanced) o;
         return courseName.equals(that.courseName);
     }
 

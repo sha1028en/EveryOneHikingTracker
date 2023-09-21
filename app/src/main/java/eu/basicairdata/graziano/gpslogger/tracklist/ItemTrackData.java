@@ -2,6 +2,10 @@ package eu.basicairdata.graziano.gpslogger.tracklist;
 
 import androidx.annotation.NonNull;
 
+import java.util.LinkedList;
+
+import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+
 public class ItemTrackData {
 
     private final long trackId; // Track Id
@@ -9,9 +13,11 @@ public class ItemTrackData {
     private final String trackAddress; // Track Address
     private final String trackRegion;
 
-    final boolean isCompleteTrack; // is this Track Already Complete ( IF ITS TRUE, NEVER MODIFY THIS TRACK )
-    boolean isDoneCourseInfo = false; // is CourseInfo has ???
-    boolean isDonePlacemarkPic = false; // is placemark picture has ???
+    private final boolean isCompleteTrack; // is this Track Already Complete ( IF ITS TRUE, NEVER MODIFY THIS TRACK )
+    private boolean isDoneCourseInfo = false; // is CourseInfo has ???
+    private boolean isDonePlacemarkPic = false; // is placemark picture has ???
+
+    private LinkedList<ItemCourseUploadQueue> toUploadCourseList;
 
     public ItemTrackData(final long trackId, @NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion, final boolean isCompleteTrack) {
         this.trackId = trackId;
@@ -19,6 +25,7 @@ public class ItemTrackData {
         this.trackAddress = trackAddress;
         this.trackRegion = trackRegion;
         this.isCompleteTrack = isCompleteTrack;
+        this.toUploadCourseList = new LinkedList<>();
     }
 
 
@@ -49,7 +56,19 @@ public class ItemTrackData {
         return isDonePlacemarkPic;
     }
 
+    public boolean isCompleteTrack() {
+        return this.isCompleteTrack;
+    }
+
     public void setDonePlacemarkPic(boolean donePlacemarkPic) {
         isDonePlacemarkPic = donePlacemarkPic;
+    }
+
+    public LinkedList<ItemCourseUploadQueue> getUploadCourseList() {
+        return toUploadCourseList;
+    }
+
+    public void setUploadCourseList(LinkedList<ItemCourseUploadQueue> toUploadCourseList) {
+        this.toUploadCourseList = toUploadCourseList;
     }
 }

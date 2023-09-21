@@ -21,7 +21,7 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
 
 
     interface OnItemSelectListener {
-        void onItemSelect(ItemTrackData item, int pos);
+        void onItemSelected(ItemTrackData item, int pos, int actionType);
     }
 
     private TrackRecyclerAdapter() {
@@ -40,7 +40,13 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
 
         this.bind.gotoRecord.setOnClickListener(v -> {
             if(this.listener != null) {
-                listener.onItemSelect(this.trackList.get(holder.getBindingAdapterPosition()), holder.getBindingAdapterPosition());
+                listener.onItemSelected(this.trackList.get(holder.getBindingAdapterPosition()), holder.getBindingAdapterPosition(), 0);
+            }
+        });
+
+        this.bind.uploadLeftCourse.setOnClickListener(v -> {
+            if(this.listener != null) {
+                listener.onItemSelected(this.trackList.get(holder.getBindingAdapterPosition()), holder.getBindingAdapterPosition(), 1);
             }
         });
         return holder;
@@ -106,7 +112,7 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
         public void onBind(ItemTrackData item) {
             if(this.bind == null || item == null) return;
 
-            final boolean allDone = item.isCompleteTrack;
+            final boolean allDone = item.isCompleteTrack();
             this.bind.gotoRecord.setBackgroundResource(allDone? R.drawable.background_round_stroke_border_32 : R.drawable.blue_round_border_32);
             this.bind.gotoRecord.setText(allDone? "기록 완료" : "정보 입력 >");
             this.bind.gotoRecord.setTextColor(allDone? Color.parseColor("#0078d7"): Color.parseColor("#eeeeee"));
@@ -115,6 +121,7 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
             this.bind.trackName.setText(item.getTrackName());
             this.bind.trackAddress.setText(item.getTrackAddress());
 
+            this.bind.uploadLeftCourse.setVisibility(item.getUploadCourseList().isEmpty()? View.INVISIBLE: View.VISIBLE);
 //            this.bind.trackCourseState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDoneCourseInfo? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
 //            this.bind.trackCourseState.setTextColor(item.isDoneCourseInfo?
 //                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):

@@ -23,6 +23,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     compileSdkVersion 34
     buildToolsVersion '32.0.0'
@@ -44,6 +47,11 @@ android {
         applicationId "eu.basicairdata.graziano.gpslogger"
         minSdkVersion 24
         targetSdkVersion 34
+
+        buildConfigField("String", "API_AUTH_KEY", properties.getProperty('serverApiAuthKey'))
+        buildConfigField("String", "API_URL", properties.getProperty('serverApiUrl'))
+        buildConfigField("String", "WEB_AUTH_KEY", properties.getProperty('webAuthKey'))
+        buildConfigField("String", "WEB_URL", properties.getProperty('webUrl'))
 
         // -----------------------------------------------------------------------------------------
         // We use the Semantic Versioning (https://semver.org/):

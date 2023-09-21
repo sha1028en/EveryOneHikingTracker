@@ -2,12 +2,12 @@ package eu.basicairdata.graziano.gpslogger.recording.enhanced;
 
 import java.io.Serializable;
 
-public class ItemPlaceMarkTypeData implements Serializable {
+public class ItemPlaceMarkType implements Serializable {
     private final int trackId;
     private final String placeMarkType;
     private boolean isEnable;
 
-    public ItemPlaceMarkTypeData(int trackId, String placeMarkType, boolean isEnable) {
+    public ItemPlaceMarkType(int trackId, String placeMarkType, boolean isEnable) {
         this.trackId = trackId;
         this.placeMarkType = placeMarkType;
         this.isEnable = isEnable;

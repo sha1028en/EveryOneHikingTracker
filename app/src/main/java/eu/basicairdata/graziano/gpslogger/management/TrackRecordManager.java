@@ -4,7 +4,6 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_DISABLED;
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.GPS_OK;
 
 import android.content.Context;
-import android.location.Location;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -70,6 +69,13 @@ public class TrackRecordManager {
      */
     public static synchronized TrackRecordManager getInstance() {
         return TrackRecordManager.instance;
+    }
+
+    /**
+     * @return is this Singleton Instance still Alive?
+     */
+    public static synchronized boolean isInstanceAlive() {
+        return instance != null;
     }
 
     /**
@@ -227,6 +233,17 @@ public class TrackRecordManager {
         if(this.gpsApp == null) return;
         this.gpsApp.gpsDataBase.updatePlacemark(trackName, courseName, isEnable);
     }
+    public void addCourseUploadQueue(@NonNull final ItemCourseUploadQueue toAppendItem) {
+        if(this.gpsApp == null) return;
+        this.gpsApp.gpsDataBase.addCourseUploadedQueue(toAppendItem);
+    }
+
+    public void retireCourseUploadQueue(@NonNull final ItemCourseUploadQueue toRetireItem) {
+        if(this.gpsApp == null) return;
+        this.gpsApp.gpsDataBase.deleteCourseUploadQueue(toRetireItem);
+    }
+
+    // RECORDING METHOD
 
     /**
      * start Record Track when GPS provider is ENABLED
@@ -305,6 +322,25 @@ public class TrackRecordManager {
         this.gpsApp.setRecording(true);
     }
 
+
+
+
+    // SELECT METHOD
+    public LinkedList<ItemCourseUploadQueue> getCourseUploadQueueList(@NonNull final String trackName, @NonNull final String courseName) {
+        LinkedList<ItemCourseUploadQueue> toUploadQueueList = new LinkedList<>();
+        if(this.gpsApp != null) {
+            toUploadQueueList = this.gpsApp.gpsDataBase.getCourseUploadedQueueList(trackName, courseName);
+        }
+        return toUploadQueueList;
+    }
+
+    public LinkedList<ItemCourseUploadQueue> getCourseUploadQueueList(final int trackId) {
+        LinkedList<ItemCourseUploadQueue> toUploadQueueList = new LinkedList<>();
+        if(this.gpsApp != null) {
+            toUploadQueueList = this.gpsApp.gpsDataBase.getCourseUploadedQueueList(trackId);
+        }
+        return toUploadQueueList;
+    }
     public LinkedList<Track> getCourseListByTrackName(@NonNull final String trackName) {
         LinkedList<Track> courseList = new LinkedList<>();
         if(this.gpsApp != null) {
@@ -368,7 +404,7 @@ public class TrackRecordManager {
 
     public void removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         if(this.gpsApp != null) {
-            this.gpsApp.gpsDataBase.deleteTrack(trackName, courseName);
+            this.gpsApp.gpsDataBase.deleteTrackWithOthers(trackName, courseName);
         }
     }
 
@@ -378,48 +414,48 @@ public class TrackRecordManager {
         }
     }
 
-    public boolean createBlankTables(final long trackId, @NonNull final String trackName, @NonNull final String trackDesc, @NonNull final String trackRegion) {
-        if(this.gpsApp == null) return false;
-
-        // create EMPTY track
-        Track emptyTrack = new Track();
-        emptyTrack.setTrackId(trackId);
-        emptyTrack.setName(trackName);
-        emptyTrack.setDescription(trackDesc);
-        emptyTrack.setCourseType(CourseRoadType.UNDEFINED.name());
-        emptyTrack.setTrackRegion(trackRegion);
-        this.gpsApp.gpsDataBase.addTrack(emptyTrack);
-
-        // then create EMPTY placemarks into track
-        LocationExtended emptyRow;
-        Location emptyLocation = new Location("DB");
-        emptyLocation.setLatitude(0.0f);
-        emptyLocation.setLongitude(0.0f);
-        emptyLocation.setAltitude(0.0f);
-        emptyLocation.setSpeed(0.0f);
-        emptyLocation.setAccuracy(0.0f);
-        emptyLocation.setBearing(0.0f);
-        emptyLocation.setTime(0L);
-
-        emptyTrack = this.gpsApp.gpsDataBase.getTrack(trackName, trackDesc);
-        if(emptyTrack == null) return false;
-
-        for(PlaceMarkType placeMarkType : PlaceMarkType.values()) {
-            emptyRow = new LocationExtended(emptyLocation);
-            emptyRow.setNumberOfSatellites(0);
-            emptyRow.setNumberOfSatellitesUsedInFix(0);
-
-            emptyRow.setType(placeMarkType.name());
-            emptyRow.setTrackName(trackName);
-            emptyRow.setName(this.getNameByPlacemarkType(placeMarkType));
-            emptyRow.setEnable(true);
-            this.gpsApp.gpsDataBase.addPlacemarkToTrack(emptyRow, emptyTrack);
-        }
-        return true;
-    }
+//    public boolean createBlankTables(final long trackId, @NonNull final String trackName, @NonNull final String trackDesc, @NonNull final String trackRegion) {
+//        if(this.gpsApp == null) return false;
+//
+//        // create EMPTY track
+//        Track emptyTrack = new Track();
+//        emptyTrack.setTrackId(trackId);
+//        emptyTrack.setName(trackName);
+//        emptyTrack.setDescription(trackDesc);
+//        emptyTrack.setCourseType(CourseRoadType.WOOD_DECK.name());
+//        emptyTrack.setTrackRegion(trackRegion);
+//        this.gpsApp.gpsDataBase.addTrack(emptyTrack);
+//
+//        // then create EMPTY placemarks into track
+//        LocationExtended emptyRow;
+//        Location emptyLocation = new Location("DB");
+//        emptyLocation.setLatitude(0.0f);
+//        emptyLocation.setLongitude(0.0f);
+//        emptyLocation.setAltitude(0.0f);
+//        emptyLocation.setSpeed(0.0f);
+//        emptyLocation.setAccuracy(0.0f);
+//        emptyLocation.setBearing(0.0f);
+//        emptyLocation.setTime(0L);
+//
+//        emptyTrack = this.gpsApp.gpsDataBase.getTrack(trackName, trackDesc);
+//        if(emptyTrack == null) return false;
+//
+//        for(PlaceMarkType placeMarkType : PlaceMarkType.values()) {
+//            emptyRow = new LocationExtended(emptyLocation);
+//            emptyRow.setNumberOfSatellites(0);
+//            emptyRow.setNumberOfSatellitesUsedInFix(0);
+//
+//            emptyRow.setType(placeMarkType.name());
+//            emptyRow.setTrackName(trackName);
+//            emptyRow.setName(this.getNameByPlacemarkType(placeMarkType));
+//            emptyRow.setEnable(true);
+//            this.gpsApp.gpsDataBase.addPlacemarkToTrack(emptyRow, emptyTrack);
+//        }
+//        return true;
+//    }
 
     private String getNameByPlacemarkType(PlaceMarkType type) {
-        String placemarkType = "기타 시설물 1";
+        String placemarkType = "기타 시설물";
 
         switch (type) {
             case ENTRANCE -> placemarkType = "나눔길 입구";
@@ -429,7 +465,6 @@ public class TrackRecordManager {
             case BUS_STOP -> placemarkType = "버스";
             case OBSERVATION_DECK -> placemarkType = "전망대";
             case ETC -> placemarkType = "기타 시설물";
-//            default -> placemarkType = "기타 시설물 1";
         }
         return placemarkType;
     }

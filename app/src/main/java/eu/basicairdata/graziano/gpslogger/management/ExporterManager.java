@@ -64,7 +64,6 @@ public class ExporterManager {
         return file;
     }
 
-
     public void setExportDir(@NonNull final Uri path) {
         if(this.gpsApp != null) gpsApp.setPrefExportFolder(path.toString());
     }
@@ -81,46 +80,4 @@ public class ExporterManager {
             this.gpsApp.deselectAllTracks();
         }
     }
-
-//    public void parseGpx(@NonNull final String gpxFileUrl) {
-//        BackGroundAsyncTask<JSONArray> requestGpxFileParse = new BackGroundAsyncTask<>(Dispatchers.getIO());
-//        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<JSONArray> responseListener = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
-//            @Override
-//            public void preTask() {
-//
-//            }
-//
-//            @Override
-//            public JSONArray doTask() {
-//                JSONArray trackPoint = new JSONArray();
-//                try {
-//                    OkHttpClient client = new OkHttpClient();
-//                    Request request = new Request.Builder()
-//                            .addHeader("accept", "*/*")
-//                            .url(gpxFileUrl)
-//                            .build();
-//
-//                    Response response = client.newCall(request).execute();
-//                    String result = response.body().string();
-//                    String[] rawPoints = result.split("^<trkpt lat=\"[0-9]+\\.[0-9]+\" lon=\"[0-9]+\\.[0-9]+\">$");
-//                    Log.d("dspark", rawPoints.toString());
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                return trackPoint;
-//            }
-//
-//            @Override
-//            public void failTask(@NonNull Throwable throwable) {
-//
-//            }
-//
-//            @Override
-//            public void endTask(JSONArray value) {
-//
-//            }
-//        };
-//        requestGpxFileParse.executeTask(responseListener);
-//    }
 }

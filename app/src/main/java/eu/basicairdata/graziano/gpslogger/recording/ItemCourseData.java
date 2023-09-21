@@ -1,7 +1,9 @@
 package eu.basicairdata.graziano.gpslogger.recording;
 
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
+
 /**
- * @deprecated {@link eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData}
+ * @deprecated {@link ItemCourseEnhanced}
  */
 public class ItemCourseData {
     private final String trackName;

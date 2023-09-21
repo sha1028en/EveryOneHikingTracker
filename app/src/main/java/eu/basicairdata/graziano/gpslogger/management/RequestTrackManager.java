@@ -18,8 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
+import eu.basicairdata.graziano.gpslogger.BuildConfig;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.MultipartBody;
@@ -30,31 +31,19 @@ import okhttp3.Response;
 
 public class RequestTrackManager {
     private BackGroundAsyncTask<LinkedList<ItemTrackData>> requestTrackListTask;
-    private BackGroundAsyncTask<ItemTrackData> requestTrackUploadTask;
-    private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseAddTask;
 
     public interface OnRequestResponse<V> {
         void onRequestResponse(final V response, final boolean isSuccess);
     }
 
     public RequestTrackManager() {
-        this.requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        this.requestTrackListTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
     public void release() {
-        if(this.requestCourseAddTask != null) {
-            this.requestCourseAddTask.cancelTask();
-            this.requestCourseAddTask = null;
-        }
-
         if(this.requestTrackListTask != null) {
             this.requestTrackListTask.cancelTask();
             this.requestTrackListTask = null;
-        }
-
-        if(this.requestTrackUploadTask != null) {
-            this.requestTrackUploadTask.cancelTask();
-            this.requestTrackUploadTask = null;
         }
     }
 
@@ -80,10 +69,10 @@ public class RequestTrackManager {
                     if (requestRegion == null || requestRegion.isBlank()) requestRegionParam = ""; // request All tracks
                     else requestRegionParam = "?sido=" + requestRegion; // request some tracks
 
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd" + requestRegionParam);
+                    URL serverUrl = new URL(BuildConfig.API_URL + requestRegionParam);
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestMethod("GET");
                     connection.connect();
 
@@ -97,6 +86,7 @@ public class RequestTrackManager {
                     }
                     JSONObject rawJsonResponse;
                     JSONArray jsonTrackList = new JSONObject(response.toString()).getJSONArray("data");
+                    TrackRecordManager recordManager = TrackRecordManager.getInstance();
 
                     int trackId;
                     String trackName;
@@ -105,6 +95,7 @@ public class RequestTrackManager {
                     int courseCount;
                     int placeMarkCount;
                     boolean isCompleteTrack;
+
                     for (int i = 0; i < jsonTrackList.length(); i++) {
                         rawJsonResponse = jsonTrackList.getJSONObject(i);
                         trackId = rawJsonResponse.getInt("cmrdId");
@@ -118,6 +109,12 @@ public class RequestTrackManager {
                         ItemTrackData track = new ItemTrackData(trackId, trackName, trackAddress, trackRegion, isCompleteTrack);
                         track.setDoneCourseInfo(courseCount > 0);
                         track.setDonePlacemarkPic(placeMarkCount > 0);
+
+                        LinkedList<ItemCourseUploadQueue> toUploadCourseList;
+                        if(recordManager != null && TrackRecordManager.isInstanceAlive()) {
+                            toUploadCourseList = recordManager.getCourseUploadQueueList(trackId);
+                            track.setUploadCourseList(toUploadCourseList);
+                        }
                         trackList.add(track);
                     }
 
@@ -154,23 +151,23 @@ public class RequestTrackManager {
             @NonNull final String courseType,
             @NonNull final DocumentFile courseFile,
             @NonNull final String fileName,
-            @NonNull OnRequestResponse<ItemCourseEnhancedData> listener) {
-        if(this.requestCourseAddTask == null) return;
-        if(this.requestCourseAddTask.isTaskAlive()) this.requestCourseAddTask.cancelTask();
+            @NonNull OnRequestResponse<ItemCourseEnhanced> listener) {
 
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+        BackGroundAsyncTask<ItemCourseEnhanced> requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhanced> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            private boolean isSuccess = true;
             @Override
             public void preTask() {}
 
             @Override
-            public ItemCourseEnhancedData doTask() {
+            public ItemCourseEnhanced doTask() {
                 OkHttpClient connection = new OkHttpClient.Builder()
                         .connectTimeout(5, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
                         .readTimeout(2, TimeUnit.SECONDS)
                         .build();
 
-                final String url = "http://cmrd-tracker.touring.city/api/cmrd/gpx/" + trackId + "/files";
+                final String url = BuildConfig.API_URL + "gpx/" + trackId + "/files";
 
                 try (BufferedReader readStream = new BufferedReader(new InputStreamReader(GPSApplication.getInstance().getContentResolver().openInputStream(courseFile.getUri())))) {
                     StringBuilder courseFileBuffer = new StringBuilder();
@@ -189,7 +186,7 @@ public class RequestTrackManager {
 
                     Request request = new Request.Builder()
                             .url(url)
-                            .addHeader("Authorization", "anwkddosksnarlf")
+                            .addHeader("Authorization", BuildConfig.API_AUTH_KEY)
                             .addHeader("accept", "*/*")
                             .post(body)
                             .build();
@@ -199,14 +196,15 @@ public class RequestTrackManager {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    this.isSuccess = false;
                     return null;
                 }
                 return null;
             }
 
             @Override
-            public void endTask(ItemCourseEnhancedData value) {
-                listener.onRequestResponse(null, true);
+            public void endTask(ItemCourseEnhanced value) {
+                listener.onRequestResponse(null, this.isSuccess);
             }
 
             @Override
@@ -215,6 +213,6 @@ public class RequestTrackManager {
                 listener.onRequestResponse(null, false);
             }
         };
-        this.requestCourseAddTask.executeTask(responseReceiver);
+        requestCourseAddTask.executeTask(responseReceiver);
     }
 }

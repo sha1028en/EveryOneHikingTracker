@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class ItemPlaceMarkImgData implements Serializable {
+public class ItemPlaceMarkImg implements Serializable {
     private int TrackId; // this img's track Id ( parent )
     private final String placeMarkType; // this img's Type ( ETC, PARKING... )
 
@@ -14,7 +14,7 @@ public class ItemPlaceMarkImgData implements Serializable {
     private double imgLat = 0.0f; // img Lat
     private double imgLng = 0.0f; // img Lng
 
-    public ItemPlaceMarkImgData(final int TrackId, final int imageId, @NonNull final  String placeMarkType, @NonNull final String imageUrl) {
+    public ItemPlaceMarkImg(final int TrackId, final int imageId, @NonNull final  String placeMarkType, @NonNull final String imageUrl) {
         this.TrackId = TrackId;
         this.imgId = imageId;
         this.placeMarkType = placeMarkType;
@@ -79,7 +79,7 @@ public class ItemPlaceMarkImgData implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ItemPlaceMarkImgData imgData = (ItemPlaceMarkImgData) o;
+        ItemPlaceMarkImg imgData = (ItemPlaceMarkImg) o;
         return imgId == imgData.imgId;
     }
 

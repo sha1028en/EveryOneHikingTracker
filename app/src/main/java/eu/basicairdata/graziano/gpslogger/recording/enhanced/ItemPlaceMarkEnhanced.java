@@ -9,14 +9,14 @@ import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
 
-public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhancedData>, Comparable<ItemPlaceMarkEnhancedData>, Serializable {
+public class ItemPlaceMarkEnhanced implements Comparator<ItemPlaceMarkEnhanced>, Comparable<ItemPlaceMarkEnhanced>, Serializable {
 //    private int placeMarkId = -1;           // this placemark's UNIQUE id
     private String trackName;               // this placemark's Parent Track Name
     private String placeMarkTitle;          // this placemark Name by placemark type
     private String placeMarkType;           // this placemark type ( REST, ETC... )
     private String placeMarkDesc;           // this placemark desc ( selection information )
 
-    private LinkedList<ItemPlaceMarkImgData> placeMarkImgItemList;
+    private LinkedList<ItemPlaceMarkImg> placeMarkImgItemList;
 
     private double lat = 0.0f;
     private double lng = 0.0f;
@@ -25,7 +25,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     private boolean isPlaceMarkStateChange;      // when this placemark state has changed???
 
 
-    public ItemPlaceMarkEnhancedData(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
+    public ItemPlaceMarkEnhanced(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
         this.trackName = trackName;
         this.placeMarkTitle = placeMarkTitle;
         this.placeMarkType = placeMarkType;
@@ -109,30 +109,30 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
         isPlaceMarkStateChange = true;
     }
 
-    public LinkedList<ItemPlaceMarkImgData> getPlaceMarkImgItemList() {
+    public LinkedList<ItemPlaceMarkImg> getPlaceMarkImgItemList() {
         return placeMarkImgItemList;
     }
 
-    public void addPlaceMarkImgItemList(ItemPlaceMarkImgData placeMarkImgItem) {
+    public void addPlaceMarkImgItemList(ItemPlaceMarkImg placeMarkImgItem) {
         this.placeMarkImgItemList.add(placeMarkImgItem);
     }
-    public void setPlaceMarkImgItemList(LinkedList<ItemPlaceMarkImgData> placeMarkImgItemList) {
+    public void setPlaceMarkImgItemList(LinkedList<ItemPlaceMarkImg> placeMarkImgItemList) {
         this.placeMarkImgItemList = placeMarkImgItemList;
     }
 
-    public void addPlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
+    public void addPlaceMarkImgItem(@NonNull final ItemPlaceMarkImg item) {
         this.placeMarkImgItemList.add(item);
     }
 
-    public void removePlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
+    public void removePlaceMarkImgItem(@NonNull final ItemPlaceMarkImg item) {
         this.placeMarkImgItemList.remove(item);
     }
 
-    public void setPlaceMarkImgItem(@NonNull final ItemPlaceMarkImgData item) {
+    public void setPlaceMarkImgItem(@NonNull final ItemPlaceMarkImg item) {
         if(this.getPlaceMarkImgItemList().isEmpty()) return;
 
         int i = 0;
-        for(ItemPlaceMarkImgData buffer : this.getPlaceMarkImgItemList()) {
+        for(ItemPlaceMarkImg buffer : this.getPlaceMarkImgItemList()) {
             if(buffer.equals(item)) {
                 this.getPlaceMarkImgItemList().set(i, item);
             }
@@ -147,7 +147,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
      * @return compare result
      */
     @Override
-    public int compare(ItemPlaceMarkEnhancedData o1, ItemPlaceMarkEnhancedData o2) {
+    public int compare(ItemPlaceMarkEnhanced o1, ItemPlaceMarkEnhanced o2) {
         // add placemark infomation label must be place roof
         if(o1.trackName.equals("label") && o1.placeMarkDesc.equals("label") && o1.placeMarkTitle.equals("label") && o1.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o1 is high
         else if(o2.trackName.equals("label") && o2.placeMarkDesc.equals("label") && o2.placeMarkTitle.equals("label") && o2.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
@@ -160,7 +160,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     }
 
     @Override
-    public int compareTo(ItemPlaceMarkEnhancedData o) {
+    public int compareTo(ItemPlaceMarkEnhanced o) {
         // add placemark infomation label must be place roof
         if(o.trackName.equals("label") && o.placeMarkDesc.equals("label") && o.placeMarkTitle.equals("label") && o.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o is high
         else if(this.trackName.equals("label") && this.placeMarkDesc.equals("label") && this.placeMarkTitle.equals("label") && this.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
@@ -176,7 +176,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ItemPlaceMarkEnhancedData that = (ItemPlaceMarkEnhancedData) o;
+        ItemPlaceMarkEnhanced that = (ItemPlaceMarkEnhanced) o;
         return trackName.equals(that.trackName) &&
                 placeMarkTitle.equals(that.placeMarkTitle) &&
                 placeMarkType.equals(that.placeMarkType);
@@ -189,7 +189,7 @@ public class ItemPlaceMarkEnhancedData implements Comparator<ItemPlaceMarkEnhanc
     @Override
     public String toString() {
         return "ItemPlaceMarkData{" +
-                ", trackName='" + trackName + '\'' +
+                "trackName='" + trackName + '\'' +
                 ", placeMarkTitle='" + placeMarkTitle + '\'' +
                 ", placeMarkType='" + placeMarkType + '\'' +
                 ", isPlaceMarkEnable=" + isPlaceMarkEnable +

@@ -42,6 +42,8 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
 import androidx.annotation.NonNull;
 
+import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+
 /**
  * A SQLite Helper wrapper that allow to easily manage the database that the app
  * uses to store all the recorded data.
@@ -60,7 +62,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Version
     // Updated to 2 in v2.1.3 (version code 14)
     // Updated to 3 in v3.0.0 (version code 38)
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     private static final int LOCATION_TYPE_LOCATION = 1;
     private static final int LOCATION_TYPE_PLACEMARK = 2;
@@ -74,6 +76,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_LOCATIONS = "locations";
     private static final String TABLE_TRACKS = "tracks";
     private static final String TABLE_PLACEMARKS = "placemarks";
+    private static final String TABLE_COURSE_UPLOAD_QUEUE = "upload_queue";
 
     // ----------------------------------------------------------------------- Common Columns names
     private static final String KEY_ID = "id";
@@ -157,6 +160,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_TRACK_COURSE_TYPE = "course_type";
     private static final String KEY_TRACK_REGION_TYPE = "track_region";
 
+    // ------------------------------------------------------------------ Track Table Columns names
+
+    private static final String KEY_UPLOAD_QUEUE_DONE = "is_uploaded";
+
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -167,6 +174,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
+
         String CREATE_TRACKS_TABLE = "CREATE TABLE " + TABLE_TRACKS + "("
                 + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"    // 0
                 + KEY_TRACK_NAME + " TEXT,"                         // 1
@@ -212,7 +220,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_TRACK_DESCRIPTION + " TEXT,"                  // 41
                 + KEY_TRACK_COURSE_TYPE + " TEXT,"                  // 42
                 + KEY_TRACK_REGION_TYPE + " TEXT,"                  // 43
-                + KEY_TRACK_ID + " INTRAGER" + ")";                 // 44
+                + KEY_TRACK_ID + " INTEGER" + ")";                  // 44
         db.execSQL(CREATE_TRACKS_TABLE);
 
         String CREATE_LOCATIONS_TABLE = "CREATE TABLE " + TABLE_LOCATIONS + "("
@@ -252,6 +260,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PLACEMARK_NAME + " TEXT, "                                // 15
                 + KEY_PLACEMARK_ENABLED + " INTEGER " + ")";                    // 16
         db.execSQL(CREATE_PLACEMARKS_TABLE);
+
+        final String CREATE_COURSE_UPLOAD_QUEUE = "CREATE TABLE " + TABLE_COURSE_UPLOAD_QUEUE + " ("
+                + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "               // 0
+                + KEY_TRACK_ID + " INTEGER, "                                   // 1
+                + KEY_TRACK_NAME + " TEXT, "                                    // 2
+                + KEY_TRACK_DESCRIPTION + " TEXT, "                             // 3
+                + KEY_UPLOAD_QUEUE_DONE + " INTEGER" + ")";                     // 4
+        db.execSQL(CREATE_COURSE_UPLOAD_QUEUE);
     }
 
     private static final String DATABASE_ALTER_TABLE_LOCATIONS_TO_V2 = "ALTER TABLE "
@@ -273,7 +289,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String DATABASE_ALTER_TABLE_TRACKS_TO_V4 = "ALTER TABLE "
             + TABLE_TRACKS + " ADD COLUMN " + KEY_TRACK_COURSE_TYPE + " TEXT DEFAULT \"\";";
 
-
+    private static final String DATABASE_CREATE_TABLE_UPLOAD_QUEUE_V1 = "CREATE TABLE IF NOT EXISTS " + TABLE_COURSE_UPLOAD_QUEUE + " ("
+            + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "               // 0
+            + KEY_TRACK_ID + " INTEGER, "                                   // 1
+            + KEY_TRACK_NAME + " TEXT, "                                    // 2
+            + KEY_TRACK_DESCRIPTION + " TEXT, "                             // 3
+            + KEY_UPLOAD_QUEUE_DONE + " INTEGER" + ")";                     // 4
     /**
      * Upgrade the database version, altering the corresponding tables.
      */
@@ -312,6 +333,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 db.execSQL(DATABASE_ALTER_TABLE_LOCATIONS_NAME_TO_V3);
                 db.execSQL(DATABASE_ALTER_TABLE_LOCATIONS_DESC_TO_V3);
 
+            case 6:
+                db.execSQL(DATABASE_CREATE_TABLE_UPLOAD_QUEUE_V1);
                 //and so on.. do not add breaks so that switch will
                 //start at oldVersion, and run straight through to the latest
         }
@@ -409,6 +432,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.update(TABLE_TRACKS, trkValues, KEY_TRACK_NAME + " LIKE ? AND " +
                     KEY_TRACK_DESCRIPTION + " LIKE ?",
                     new String[] { trackName, courseName });                // Update the corresponding Track
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void addCourseUploadedQueue(@NonNull final ItemCourseUploadQueue toAppendItem) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues appendItemContent = new ContentValues();
+
+        appendItemContent.put(KEY_TRACK_ID, toAppendItem.getTrackId());
+        appendItemContent.put(KEY_TRACK_NAME, toAppendItem.getTrackName());
+        appendItemContent.put(KEY_TRACK_DESCRIPTION, toAppendItem.getCourseName());
+        appendItemContent.put(KEY_UPLOAD_QUEUE_DONE, toAppendItem.isUploaded());
+
+        try {
+            db.beginTransaction();
+            db.insert(TABLE_COURSE_UPLOAD_QUEUE, null, appendItemContent);              // Insert the new Location
             db.setTransactionSuccessful();
 
         } finally {
@@ -850,6 +892,66 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             cursor.close();
         }
         return locationList;
+    }
+
+    public LinkedList<ItemCourseUploadQueue> getCourseUploadedQueueList(final int trackId) {
+        LinkedList<ItemCourseUploadQueue> toUploadedCourseList = new LinkedList<>();
+
+        final String selectQuery = "SELECT  * FROM " + TABLE_COURSE_UPLOAD_QUEUE + " WHERE " + KEY_TRACK_ID + " = " + trackId;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        String trackName;
+        String courseName;
+        int isUploaded;
+
+        if (cursor != null) {
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    trackName = cursor.getString(2);
+                    courseName = cursor.getString(3);
+                    isUploaded = cursor.getInt(4);
+
+                    ItemCourseUploadQueue buffer = new ItemCourseUploadQueue(trackId, trackName, courseName);
+                    buffer.setUploaded(isUploaded);
+                    toUploadedCourseList.add(buffer); // Add Location to list
+
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        return toUploadedCourseList;
+    }
+
+
+    public LinkedList<ItemCourseUploadQueue> getCourseUploadedQueueList(@NonNull final String trackName, @NonNull final String courseName) {
+        LinkedList<ItemCourseUploadQueue> toUploadedCourseList = new LinkedList<>();
+
+        final String selectQuery = "SELECT  * FROM " + TABLE_COURSE_UPLOAD_QUEUE + " WHERE " + KEY_TRACK_NAME + " LIKE ? AND " + KEY_TRACK_DESCRIPTION + " LIKE ?";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { trackName, courseName });
+
+        int trackId;
+        int isUploaded;
+
+        if (cursor != null) {
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    trackId = cursor.getInt(1);
+                    isUploaded = cursor.getInt(4);
+
+                    ItemCourseUploadQueue buffer = new ItemCourseUploadQueue(trackId, trackName, courseName);
+                    buffer.setUploaded(isUploaded);
+                    toUploadedCourseList.add(buffer); // Add Location to list
+
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        return toUploadedCourseList;
     }
 
 //    public List<LocationExtended> getLocationsList(@NonNull String trackName) {
@@ -1333,7 +1435,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 //        }
 //    }
 
-    public void deleteTrack(@NonNull final String trackName, @NonNull final String trackDesc) {
+    public void deleteTrackWithOthers(@NonNull final String trackName, @NonNull final String trackDesc) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
             db.beginTransaction();
@@ -1363,6 +1465,30 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         try {
             db.beginTransaction();
             db.delete(TABLE_LOCATIONS, KEY_TRACK_NAME + " LIKE ? ", new String[] { trackName });
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void deleteCourseUploadQueue(@NonNull final String trackName, @NonNull final String courseName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            db.beginTransaction();
+            db.delete(TABLE_COURSE_UPLOAD_QUEUE, KEY_TRACK_NAME + " LIKE ? AND " + KEY_TRACK_DESCRIPTION + " LIKE ?", new String[] { trackName, courseName });
+            db.setTransactionSuccessful();
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void deleteCourseUploadQueue(@NonNull final ItemCourseUploadQueue toRetireItem) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            db.beginTransaction();
+            db.delete(TABLE_COURSE_UPLOAD_QUEUE, KEY_TRACK_NAME + " LIKE ? AND " + KEY_TRACK_DESCRIPTION + " LIKE ?", new String[] { toRetireItem.getTrackName(), toRetireItem.getCourseName() });
             db.setTransactionSuccessful();
 
         } finally {
@@ -1415,6 +1541,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
 
     /**
      * Adds a new track to the Database.

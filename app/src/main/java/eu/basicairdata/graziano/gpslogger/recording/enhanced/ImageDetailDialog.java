@@ -19,11 +19,11 @@ public class ImageDetailDialog extends Dialog implements Serializable {
     private OnRemoveBtnClickedListener listener;
 
     interface OnRemoveBtnClickedListener {
-        void onRemoveBtnClicked(ItemPlaceMarkImgData removeImgData);
+        void onRemoveBtnClicked(ItemPlaceMarkImg removeImgData);
     }
 
-    ItemPlaceMarkImgData imgData;
-    public ImageDetailDialog(@NonNull Context context, @NonNull final ItemPlaceMarkImgData imgData, @NonNull final  OnRemoveBtnClickedListener listener) {
+    ItemPlaceMarkImg imgData;
+    public ImageDetailDialog(@NonNull Context context, @NonNull final ItemPlaceMarkImg imgData, @NonNull final  OnRemoveBtnClickedListener listener) {
         super(context);
         this.bind = DialogImageDetailBinding.inflate(getLayoutInflater());
         this.localContext = new WeakReference<>(context);

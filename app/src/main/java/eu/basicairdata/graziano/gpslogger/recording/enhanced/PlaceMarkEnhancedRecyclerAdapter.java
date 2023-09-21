@@ -22,22 +22,21 @@ import java.util.List;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkEnhancedBinding;
 import eu.basicairdata.graziano.gpslogger.management.PlaceMarkType;
-import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
 public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder> implements Serializable {
-    private LinkedList<ItemPlaceMarkEnhancedData> placeMarkDataList;
+    private LinkedList<ItemPlaceMarkEnhanced> placeMarkDataList;
     private transient ItemPlacemarkEnhancedBinding bind;
     private PlacemarkTypeViewHolder.OnImageSelectedListener imgSelectedListener;
 
     private OnAddImageClickListener imgAddListener;
     public interface OnAddImageClickListener {
-        void onAddImageClick(ItemPlaceMarkEnhancedData placemarkItem, int pos);
+        void onAddImageClick(ItemPlaceMarkEnhanced placemarkItem, int pos);
     }
 
     private PlaceMarkEnhancedRecyclerAdapter() {
         this.placeMarkDataList = new LinkedList<>();
 
-        ItemPlaceMarkEnhancedData tmpData = new ItemPlaceMarkEnhancedData("label", "label", PlaceMarkType.ETC.name(), "label", false);
+        ItemPlaceMarkEnhanced tmpData = new ItemPlaceMarkEnhanced("label", "label", PlaceMarkType.ETC.name(), "label", false);
         this.placeMarkDataList.add(tmpData);
     }
 
@@ -60,7 +59,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
             holder.setViewEnableEvent(isChecked, false);
 
             // update POI state
-            ItemPlaceMarkEnhancedData item = this.placeMarkDataList.get(holder.getBindingAdapterPosition());
+            ItemPlaceMarkEnhanced item = this.placeMarkDataList.get(holder.getBindingAdapterPosition());
             item.setPlaceMarkEnable(isChecked);
             item.setPlaceMarkStateChange();
             this.placeMarkDataList.set(holder.getBindingAdapterPosition(), item);
@@ -93,8 +92,8 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
 //        super.onViewRecycled(holder);
     }
 
-    public LinkedList<ItemPlaceMarkEnhancedData> getClonedList() {
-        return (LinkedList<ItemPlaceMarkEnhancedData>) this.placeMarkDataList.clone();
+    public LinkedList<ItemPlaceMarkEnhanced> getClonedList() {
+        return (LinkedList<ItemPlaceMarkEnhanced>) this.placeMarkDataList.clone();
     }
 
     @Override
@@ -110,7 +109,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
      * add item at last position
      * @param item added Item data
      */
-    public void addPlaceMark(@NonNull final ItemPlaceMarkEnhancedData item) {
+    public void addPlaceMark(@NonNull final ItemPlaceMarkEnhanced item) {
         if(this.placeMarkDataList == null) return;
 
         this.placeMarkDataList.add(item);
@@ -118,7 +117,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         this.notifyItemInserted(this.placeMarkDataList.size());
     }
 
-    public void addPlaceMark(@NonNull final ItemPlaceMarkEnhancedData item, final int pos) {
+    public void addPlaceMark(@NonNull final ItemPlaceMarkEnhanced item, final int pos) {
         if(pos < 0) throw new IllegalArgumentException("PlacemarkTypeRecyclerViewAdapter.addPlaceMark(item, pos) : wrong value pos " + pos);
 
         this.placeMarkDataList.add(pos, item);
@@ -126,22 +125,22 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         this.notifyItemInserted(pos);
     }
 
-    public void addPlaceMark(@NonNull final List<ItemPlaceMarkEnhancedData> items) {
+    public void addPlaceMark(@NonNull final List<ItemPlaceMarkEnhanced> items) {
         if(this.placeMarkDataList == null) return;
 
         this.placeMarkDataList.addAll(items);
         this.notifyDataSetChanged();
     }
 
-    public void addPlaceMarkImg(@NonNull final LinkedList<ItemPlaceMarkImgData> items) {
+    public void addPlaceMarkImg(@NonNull final LinkedList<ItemPlaceMarkImg> items) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
 
-        for(ItemPlaceMarkImgData item : items) {
-            ItemPlaceMarkEnhancedData toUpdatePlaceMark = null;
+        for(ItemPlaceMarkImg item : items) {
+            ItemPlaceMarkEnhanced toUpdatePlaceMark = null;
             boolean hasFind = false;
             int i = 0;
 
-            for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+            for(ItemPlaceMarkEnhanced placemark : this.placeMarkDataList) {
                 if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                     toUpdatePlaceMark = placemark;
                     toUpdatePlaceMark.addPlaceMarkImgItem(item);
@@ -158,13 +157,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
-    public void addPlaceMarkImg(@NonNull final ItemPlaceMarkImgData item) {
+    public void addPlaceMarkImg(@NonNull final ItemPlaceMarkImg item) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
-        ItemPlaceMarkEnhancedData toUpdatePlaceMark = null;
+        ItemPlaceMarkEnhanced toUpdatePlaceMark = null;
         boolean hasFind = false;
         int i = 0;
 
-        for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+        for(ItemPlaceMarkEnhanced placemark : this.placeMarkDataList) {
             if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                 toUpdatePlaceMark = placemark;
                 toUpdatePlaceMark.addPlaceMarkImgItem(item);
@@ -180,13 +179,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
-    public void setPlaceMarkImg(@NonNull final ItemPlaceMarkImgData item) {
+    public void setPlaceMarkImg(@NonNull final ItemPlaceMarkImg item) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
-        ItemPlaceMarkEnhancedData toUpdatePlaceMark = null;
+        ItemPlaceMarkEnhanced toUpdatePlaceMark = null;
         boolean hasFind = false;
         int i = 0;
 
-        for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+        for(ItemPlaceMarkEnhanced placemark : this.placeMarkDataList) {
             if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                 toUpdatePlaceMark = placemark;
                 toUpdatePlaceMark.setPlaceMarkImgItem(item);
@@ -202,13 +201,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
-    public void removePlaceMarkImg(@NonNull final ItemPlaceMarkImgData item) {
+    public void removePlaceMarkImg(@NonNull final ItemPlaceMarkImg item) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return;
-        ItemPlaceMarkEnhancedData toRemovePlaceMark = null;
+        ItemPlaceMarkEnhanced toRemovePlaceMark = null;
         boolean hasFind = false;
         int i = 0;
 
-        for(ItemPlaceMarkEnhancedData placemark : this.placeMarkDataList) {
+        for(ItemPlaceMarkEnhanced placemark : this.placeMarkDataList) {
             if(placemark.getPlaceMarkType().equals(item.getPlaceMarkType()) && !placemark.getPlaceMarkTitle().equals("label")) {
                 toRemovePlaceMark = placemark;
                 toRemovePlaceMark.removePlaceMarkImgItem(item);
@@ -224,11 +223,11 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         }
     }
 
-    public void updatePlaceMark(@NonNull final ItemPlaceMarkEnhancedData item) {
+    public void updatePlaceMark(@NonNull final ItemPlaceMarkEnhanced item) {
         if(this.placeMarkDataList == null) return;
 
         int index = 0;
-        for(ItemPlaceMarkEnhancedData buffer : this.placeMarkDataList) {
+        for(ItemPlaceMarkEnhanced buffer : this.placeMarkDataList) {
             if(buffer.getPlaceMarkType().equals(item.getPlaceMarkType()) && buffer.getPlaceMarkTitle().equals(item.getPlaceMarkTitle())) {
                 this.placeMarkDataList.set(index, item);
                 break;
@@ -238,7 +237,7 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
         this.notifyDataSetChanged();
     }
 
-    private int getItemPosition(@NonNull final ItemPlaceMarkEnhancedData item) {
+    private int getItemPosition(@NonNull final ItemPlaceMarkEnhanced item) {
         if(this.placeMarkDataList == null || this.placeMarkDataList.isEmpty()) return -1;
 
         int pos = this.placeMarkDataList.indexOf(item);
@@ -256,13 +255,13 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
     // INNER CLASS MIGHT BE STATIC CLASS
     // FOR PREVENT MEMORY LEAK
     public static class PlacemarkTypeViewHolder extends RecyclerView.ViewHolder implements Serializable {
-        private ItemPlaceMarkEnhancedData placeMarkData = null;
+        private ItemPlaceMarkEnhanced placeMarkData = null;
         private transient final ItemPlacemarkEnhancedBinding bind;
         private PlaceMarkImgRecyclerAdapter imgRecyclerAdapter;
         private boolean isEnableImgEvent;
 
         public interface OnImageSelectedListener {
-            void onImageSelect(ItemPlaceMarkImgData imgData, int pos);
+            void onImageSelect(ItemPlaceMarkImg imgData, int pos);
         }
         public void setViewEnableEvent(final boolean isEnableEvent, final boolean alsoSwitchEventChange) {
             if(alsoSwitchEventChange) {
@@ -297,14 +296,14 @@ public class PlaceMarkEnhancedRecyclerAdapter extends RecyclerView.Adapter<Place
             this.bind.placemarkAddInfo.setText(emphaticInformation);
         }
 
-        public void onBind(@NonNull final ItemPlaceMarkEnhancedData item, PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener listener) {
+        public void onBind(@NonNull final ItemPlaceMarkEnhanced item, PlaceMarkEnhancedRecyclerAdapter.PlacemarkTypeViewHolder.OnImageSelectedListener listener) {
             this.placeMarkData = item;
 
             this.bind.placemarkTypeTitle.setText(this.placeMarkData.getPlaceMarkTitle());
             this.bind.placemarkEnabled.setChecked(this.placeMarkData.isPlaceMarkEnable());
             this.imgRecyclerAdapter = new PlaceMarkImgRecyclerAdapter(new PlaceMarkImgRecyclerAdapter.OnImageClickListener() {
                 @Override
-                public void onImageClick(ItemPlaceMarkImgData placemarkItem, int pos) {
+                public void onImageClick(ItemPlaceMarkImg placemarkItem, int pos) {
                     if(isEnableImgEvent) listener.onImageSelect(placemarkItem, pos);
                 }
             });

@@ -23,10 +23,11 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkEnhancedData;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImgData;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkTypeData;
+import eu.basicairdata.graziano.gpslogger.BuildConfig;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkEnhanced;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImg;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkType;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -37,11 +38,11 @@ import okhttp3.Response;
 
 public class RequestRecordManager {
     private BackGroundAsyncTask<ItemTrackRecord> requestTrackRecordTask;
-    private BackGroundAsyncTask<ItemCourseEnhancedData> requestCourseRemoveTask;
+    private BackGroundAsyncTask<ItemCourseEnhanced> requestCourseRemoveTask;
     private BackGroundAsyncTask<ItemTrackRecord> requestCourseTask;
     private BackGroundAsyncTask<ItemTrackRecord> requestPlaceMarkTask;
-    private BackGroundAsyncTask<ItemPlaceMarkImgData> requestMoveImgPosTask;
-    private BackGroundAsyncTask<ItemPlaceMarkImgData> requestRemoveImgTask;
+    private BackGroundAsyncTask<ItemPlaceMarkImg> requestMoveImgPosTask;
+    private BackGroundAsyncTask<ItemPlaceMarkImg> requestRemoveImgTask;
 
     // callback Listener
     public interface OnRequestResponse<V> {
@@ -107,26 +108,26 @@ public class RequestRecordManager {
                               @NonNull final String placemarkType,
                               @NonNull final File imageFile,
                               @NonNull final String fileName,
-                              @NonNull final OnRequestResponse<ItemPlaceMarkImgData> listener) {
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+                              @NonNull final OnRequestResponse<ItemPlaceMarkImg> listener) {
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImg> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
 
             @Override
-            public ItemPlaceMarkImgData doTask() {
+            public ItemPlaceMarkImg doTask() {
                 HttpURLConnection connection = null;
-                ItemPlaceMarkImgData imgData = null;
+                ItemPlaceMarkImg imgData = null;
 
                 final String boundary = Long.toHexString(System.currentTimeMillis());
                 final String crlf = "\r\n";
                 final String twoHyphens = "--";
 
                 try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/poi/");
+                    URL serverUrl = new URL(BuildConfig.API_URL + "poi/");
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestMethod("POST");
                     connection.setRequestProperty("Connection", "Keep-Alive");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestProperty("Content-type", "multipart/form-data;boundary=" + boundary);
                     connection.setRequestProperty("Accept", "*/*");
                     connection.setConnectTimeout(5000);
@@ -186,15 +187,11 @@ public class RequestRecordManager {
                     final int photoId = responseJson.optInt("poiId", -1);
 
                     if(photoId != -1 && (imgLat != 0.0 || imgLng != 0.0f)) {
-                        imgData = new ItemPlaceMarkImgData(trackId, photoId, placemarkType, imgUrl);
+                        imgData = new ItemPlaceMarkImg(trackId, photoId, placemarkType, imgUrl);
                         imgData.setImgLat(imgLat);
                         imgData.setImgLng(imgLng);
 
-                    } // else {
-                        // avoid NPE!!!
-//                        imgData = new ItemPlaceMarkImgData(-1, -1, "NONE", "");
-//                    }
-
+                    }
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
                     e.printStackTrace();
 
@@ -205,7 +202,7 @@ public class RequestRecordManager {
             }
 
             @Override
-            public void endTask(ItemPlaceMarkImgData value) {
+            public void endTask(ItemPlaceMarkImg value) {
                 if (value != null) listener.onRequestResponse(value, true);
                 else listener.onRequestResponse(null, false);
             }
@@ -216,7 +213,7 @@ public class RequestRecordManager {
                 listener.onRequestResponse(null, false);
             }
         };
-        BackGroundAsyncTask<ItemPlaceMarkImgData> requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        BackGroundAsyncTask<ItemPlaceMarkImg> requestAddImgTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         requestAddImgTask.executeTask(responseReceiver);
     }
 
@@ -231,19 +228,19 @@ public class RequestRecordManager {
     public void requestRemoveImg(final int photoId, @Nullable RequestTrackManager.OnRequestResponse<Boolean> listener) {
         if(this.requestRemoveImgTask == null) return;
         if(this.requestRemoveImgTask.isTaskAlive()) this.requestRemoveImgTask.cancelTask();
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImg> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
 
             @Override
-            public ItemPlaceMarkImgData doTask() {
+            public ItemPlaceMarkImg doTask() {
                 HttpURLConnection connection = null;
-                ItemPlaceMarkImgData imgData = null;
+                ItemPlaceMarkImg imgData = null;
                 try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/poi/" + photoId);
+                    URL serverUrl = new URL(BuildConfig.API_URL + "poi/" + photoId);
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestMethod("DELETE");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestProperty("Content-type", "application/json");
                     connection.setRequestProperty("Accept", "*/*");
 
@@ -259,7 +256,7 @@ public class RequestRecordManager {
                     final String responseMsg = responseJson.optString("message", "fail");
 
                     if(responseMsg.equals("OK")) {
-                        imgData = new ItemPlaceMarkImgData(-1, -1, "", "");
+                        imgData = new ItemPlaceMarkImg(-1, -1, "", "");
                     }
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
@@ -272,7 +269,7 @@ public class RequestRecordManager {
             }
 
             @Override
-            public void endTask(ItemPlaceMarkImgData value) {
+            public void endTask(ItemPlaceMarkImg value) {
                 if (value != null && listener != null) listener.onRequestResponse(true, true);
                 else if (listener != null) listener.onRequestResponse(false, false);
             }
@@ -294,22 +291,22 @@ public class RequestRecordManager {
      * @param imgLng to Update Placemark Img Lng
      * @param listener CallBackListener
      */
-    public void requestMoveImgPos(final int photoId, final double imgLat, final double imgLng, @NonNull RequestRecordManager.OnRequestResponse<ItemPlaceMarkImgData> listener) {
+    public void requestMoveImgPos(final int photoId, final double imgLat, final double imgLng, @NonNull RequestRecordManager.OnRequestResponse<ItemPlaceMarkImg> listener) {
         if(this.requestMoveImgPosTask == null) return;
         if(this.requestMoveImgPosTask.isTaskAlive()) this.requestMoveImgPosTask.cancelTask();
 
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImgData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemPlaceMarkImg> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {
                 // NOTHING TO DO
             }
 
             @Override
-            public ItemPlaceMarkImgData doTask() {
+            public ItemPlaceMarkImg doTask() {
                 OkHttpClient connection = new OkHttpClient();
-                final String serverUrl = "http://cmrd-tracker.touring.city/api/cmrd/poi/" + photoId;
+                final String serverUrl = BuildConfig.API_URL + "poi/" + photoId;
                 final JSONObject toSendPhotoLocation = new JSONObject();
-                ItemPlaceMarkImgData resultImg = null;
+                ItemPlaceMarkImg resultImg = null;
 
                 try {
                     toSendPhotoLocation.put("lat", imgLat);
@@ -317,7 +314,7 @@ public class RequestRecordManager {
 
                     Request request = new Request.Builder()
                             .url(serverUrl)
-                            .addHeader("Authorization", "anwkddosksnarlf")
+                            .addHeader("Authorization", BuildConfig.API_AUTH_KEY)
                             .post(RequestBody.create(MediaType.parse("application/json"), toSendPhotoLocation.toString()))
                             .build();
 
@@ -332,7 +329,7 @@ public class RequestRecordManager {
                     final double modifyImgLat = rawResponse.getDouble("imgLat");
                     final double modifyImgLng = rawResponse.getDouble("imgLng");
 
-                    resultImg = new ItemPlaceMarkImgData(trackId, photoId, poiType, imgUrl);
+                    resultImg = new ItemPlaceMarkImg(trackId, photoId, poiType, imgUrl);
                     resultImg.setImgLat(modifyImgLat);
                     resultImg.setImgLng(modifyImgLng);
 
@@ -343,7 +340,7 @@ public class RequestRecordManager {
             }
 
             @Override
-            public void endTask(ItemPlaceMarkImgData value) {
+            public void endTask(ItemPlaceMarkImg value) {
                 if(value == null) listener.onRequestResponse(null, false);
                 else listener.onRequestResponse(value, true);
             }
@@ -363,24 +360,24 @@ public class RequestRecordManager {
      * @param item to Remove Course Data Class
      * @param listener CallBackListener Nullable
      */
-    public void requestRemoveCourse(@NonNull final ItemCourseEnhancedData item, @Nullable final OnRequestResponse<ItemCourseEnhancedData> listener) {
+    public void requestRemoveCourse(@NonNull final ItemCourseEnhanced item, @Nullable final OnRequestResponse<ItemCourseEnhanced> listener) {
         if(this.requestCourseRemoveTask == null) return;
         if(this.requestCourseRemoveTask.isTaskAlive()) this.requestCourseRemoveTask.cancelTask();
 
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhancedData> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhanced> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
             public void preTask() {}
 
             @Override
-            public ItemCourseEnhancedData doTask() {
+            public ItemCourseEnhanced doTask() {
 
                 HttpURLConnection connection;
 
                 try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/gpx/" + item.getCourseId());
+                    URL serverUrl = new URL(BuildConfig.API_URL + "gpx/" + item.getCourseId());
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestMethod("DELETE");
                     connection.connect();
 
@@ -403,7 +400,7 @@ public class RequestRecordManager {
             }
 
             @Override
-            public void endTask(ItemCourseEnhancedData value) {
+            public void endTask(ItemCourseEnhanced value) {
                 if (listener != null) listener.onRequestResponse(value, true);
             }
 
@@ -439,9 +436,9 @@ public class RequestRecordManager {
                     OkHttpClient connection = new OkHttpClient();
 
                     Request requestHeader = new Request.Builder()
-                            .url("http://cmrd-tracker.touring.city/api/cmrd/"+ trackId + "/" + placeMarkType + "/" + (isEnable? "Y": "N"))
+                            .url(BuildConfig.API_URL + trackId + "/" + placeMarkType + "/" + (isEnable? "Y": "N"))
                             .method("PUT", new FormBody.Builder().build())
-                            .addHeader("Authorization", "anwkddosksnarlf")
+                            .addHeader("Authorization", BuildConfig.API_AUTH_KEY)
                             .addHeader("accept", "*/*")
                             .build();
 
@@ -483,6 +480,7 @@ public class RequestRecordManager {
         if(this.requestCourseTask.isTaskAlive()) this.requestCourseTask.cancelTask();
 
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemTrackRecord> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            private boolean isSuccess = true;
             @Override
             public void preTask() {}
 
@@ -491,13 +489,13 @@ public class RequestRecordManager {
                 ItemTrackRecord trackRecord = new ItemTrackRecord();
                 HttpURLConnection connection = null;
 
-                LinkedList<ItemCourseEnhancedData> courseList;
+                LinkedList<ItemCourseEnhanced> courseList;
 
                 try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId);
+                    URL serverUrl = new URL(BuildConfig.API_URL + trackId);
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestMethod("GET");
                     connection.connect();
 
@@ -521,6 +519,7 @@ public class RequestRecordManager {
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
                     e.printStackTrace();
+                    this.isSuccess = false;
 
                 } finally {
                     if (connection != null) connection.disconnect();
@@ -530,7 +529,7 @@ public class RequestRecordManager {
 
             @Override
             public void endTask(ItemTrackRecord value) {
-                listener.onRequestResponse(value, true);
+                listener.onRequestResponse(value, this.isSuccess);
             }
 
             @Override
@@ -563,16 +562,16 @@ public class RequestRecordManager {
                 ItemTrackRecord trackRecord = new ItemTrackRecord();
                 HttpURLConnection connection = null;
 
-                LinkedList<ItemPlaceMarkEnhancedData> placeMarkDataList = new LinkedList<>();
-                LinkedList<ItemPlaceMarkTypeData> placeMarkTypeList;
-                LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
-                LinkedList<ItemCourseEnhancedData> courseList;
+                LinkedList<ItemPlaceMarkEnhanced> placeMarkDataList = new LinkedList<>();
+                LinkedList<ItemPlaceMarkType> placeMarkTypeList;
+                LinkedList<ItemPlaceMarkImg> placeMarkImgList;
+                LinkedList<ItemCourseEnhanced> courseList;
 
                 try {
-                    URL serverUrl = new URL("http://cmrd-tracker.touring.city/api/cmrd/" + trackId);
+                    URL serverUrl = new URL(BuildConfig.API_URL + trackId);
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setRequestProperty("Accept", "application/json");
-                    connection.setRequestProperty("Authorization", "anwkddosksnarlf");
+                    connection.setRequestProperty("Authorization", BuildConfig.API_AUTH_KEY);
                     connection.setRequestMethod("GET");
                     connection.connect();
 
@@ -594,10 +593,10 @@ public class RequestRecordManager {
                     placeMarkImgList = parsePlacemarkList(trackId, rawJsonResponse);
                     courseList = parseCourseList(trackName, trackId, rawJsonResponse);
 
-                    for (ItemPlaceMarkTypeData placeMarkType : placeMarkTypeList) {
-                        ItemPlaceMarkEnhancedData placeMark = new ItemPlaceMarkEnhancedData(trackName, convertPlacemarkTypeToName(placeMarkType.getPlaceMarkType()), placeMarkType.getPlaceMarkType(), "", placeMarkType.isEnable());
+                    for (ItemPlaceMarkType placeMarkType : placeMarkTypeList) {
+                        ItemPlaceMarkEnhanced placeMark = new ItemPlaceMarkEnhanced(trackName, convertPlacemarkTypeToName(placeMarkType.getPlaceMarkType()), placeMarkType.getPlaceMarkType(), "", placeMarkType.isEnable());
 
-                        for (ItemPlaceMarkImgData img : placeMarkImgList) {
+                        for (ItemPlaceMarkImg img : placeMarkImgList) {
                             if(placeMark.getPlaceMarkType().equals(img.getPlaceMarkType())) {
                                 placeMark.addPlaceMarkImgItemList(img);
                             }
@@ -663,8 +662,8 @@ public class RequestRecordManager {
      *
      * @return Placemark List
      */
-    private LinkedList<ItemPlaceMarkImgData> parsePlacemarkList(final int trackId, @NonNull final JSONObject rawRecordJson) {
-        LinkedList<ItemPlaceMarkImgData> placeMarkList = new LinkedList<>();
+    private LinkedList<ItemPlaceMarkImg> parsePlacemarkList(final int trackId, @NonNull final JSONObject rawRecordJson) {
+        LinkedList<ItemPlaceMarkImg> placeMarkList = new LinkedList<>();
         try {
             JSONArray rawPlaceMarkList = rawRecordJson.getJSONArray("poiList");
 
@@ -684,7 +683,7 @@ public class RequestRecordManager {
 
                 if(imgLat == 0.0f && imgLng == 0.0f) continue;
 
-                ItemPlaceMarkImgData placemarkImg = new ItemPlaceMarkImgData(trackId, photoId, poiType, imgUrl);
+                ItemPlaceMarkImg placemarkImg = new ItemPlaceMarkImg(trackId, photoId, poiType, imgUrl);
                 placemarkImg.setImgLat(imgLat);
                 placemarkImg.setImgLng(imgLng);
                 placeMarkList.add(placemarkImg);
@@ -697,14 +696,14 @@ public class RequestRecordManager {
     }
 
     /**
-     * parse Course List from RAW Record
+     * parse Placemark List from RAW Record
      * @param trackId track Id to Record DataClass
      * @param rawRecordJson Raw Record to parse Placemark
      *
      * @return PlaceMark Type List
      */
-    private LinkedList<ItemPlaceMarkTypeData> parsePlacemarkTypeList(final int trackId, @NonNull final JSONObject rawRecordJson) {
-        LinkedList<ItemPlaceMarkTypeData> placeMarkItemTypeList = new LinkedList<>();
+    private LinkedList<ItemPlaceMarkType> parsePlacemarkTypeList(final int trackId, @NonNull final JSONObject rawRecordJson) {
+        LinkedList<ItemPlaceMarkType> placeMarkItemTypeList = new LinkedList<>();
         try {
             JSONArray rawPlaceMarkItemTypeArray = rawRecordJson.getJSONArray("categoryList");
             for(int i = 0; i < rawPlaceMarkItemTypeArray.length(); i++) {
@@ -713,7 +712,7 @@ public class RequestRecordManager {
                 final String placeMarkType = rawPlaceMarkItemTypeBuffer.getString("poiType");
                 final boolean isEnable = rawPlaceMarkItemTypeBuffer.optString("enabled", "Y").equals("Y");
 
-                final ItemPlaceMarkTypeData placeMarkTypeData = new ItemPlaceMarkTypeData(trackId, placeMarkType, isEnable);
+                final ItemPlaceMarkType placeMarkTypeData = new ItemPlaceMarkType(trackId, placeMarkType, isEnable);
                 placeMarkItemTypeList.add(placeMarkTypeData);
             }
 
@@ -733,8 +732,8 @@ public class RequestRecordManager {
      *
      * @return Placemark list
      */
-    private LinkedList<ItemCourseEnhancedData> parseCourseList(final String trackName, final int trackId, @NonNull final JSONObject rawRecordJson) {
-        LinkedList<ItemCourseEnhancedData> courseList = new LinkedList<>();
+    private LinkedList<ItemCourseEnhanced> parseCourseList(final String trackName, final int trackId, @NonNull final JSONObject rawRecordJson) {
+        LinkedList<ItemCourseEnhanced> courseList = new LinkedList<>();
         try {
             JSONArray rawCourseList = rawRecordJson.getJSONArray("courseList");
             int courseId;
@@ -754,7 +753,7 @@ public class RequestRecordManager {
                 courseType = courseBuffer.getString("courseType");
                 courseFileUrl = courseBuffer.getString("courseFileUrl");
 
-                ItemCourseEnhancedData course = new ItemCourseEnhancedData(trackName, courseName, trackId, courseId, courseDistance, courseType);
+                ItemCourseEnhanced course = new ItemCourseEnhanced(trackName, courseName, trackId, courseId, courseDistance, courseType);
                 course.setCourseFileUrl(courseFileUrl);
 
                 try {

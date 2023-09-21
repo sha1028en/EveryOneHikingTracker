@@ -17,12 +17,12 @@ import java.util.LinkedList;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkImgBinding;
 
 public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkImgRecyclerAdapter.PlaceMarkImgViewHolder> implements Serializable {
-    private LinkedList<ItemPlaceMarkImgData> placeMarkImgList;
+    private LinkedList<ItemPlaceMarkImg> placeMarkImgList;
     private ItemPlacemarkImgBinding bind;
     private OnImageClickListener listener;
 
     interface OnImageClickListener {
-        void onImageClick(ItemPlaceMarkImgData placemarkItem, int pos);
+        void onImageClick(ItemPlaceMarkImg placemarkItem, int pos);
     }
 
     private PlaceMarkImgRecyclerAdapter() {
@@ -53,7 +53,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
         return this.placeMarkImgList.size();
     }
 
-    public void setItems(@NonNull final LinkedList<ItemPlaceMarkImgData> items) {
+    public void setItems(@NonNull final LinkedList<ItemPlaceMarkImg> items) {
         if(this.placeMarkImgList != null) this.placeMarkImgList.clear();
         this.placeMarkImgList = items;
         this.notifyDataSetChanged();
@@ -61,7 +61,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
 
     public static class PlaceMarkImgViewHolder extends RecyclerView.ViewHolder implements Serializable {
         private final ItemPlacemarkImgBinding bind;
-        private ItemPlaceMarkImgData itemImg;
+        private ItemPlaceMarkImg itemImg;
         private final OnImageClickListener listener;
 //        private boolean isEnable = true;
 
@@ -71,7 +71,7 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
             this.listener = listener;
         }
 
-        public void onBind(@NonNull final ItemPlaceMarkImgData itemImg, final int position) {
+        public void onBind(@NonNull final ItemPlaceMarkImg itemImg, final int position) {
             this.itemImg = itemImg;
 
             Glide.with(this.bind.placemarkImgView.getContext())

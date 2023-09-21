@@ -23,6 +23,7 @@ package eu.basicairdata.graziano.gpslogger;
 
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -45,9 +46,10 @@ import androidx.documentfile.provider.DocumentFile;
 
 import org.greenrobot.eventbus.EventBus;
 
+import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhancedData;
-import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
+import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
+import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
 
 /**
  * A Thread that performs the exportation of a Track in KML, GPX, and/or TXT format.
@@ -1089,11 +1091,20 @@ class Exporter extends Thread {
                         track.getCourseType(),
                         this.gpxFile,
                         gpsApp.getFileName(track),
-                        new RequestTrackManager.OnRequestResponse<ItemCourseEnhancedData>() {
+                        new RequestTrackManager.OnRequestResponse<>() {
                             @Override
-                            public void onRequestResponse(ItemCourseEnhancedData response, boolean isSuccess) {
+                            public void onRequestResponse(ItemCourseEnhanced response, boolean isSuccess) {
                                 uploadManager.release();
-                                EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_SUCCESS);
+
+                                if(isSuccess) {
+                                    TrackRecordManager recordManager = TrackRecordManager.getInstance();
+                                    if(recordManager != null) {
+                                        recordManager.retireCourseUploadQueue(new ItemCourseUploadQueue((int) track.getTrackId(), track.getName(), track.getDescription()));
+                                        recordManager = null;
+                                    }
+                                    EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_SUCCESS);
+
+                                }
                             }
                         });
 

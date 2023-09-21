@@ -46,18 +46,19 @@
 <!--        app:layout_constraintStart_toStartOf="parent"-->
 <!--        app:layout_constraintTop_toBottomOf="@+id/track_address" />-->
 
-<!--    <TextView-->
-<!--        android:id="@+id/track_picture_state"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="시설물 사진"-->
-<!--        android:textColor="@color/textColorSecondary"-->
-<!--        android:visibility="invisible"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/track_course_state"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/goto_record"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/track_course_state"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/track_course_state" />-->
+    <TextView
+        android:id="@+id/upload_left_course"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="미등록 코스 등록"
+        android:background="@drawable/red_round_border_32"
+        app:layout_constraintBottom_toBottomOf="@+id/goto_record"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/goto_record" />
 
     <TextView
         android:id="@+id/goto_record"

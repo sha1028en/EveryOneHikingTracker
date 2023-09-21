@@ -13,11 +13,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.LinkedList;
 
+import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityTrackListBinding;
+import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
+import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 import eu.basicairdata.graziano.gpslogger.recording.enhanced.RecordEnhancedActivity;
@@ -27,6 +31,7 @@ public class TrackListActivity extends AppCompatActivity {
     private TrackRecordManager recordManager; // Track, Course, Placemark control Manager
     private RequestTrackManager requestTrackManager; // request and response Track Data from Server
     private TrackRecyclerAdapter trackListAdapter; // Track List View Adapter ( RecyclerView )
+    private ExporterManager exporterManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,20 +47,19 @@ public class TrackListActivity extends AppCompatActivity {
 //
 //            }
 //        }
-
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
-
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
-        }
-        EventBus.getDefault().register(this);
+        this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
         this.initViewListener();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+        EventBus.getDefault().register(this);
         this.requestTrackList(this.bind.selectRegion.getText().toString());
     }
 
@@ -72,20 +76,30 @@ public class TrackListActivity extends AppCompatActivity {
        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(bind.getRoot().getContext());
        this.bind.trackList.setLayoutManager(linearLayoutManager);
 
-       this.trackListAdapter = new TrackRecyclerAdapter((item, pos) -> {
-           if(!item.isCompleteTrack) {
-               Intent intent = new Intent(bind.getRoot().getContext(), RecordEnhancedActivity.class);
-               intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
-               intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
-               intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, (int) item.getTrackId());
-               startActivity(intent);
+       this.trackListAdapter = new TrackRecyclerAdapter((item, pos, actionType) -> {
+           switch (actionType) {
+               case 0 -> { // Goto record Enhanced Activity
+                   if (!item.isCompleteTrack()) {
+                       Intent intent = new Intent(bind.getRoot().getContext(), RecordEnhancedActivity.class);
+                       intent.putExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE, item.getTrackName());
+                       intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_REGION, item.getTrackRegion());
+                       intent.putExtra(GPSApplication.ATV_EXTRA_TRACK_ID, (int) item.getTrackId());
+                       startActivity(intent);
 
-           } else {
-               Toast.makeText(this.bind.selectRegion.getContext(), "이미 기록이 완료된 무장애 나눔길 입니다.", Toast.LENGTH_SHORT).show();
+                   } else {
+                       Toast.makeText(this.bind.selectRegion.getContext(), "이미 기록이 완료된 무장애 나눔길 입니다.", Toast.LENGTH_SHORT).show();
+                   }
+               }
+
+               case 1 -> { // upload left Course
+                    if(item.getUploadCourseList().isEmpty() || this.exporterManager == null) return;
+                    for (ItemCourseUploadQueue toUploadCourse : item.getUploadCourseList()) {
+                        this.exporterManager.export(toUploadCourse.getTrackName(), toUploadCourse.getCourseName());
+                    }
+               }
            }
        });
        this.bind.trackList.setAdapter(trackListAdapter);
-//       this.requestTrackList(TrackRegionType.SEOUL.getRegionName());
    }
 
    private void requestTrackList(@Nullable final String requestRegion) {
@@ -109,10 +123,15 @@ public class TrackListActivity extends AppCompatActivity {
        });
    }
 
-   @Override
+    @Override
+    protected void onPause() {
+        super.onPause();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
    protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
         TrackRecordManager.destroyInstance();
         this.recordManager = null;
 
@@ -130,8 +149,10 @@ public class TrackListActivity extends AppCompatActivity {
 
    @Subscribe(threadMode = ThreadMode.BACKGROUND)
    public void onEvent(Short msg) {
-//        if (msg == EventBusMSG.UPDATE_FIX) {
-//
-//        }
+        if (msg == EventBusMSG.UPDATE_FIX) {
+
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
+            this.requestTrackList(this.bind.selectRegion.getText().toString());
+        }
    }
 }
