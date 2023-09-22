@@ -11,6 +11,7 @@ import android.os.Environment
 import android.os.Environment.DIRECTORY_DCIM
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import eu.basicairdata.graziano.gpslogger.GPSApplication
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -56,13 +57,10 @@ class ImageManager {
         }
 
         fun createEmptyDirectory(directoryPath: String, directoryName: String): String {
-            var dir: File
-            for (i in 0..2) {
-                dir = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName + i.toString())
-                if (!dir.exists()) {
-                    dir.mkdirs()
-                    return directoryName + i.toString()
-                }
+            var dir = File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).absolutePath + "/" + directoryPath + "/" + directoryName)
+            if (!dir.exists()) {
+                dir.mkdirs()
+                return directoryName
             }
             return ""
         }
@@ -394,10 +392,13 @@ class ImageManager {
         }
 
         @Throws(IllegalArgumentException::class, IOException::class)
-        fun addLocationIntoImage(image: File, lat: Double, lng: Double) {
+        fun addLocationIntoImage(image: Uri, lat: Double, lng: Double) {
             if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
 
-            val imageExif = ExifInterface(image.absolutePath)
+            val rawImageFileDescriptor = GPSApplication.getInstance().contentResolver.openFileDescriptor(image, "rw", null)!!
+            val imageFileDescriptor = rawImageFileDescriptor.fileDescriptor
+
+            val imageExif = ExifInterface(imageFileDescriptor)
             imageExif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, convert(lat))
             imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, convert(lng))
 
@@ -405,6 +406,7 @@ class ImageManager {
             imageExif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, if(lng > 0.0f) "E" else "W")
 
             imageExif.saveAttributes()
+            rawImageFileDescriptor.close()
         }
 
         // Convert latitude/longitude to exif format
@@ -509,7 +511,6 @@ class ImageManager {
 
             return compressedBitmap
         }
-
 
         fun getFileFromImageURI(context: Context, contentUri: Uri): File {
             val localContext: WeakReference<Context> = WeakReference(context)

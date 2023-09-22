@@ -56,6 +56,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -145,8 +146,8 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
             this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
         }
-        this.toast = new Toast(this.bind.getRoot().getContext());
         this.bind = ActivityRecordEnahnecdBinding.inflate(this.getLayoutInflater());
+        this.toast = new Toast(this.bind.getRoot().getContext());
         setContentView(this.bind.getRoot());
 
         this.bind.toolbarTitle.setText(this.currentTrackName);
@@ -194,10 +195,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                 if (!fileName.isBlank()) {
-
                     try {
-                        ImageManager.Companion.addLocationIntoImage(ImageManager.Companion.getFileFromImageURI(bind.getRoot().getContext(), tmpFile), recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-                        this.requestManager.requestAddImg(currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), tmpFile), fileName, new OnRequestResponse<>() {
+                        LinkedList<Uri> imgList = ImageManager.Companion.loadImageUriList(bind.getRoot().getContext(), this.currentPoiType,  "Trekking/" + this.currentTrackName + "/" + this.currentPoiType + "/" + this.currentPoiType);
+                        final Uri imgFile = imgList.getLast();
+                        ImageManager.Companion.addLocationIntoImage(imgFile, recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
+                        this.requestManager.requestAddImg(currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), imgList.getLast()), fileName, new OnRequestResponse<>() {
                             @Override
                             public void onRequestResponse(ItemPlaceMarkImg response, boolean isSuccess) {
                                 runOnUiThread(() -> {
@@ -212,6 +214,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                                 });
                             }
                         });
+                        imgList.clear();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -310,12 +313,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             currentPoiType = placemarkItem.getPlaceMarkType();
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            ImageManager.Companion.createEmptyDirectory("Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType(), placemarkItem.getPlaceMarkTitle());
+//            ImageManager.Companion.createEmptyDirectory("Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType(), placemarkItem.getPlaceMarkTitle());
 
             tmpFile = ImageManager.Companion.createTmpFile(
                     bind.getRoot().getContext(),
                     placemarkItem.getPlaceMarkType(),
-                    "Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType() + "/" + placemarkItem.getPlaceMarkTitle());
+                    "Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType() + "/" + placemarkItem.getPlaceMarkType());
 
             intent.putExtra(MediaStore.EXTRA_OUTPUT, tmpFile);
             requestCamera.launch(intent);
