@@ -1103,8 +1103,8 @@ class Exporter extends Thread {
                                         recordManager.retireCourseUploadQueue(new ItemCourseUploadQueue((int) track.getTrackId(), track.getName(), track.getDescription()));
                                         recordManager = null;
                                     }
-                                    EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_SUCCESS);
                                 }
+                                EventBus.getDefault().post(isSuccess? EventBusMSG.TRACK_COURSE_SEND_SUCCESS: EventBusMSG.TRACK_COURSE_SEND_FAILED);
                             }
                         });
 

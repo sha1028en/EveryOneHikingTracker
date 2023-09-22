@@ -34,6 +34,7 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
@@ -237,16 +238,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     private void initCourseList() {
         if(this.recordManager == null || this.bind == null) return;
 
-        // not allow here, because
-//        LinkedList<Track> rawCourseList = recordManager.getCourseListByTrackName(this.currentTrackName);
-//        if(rawCourseList.isEmpty() && createEmptyCourse) {
-//            this.recordManager.createBlankTables(this.currentTrackId, this.currentTrackName, "코스 1", this.currentTrackRegion);
-//        }
-
         LinearLayoutManager courseRecyclerLayoutManager = new LinearLayoutManager(this);
         courseRecyclerLayoutManager.setOrientation(RecyclerView.HORIZONTAL);
         this.bind.recordCourseList.setLayoutManager(courseRecyclerLayoutManager);
-
         this.courseRecyclerAdapter = new CourseRecyclerAdapter(new CourseRecyclerAdapter.OnItemSelectListener() {
             @Override
             public void onItemSelected(String courseType, ItemCourse item) {
@@ -332,6 +326,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 //     * @param toRemoveCourse to Remove Course Item
 //     * @param listener CallBack Listener Nullable
 //     */
+//
 //    private void removeCourseRecord(@NonNull final ItemCourse toRemoveCourse, @Nullable RequestRecordManager.OnRequestResponse<ItemCourse> listener) {
 //        if(this.bind == null || this.recordManager == null || this.requestManager == null || this.courseRecyclerAdapter == null) return;
 //        this.requestManager.requestRemoveCourse(toRemoveCourse, listener);
@@ -427,23 +422,44 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         } else if (msg == EventBusMSG.TRACK_EXPORTED) { // when TRACK EXPORT START!
             Log.i("GPS_STATE", "TRACK_EXPORTED");
 
-        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) { // when TRACK EXPORT SUCCESSFULLY
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) { // when TRACK EXPORT and Send to Server SUCCESSFULLY
             Log.i("GPS_STATE", "TRACK_COURSE_SEND_SUCCESS");
 
-            // if already uploaded Course, remove First
-            if(this.requestManager != null && this.removeCourseBeforeAddCourse != null && this.removeCourseBeforeAddCourse.getCourseId() > -1) {
-                this.requestManager.requestRemoveCourse(this.removeCourseBeforeAddCourse, (response, isSuccess) -> {
-                    if(!isSuccess && toast != null) {
-                        runOnUiThread(() -> {
+            if(this.requestManager != null && this.removeCourseBeforeAddCourse != null) {
+
+                // if already uploaded Course, remove prev Course
+                if(this.removeCourseBeforeAddCourse.getCourseId() > -1) {
+                    this.requestManager.requestRemoveCourse(this.removeCourseBeforeAddCourse, (response, isSuccess) -> runOnUiThread(() -> {
+                        if(isSuccess) {
+                            if(toast != null) toast.cancel();
+                            this.toast = Toast.makeText(bind.getRoot().getContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
+                            this.toast.show();
+
+                        } else {
                             if(toast != null) toast.cancel();
                             toast = Toast.makeText(bind.getRoot().getContext(), "코스 덮어쓰기에 실패 했습니다.", Toast.LENGTH_SHORT);
                             toast.show();
-                        });
-                    }
-                });
+                        }
+                    }));
+
+                // this course is really NEW course,
+                } else {
+                    runOnUiThread(() -> {
+                        if (toast != null) toast.cancel();
+                        this.toast = Toast.makeText(bind.getRoot().getContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
+                        this.toast.show();
+                    });
+                }
             }
             this.initCourseList();
             this.requestCourseRecord(true);
+
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_FAILED) { // when TRACK EXPORT or Send to Server FAILED
+            if(removeCourseBeforeAddCourse != null) {
+                if(toast != null) toast.cancel();
+                toast = Toast.makeText(bind.getRoot().getContext(), "코스 전송에 실패 했습니다.", Toast.LENGTH_SHORT);
+                toast.show();
+            }
         }
     }
 

@@ -290,11 +290,13 @@ public class TrackRecordManager {
             currentTrack.setCourseType(courseType);
             GPSApplication.getInstance().gpsDataBase.updateTrack(currentTrack);
 
-
             EventBus.getDefault().post(EventBusMSG.NEW_TRACK);
-            this.toast = Toast.makeText(this.gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
-            this.toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
-            this.toast.show();
+            // not allow here
+            // because, end record after export record to file and send it to Server
+            // so... notify is too early...
+//            this.toast = Toast.makeText(this.gpsApp.getApplicationContext(), R.string.toast_track_saved_into_tracklist, Toast.LENGTH_SHORT);
+//            this.toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
+//            this.toast.show();
 
         } else {
             toast.cancel();
