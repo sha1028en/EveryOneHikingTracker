@@ -2,11 +2,15 @@ package eu.basicairdata.graziano.gpslogger.splash
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -16,6 +20,7 @@ import eu.basicairdata.graziano.gpslogger.R
 import eu.basicairdata.graziano.gpslogger.databinding.ActivitySplashBinding
 import eu.basicairdata.graziano.gpslogger.tracklist.TrackListActivity
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
 
     private val bind by lazy { ActivitySplashBinding.inflate(this.layoutInflater) }
@@ -30,7 +35,7 @@ class SplashActivity : AppCompatActivity() {
 
         // show this layout during 2 sec
         this.bind.root.postDelayed({
-            this.checkLocationPermission()
+            this.checkPermissions()
 
         }, 2000L)
     }
@@ -54,6 +59,7 @@ class SplashActivity : AppCompatActivity() {
                         gpsApp.updateGPSLocationFrequency()
 
                     } else {
+                        Toast.makeText(this.bind.root.context, "위치 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - ACCESS_FINE_LOCATION = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -74,6 +80,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - CAMERA = PERMISSION_GRANTED")
 
                     } else {
+                        Toast.makeText(this.bind.root.context, "카메라 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - CAMERA = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -85,6 +92,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_GRANTED")
 
                     } else {
+                        Toast.makeText(this.bind.root.context, "사진 및 동영상 권한을\n허용해 주셔야 앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -96,6 +104,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_GRANTED")
 
                     } else {
+                        Toast.makeText(this.bind.root.context, "외부저장소 읽기 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -109,14 +118,22 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_GRANTED")
 
                     } else {
+                        Toast.makeText(this.bind.root.context, "외부저장소 쓰기 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
                 }
 
-                if(allGrantPerm) {
+                if(allGrantPerm) { // goto trackListAct.
                     val intent = Intent(this, TrackListActivity::class.java)
                     this.startActivity(intent)
+                    this.finish()
+
+                } else { // goto this App Setting
+                    val gotoSetting = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${this.packageName}"))
+                    gotoSetting.addCategory(Intent.CATEGORY_DEFAULT)
+                    gotoSetting.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    this.startActivity(gotoSetting)
                     this.finish()
                 }
             }
@@ -126,67 +143,82 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkLocationPermission() {
-        Log.w("myApp", "[#] GPSActivity.java - Check Location Permission...")
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission granted")
+    private fun checkPermissions() {
+        Log.w("myApp", "[#] GPSActivity.java - Check Permission...")
 
-            // Permission Granted
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-//                    val intent = Intent(this, TrackListActivity::class.java)
-//                    this.startActivity(intent)
-//                    this.finish()
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // SDK 32 ( VER : 12 )
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED  &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
 
-                } else {
-                    val listPermissionsNeeded: MutableList<String> = ArrayList()
-                    listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
-                    ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
-                    return
-                }
+                // All Grant
+                Log.w("myApp", "[#] GPSActivity.java - Precise ALL Permission granted")
+                val intent = Intent(this, TrackListActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                this.startActivity(intent)
+                this.finish()
 
             } else {
-                // FOR LOW ANDROID OS
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                // Somethings Denined
+                Log.w("myApp", "[#] GPSActivity.java - Precise Permission denied")
+                val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+
+                if (showRationale || !gpsApp.isLocationPermissionChecked ||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+
+                    Log.w("myApp", "[#] GPSActivity.java - Precise Permission denied, need new check")
 
                     val listPermissionsNeeded: MutableList<String> = ArrayList()
-                    listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    listPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
+                    listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
+                    listPermissionsNeeded.add(Manifest.permission.INTERNET)
+                    listPermissionsNeeded.add(Manifest.permission.CAMERA)
+
                     ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
                 }
             }
-            val intent = Intent(this, TrackListActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            this.startActivity(intent)
-            this.finish()
 
-        } else {
-            Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission denied")
-            val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            if (showRationale || !gpsApp.isLocationPermissionChecked ||
+        } else {  // FOR LOW VERSION ANDROID OS
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED  &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.w("myApp", "[#] GPSActivity.java - Precise ALL Permission granted")
 
-                Log.w("myApp", "[#] GPSActivity.java - Precise Location Permission denied, need new check")
+                val intent = Intent(this, TrackListActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                this.startActivity(intent)
+                this.finish()
 
-                val listPermissionsNeeded: MutableList<String> = ArrayList()
-                listPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-                listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
-                listPermissionsNeeded.add(Manifest.permission.CAMERA)
+            } else {
+                Log.w("myApp", "[#] GPSActivity.java - Precise Permission denied")
+                val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                if (showRationale || !gpsApp.isLocationPermissionChecked ||
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED  &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
-                // TO READ MEDIA_IMG, AUDIO, VIDEO
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    listPermissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES)
+                    Log.w("myApp", "[#] GPSActivity.java - Precise Permission denied, need new check")
 
-                } else {
+                    val listPermissionsNeeded: MutableList<String> = ArrayList()
+                    listPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
+                    listPermissionsNeeded.add(Manifest.permission.INTERNET)
+                    listPermissionsNeeded.add(Manifest.permission.CAMERA)
                     listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
                     listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+                    ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
                 }
-                ActivityCompat.requestPermissions(this, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
             }
         }
     }
