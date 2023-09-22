@@ -22,7 +22,9 @@ import eu.basicairdata.graziano.gpslogger.LocationExtended;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.define.CourseRoadType;
 import eu.basicairdata.graziano.gpslogger.management.define.PlaceMarkType;
+import eu.basicairdata.graziano.gpslogger.management.define.TrackRegionType;
 
 /**
  * @author dspark ( sha1028en )
@@ -37,6 +39,12 @@ public class TrackRecordManager {
 
     private int gpsState = GPS_DISABLED; // current GPS State
     private boolean isRecording = false; // now REALLY Recording Track???
+
+    private int recordingTrackId; // now Recording TrackId
+    private String recordingTrackName; // now Recording TrackName
+    private String recordingCourseName; // now Recording CourseName
+    private String recordingTrackRegionType; // now Recording Track Region
+    private String recordingCourseRoadType; // now Recording Course Road Type
 
     private int totalSatellitesCnt = 0; // total satellite Count
     private int availableSatellitesCnt = 0; // available satellite Count
@@ -98,6 +106,13 @@ public class TrackRecordManager {
     private TrackRecordManager(@NonNull final Context context) {
         this.mLocalContext = new WeakReference<>(context);
         this.toast = new Toast(this.mLocalContext.get());
+
+        this.recordingTrackId = -1;
+        this.recordingTrackName = "";
+        this.recordingCourseName = "";
+        this.recordingTrackRegionType = TrackRegionType.SEOUL.getRegionName();
+        this.recordingTrackRegionType = CourseRoadType.WOOD_DECK.name();
+
         this.initEventBus();
     }
 
@@ -142,6 +157,30 @@ public class TrackRecordManager {
      */
     public int getAvailableSatellitesCnt() {
         return this.availableSatellitesCnt;
+    }
+
+    public String getRecordingTrackName() {
+        return recordingTrackName;
+    }
+
+    public int getRecordingTrackId() {
+        return recordingTrackId;
+    }
+
+    public String getRecordingCourseName() {
+        return recordingCourseName;
+    }
+
+    public String getRecordingTrackRegionType() {
+        return recordingTrackRegionType;
+    }
+
+    public String getRecordingCourseRoadType() {
+        return recordingCourseRoadType;
+    }
+
+    public void setRecordingCourseRoadType(@NonNull final String courseRoadType) {
+        if(this.isRecording) this.recordingCourseRoadType = courseRoadType;
     }
 
     /**
@@ -251,6 +290,13 @@ public class TrackRecordManager {
         this.gpsApp.setCurrentTrackRegion(trackRegion);
         this.gpsApp.setRecording(true);
         this.isRecording = true;
+
+        // remember recording information
+        this.recordingTrackName = trackName;
+        this.recordingCourseName = courseName;
+        this.recordingTrackId = (int) trackId;
+        this.recordingTrackRegionType = trackRegion;
+        this.recordingCourseRoadType = CourseRoadType.WOOD_DECK.name();
     }
 
     /**
@@ -304,6 +350,12 @@ public class TrackRecordManager {
             toast.setGravity(Gravity.BOTTOM, 0, GPSApplication.TOAST_VERTICAL_OFFSET);
             toast.show();
         }
+
+        this.recordingTrackId = -1;
+        this.recordingTrackName = "";
+        this.recordingCourseName = "";
+        this.recordingCourseRoadType = CourseRoadType.WOOD_DECK.name();
+        this.recordingTrackRegionType = TrackRegionType.SEOUL.getRegionName();
     }
 
     public void pauseRecordTrack() {

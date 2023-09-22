@@ -56,4 +56,6 @@ public class EventBusMSG {
     public static final short TRACK_COURSE_SEND_SUCCESS = 47;   // course send to Server Successfully
     public static final short TRACK_COURSE_SEND_FAILED = 48;    // course send to Server Failed
 
+    public static final short TRACK_COURSE_SEND_EMPTY = 49;
+
 }

@@ -34,7 +34,6 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
@@ -88,7 +87,12 @@ import eu.basicairdata.graziano.gpslogger.recording.adapter.PlaceMarkRecyclerAda
 
 public class RecordEnhancedActivity extends AppCompatActivity {
     private final String RESTORE_LATEST_IMG_URI = "LATEST_CAPTURE_IMG_URI";
+    private final String RESTORE_LATEST_COURSE_NAME = "LATEST_COURSE_NAME";
     private final String RESTORE_LATEST_IMG_TYPE = "LATEST_CAPTURE_IMG_TYPE";
+    private final String RESTORE_LATEST_TRACK_ID = "LATEST_TRACK_ID";
+    private final String RESTORE_LATEST_TRACK_NAME = "LATEST_TRACK_NAME";
+    private final String RESTORE_LATEST_TRACK_REGION = "LATEST_TRACK_REGION";
+
     private boolean isRestored = false;
 
     private ActivityRecordEnahnecdBinding bind; // this View n Layout Instance
@@ -114,8 +118,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     private String currentTrackName = ""; // this course's Parents Track Name
     private String currentTrackRegion; // this course Region
     private String currentPoiType = ""; // selected POI Type
-    private String currentPoiName = ""; // selected POI Name
-    private boolean currentPoiEnable = true; // is POI enabled( POI's checkbox )
+    private String lastRecordCourseName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +129,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         if(savedInstanceState != null) {
             this.tmpFile = Uri.parse(savedInstanceState.getString(RESTORE_LATEST_IMG_URI, ""));
             this.currentPoiType = savedInstanceState.getString(RESTORE_LATEST_IMG_TYPE, "");
+
+            // FINAL VALUE, NEVER MODIFY THIS
+            this.currentTrackId = savedInstanceState.getInt(RESTORE_LATEST_TRACK_ID, -1);
+            this.currentTrackName = savedInstanceState.getString(RESTORE_LATEST_TRACK_NAME, "");
+            this.currentTrackRegion = savedInstanceState.getString(RESTORE_LATEST_TRACK_REGION, "RESTORE FAILED");
+            this.lastRecordCourseName = savedInstanceState.getString(RESTORE_LATEST_COURSE_NAME, "");
             this.isRestored = true;
 
             Log.w("RESTORE", "RESTORE LATEST IMG URI " + this.tmpFile);
@@ -137,9 +146,11 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         toast = new Toast(this.bind.getRoot().getContext());
         // FINAL VALUE, NEVER MODIFY THIS
-        this.currentTrackId = this.getIntent().getIntExtra(GPSApplication.ATV_EXTRA_TRACK_ID, -1);
-        this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
-        this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
+        if(!this.isRestored) {
+            this.currentTrackId = this.getIntent().getIntExtra(GPSApplication.ATV_EXTRA_TRACK_ID, -1);
+            this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
+            this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
+        }
 
         this.bind.toolbarTitle.setText(this.currentTrackName);
         this.setSupportActionBar(this.bind.idToolbar);
@@ -168,10 +179,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                         .FLAG_GRANT_READ_URI_PERMISSION | Intent
                         .FLAG_GRANT_WRITE_URI_PERMISSION);
 
+                final String toSendCourseName = this.isRestored? this.lastRecordCourseName: this.courseRecyclerAdapter.getSelectedCourseName();
+
                 // append upload Course Queue
                 this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName()));
                 this.exporterManager.setExportDir(treeUri);
-                this.exporterManager.export(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+                this.exporterManager.export(this.currentTrackName, toSendCourseName);
             }
         });
 
@@ -250,6 +263,18 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             }
         });
         this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
+
+        // Restored during Recording Course? add Tmp Course Item!
+        if(this.isRestored && this.recordManager.isRecordingCourse()) {
+            ItemCourse restoredTmpCourse = new ItemCourse(
+                    this.recordManager.getRecordingTrackName(),
+                    this.recordManager.getRecordingCourseName(),
+                    this.recordManager.getRecordingTrackId(),
+                    -1,
+                    0,
+                    this.recordManager.getRecordingCourseRoadType());
+            this.courseRecyclerAdapter.addNewCourseItem(restoredTmpCourse);
+        }
     }
 
     /**
@@ -285,9 +310,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 toast.show();
                 return;
             }
-            currentPoiName = placemarkItem.getPlaceMarkTitle();
             currentPoiType = placemarkItem.getPlaceMarkType();
-            currentPoiEnable = placemarkItem.isPlaceMarkEnable();
 
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             ImageManager.Companion.createEmptyDirectory("Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType(), placemarkItem.getPlaceMarkTitle());
@@ -388,17 +411,19 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         } else if (msg == EventBusMSG.NEW_TRACK) { // A NEW NEW TRACK INCOMING!!!
             if(this.courseRecyclerAdapter != null && this.recordManager != null) {
-                LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+
+                final String toSendCourseName = isRestored? this.lastRecordCourseName : this.courseRecyclerAdapter.getSelectedCourseName();
+                LinkedList<Track> rawCourseList = this.recordManager.getCourseList(this.currentTrackName, toSendCourseName);
 
                 if(!rawCourseList.isEmpty()) { // when new TRACK has, create *.gpx File
                     this.removeCourseBeforeAddCourse = this.courseRecyclerAdapter.getSelectCourse();
                     if(this.exporterManager.isExportDirHas()) {
 
                         // append upload Course Queue
-                        this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName()));
+                        this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, toSendCourseName));
 
                         // if already has Perm? Export NOW!
-                        this.exporterManager.export(this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName());
+                        this.exporterManager.export(this.currentTrackName, toSendCourseName);
 
                     } else { // request Perm With File Picker by Android System
                         Intent intent = new Intent();
@@ -586,6 +611,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     if(toRecordCourseItem.getCourseId() < 0) { // start NEW Record Course
                         this.recordManager.startRecordCourse(this.currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
                         this.isPauseCourseRecording = false;
+                        this.lastRecordCourseName = selectedCourseName;
 
                     } else { // show warning Override Course Dialog
                         ConfirmDialog confirmDialog = new ConfirmDialog(this.bind.getRoot().getContext(), new ConfirmDialog.OnDialogActionListener() {
@@ -594,6 +620,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                                 // override Course
                                 recordManager.startRecordCourse(currentTrackId, currentTrackName, selectedCourseName, currentTrackRegion);
                                 isPauseCourseRecording = false;
+                                lastRecordCourseName = selectedCourseName;
                             }
 
                             @Override
@@ -625,14 +652,34 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         // upside "Stop Record" btn
         this.bind.stopRecordBtn.setOnClickListener(v -> {
-            if(this.bind == null || this.courseRecyclerAdapter == null) return;
+            if(this.bind == null || this.courseRecyclerAdapter == null || this.recordManager == null) return;
 
             final ItemCourse toRecordCourse = this.courseRecyclerAdapter.getSelectCourse();
-            final String selectedCourseName = toRecordCourse.getCourseName();
+            final String toRecordCourseName;
+            final String toRecordTrackName;
+            final String toRecordCourseType;
+            final String toRecordTrackRegionType;
+            final int toRecordTrackId;
 
-            if(!selectedCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(this.currentTrackId, this.currentTrackName, selectedCourseName, this.currentTrackRegion, this.courseRecyclerAdapter.getSelectCourse().getCourseType());
+            if(toRecordCourse != null && !this.isRestored) {
+                toRecordTrackId = toRecordCourse.getTrackId();
+                toRecordTrackName = toRecordCourse.getTrackName();
+                toRecordCourseName = toRecordCourse.getCourseName();
+                toRecordTrackRegionType = this.currentTrackRegion;
+                toRecordCourseType = toRecordCourse.getCourseType();
+
+            } else {
+                toRecordTrackId = this.recordManager.getRecordingTrackId();
+                toRecordTrackName = this.recordManager.getRecordingTrackName();
+                toRecordCourseName = this.recordManager.getRecordingCourseName();
+                toRecordTrackRegionType = this.recordManager.getRecordingTrackRegionType();
+                toRecordCourseType = this.recordManager.getRecordingCourseRoadType();
+            }
+
+            if(!toRecordCourseName.isBlank()) {
+                this.recordManager.stopRecordTrack(toRecordTrackId, toRecordTrackName, toRecordCourseName, toRecordTrackRegionType, toRecordCourseType);
                 this.isPauseCourseRecording = false;
+                this.lastRecordCourseName = toRecordCourseName;
                 this.updateUpsideControlPanelState();
             }
         });
@@ -646,6 +693,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 toUpdateCourse.calcCourseType(isChecked, this.bind.checkDirtCheckbox.isChecked());
                 this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
+                this.recordManager.setRecordingCourseRoadType(toUpdateCourse.getCourseType());
                 this.recordManager.updateCourseType(this.currentTrackName, toUpdateCourse.getCourseName(), toUpdateCourse.getCourseType()); // UPDATE DB
             }
         });
@@ -658,6 +706,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             if(toUpdateCourse != null) {
                 toUpdateCourse.calcCourseType(this.bind.checkDeckCheckbox.isChecked(), isChecked);
                 this.courseRecyclerAdapter.updateCourse(toUpdateCourse);
+                this.recordManager.setRecordingCourseRoadType(toUpdateCourse.getCourseType());
                 this.recordManager.updateCourseType(this.currentTrackName, toUpdateCourse.getCourseName(), toUpdateCourse.getCourseType()); // UPDATE DB
             }
         });
@@ -1079,6 +1128,26 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         if(this.currentPoiType != null && !this.currentPoiType.isBlank()) {
             outState.putString(RESTORE_LATEST_IMG_TYPE, this.currentPoiType);
             Log.w("RECORDING", "SAVE LATEST POI TYPE " + this.currentPoiType);
+        }
+
+        if(this.currentTrackId > -1) {
+            outState.putInt(RESTORE_LATEST_TRACK_ID, this.currentTrackId);
+            Log.w("RECORDING", "SAVE LATEST TRACK ID " + this.currentTrackId);
+        }
+
+        if(this.currentTrackName != null && !this.currentTrackName.isBlank()) {
+            outState.putString(RESTORE_LATEST_TRACK_NAME, this.currentTrackName);
+            Log.w("RECORDING", "SAVE LATEST TRACK NAME " + this.currentTrackName);
+        }
+
+        if(this.currentTrackRegion != null && !this.currentTrackRegion.isBlank()) {
+            outState.putString(RESTORE_LATEST_TRACK_REGION, this.currentTrackRegion);
+            Log.w("RECORDING", "SAVE LATEST TRACK REGION " + this.currentTrackRegion);
+        }
+
+        if(this.lastRecordCourseName != null && !this.lastRecordCourseName.isBlank()) {
+            outState.putString(RESTORE_LATEST_COURSE_NAME, this.lastRecordCourseName);
+            Log.w("RECORDING", "SAVE LATEST COURSE NAME " + this.currentTrackRegion);
         }
         super.onSaveInstanceState(outState);
     }

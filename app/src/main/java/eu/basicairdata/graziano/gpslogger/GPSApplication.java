@@ -1718,6 +1718,7 @@ public class GPSApplication extends Application implements LocationListener {
 
         } else {
             Log.w("myApp", "[#] GPSApplication.java - Empty Job, nothing processed");
+            EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_EMPTY);
             jobProgress = 0;
             jobsPending = 0;
         }

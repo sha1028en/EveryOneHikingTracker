@@ -227,6 +227,9 @@ public class TrackListActivity extends AppCompatActivity {
 
         if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
             this.requestTrackList(this.selectedRegion);
+
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_EMPTY) {
+//            this.re
         }
    }
 }
