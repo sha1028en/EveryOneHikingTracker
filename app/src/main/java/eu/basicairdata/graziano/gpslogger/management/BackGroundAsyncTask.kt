@@ -74,6 +74,10 @@ class BackGroundAsyncTask<V> constructor(private val scopeType: CoroutineDispatc
         }
     }
 
+    /**
+     * before start task, wait a milliSeconds
+     * @param delayMilliSecond how long this wait???
+     */
     fun setDelay(delayMilliSecond: Long) {
         if(delayMilliSecond < 0L) this.delayMilliSecond = 0L
         else this.delayMilliSecond = delayMilliSecond

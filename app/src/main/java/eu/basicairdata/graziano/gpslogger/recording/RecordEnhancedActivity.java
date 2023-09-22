@@ -76,7 +76,6 @@ import eu.basicairdata.graziano.gpslogger.management.data.ItemPlaceMarkImg;
 import eu.basicairdata.graziano.gpslogger.management.data.ItemTrackRecord;
 import eu.basicairdata.graziano.gpslogger.management.OnRequestResponse;
 import eu.basicairdata.graziano.gpslogger.management.RequestRecordManager;
-import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 import eu.basicairdata.graziano.gpslogger.recording.dialog.AddCourseNameDialog;
 import eu.basicairdata.graziano.gpslogger.recording.dialog.LoadingDialog;
@@ -93,21 +92,20 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     private final String RESTORE_LATEST_TRACK_NAME = "LATEST_TRACK_NAME";
     private final String RESTORE_LATEST_TRACK_REGION = "LATEST_TRACK_REGION";
 
-    private boolean isRestored = false;
+    private boolean isRestored = false; // when this Activity has restored, it ll be true. NEVER MODIFY DIRECTLY !!!!!
 
     private ActivityRecordEnahnecdBinding bind; // this View n Layout Instance
     private boolean isModifyTrackExpended = false; // id Behavior Bottom Sheet has Expended? ( state )
     private Toast toast; // using this activity's toast
 
-    private RequestTrackManager requestTrackManager;
-    private RequestRecordManager requestManager;
+    private RequestRecordManager requestManager; // send Record Data to Server Manager
     private PlaceMarkRecyclerAdapter placeMarkListAdapter; // POI list
     private CourseRecyclerAdapter courseRecyclerAdapter; // upside Course list
 
     private ActivityResultLauncher<Intent> requestCamera; // Camera
     private ActivityResultLauncher<Intent> requestExportDir; // Write Document;
 
-    private ItemCourse removeCourseBeforeAddCourse = null;
+    private ItemCourse removeCourseBeforeAddCourse = null; // ll be remove Course Item
     private Uri tmpFile; // taken a Picture's File Instance
 
     private TrackRecordManager recordManager = TrackRecordManager.getInstance(); // Track, Course, POI control Manager.
@@ -118,7 +116,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
     private String currentTrackName = ""; // this course's Parents Track Name
     private String currentTrackRegion; // this course Region
     private String currentPoiType = ""; // selected POI Type
-    private String lastRecordCourseName = "";
+    private String lastRecordCourseName = ""; // remember last record Course name during this activity live!
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +124,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         setTheme(R.style.MyMaterialTheme);
         super.onCreate(savedInstanceState);
 
+        // when this activity restored? recover them!
         if(savedInstanceState != null) {
             this.tmpFile = Uri.parse(savedInstanceState.getString(RESTORE_LATEST_IMG_URI, ""));
             this.currentPoiType = savedInstanceState.getString(RESTORE_LATEST_IMG_TYPE, "");
@@ -139,18 +138,16 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
             Log.w("RESTORE", "RESTORE LATEST IMG URI " + this.tmpFile);
             Log.w("RESTORE", "RESTORE LATEST IMG TYPE " + this.currentPoiType);
-        }
 
-        this.bind = ActivityRecordEnahnecdBinding.inflate(this.getLayoutInflater());
-        setContentView(this.bind.getRoot());
-
-        toast = new Toast(this.bind.getRoot().getContext());
-        // FINAL VALUE, NEVER MODIFY THIS
-        if(!this.isRestored) {
+        } else {
+            // FINAL VALUE, NEVER MODIFY THIS
             this.currentTrackId = this.getIntent().getIntExtra(GPSApplication.ATV_EXTRA_TRACK_ID, -1);
             this.currentTrackName = this.getIntent().getStringExtra(GPSApplication.ATX_EXTRA_TRACK_TITLE);
             this.currentTrackRegion = this.getIntent().getStringExtra(GPSApplication.ATV_EXTRA_TRACK_REGION);
         }
+        this.toast = new Toast(this.bind.getRoot().getContext());
+        this.bind = ActivityRecordEnahnecdBinding.inflate(this.getLayoutInflater());
+        setContentView(this.bind.getRoot());
 
         this.bind.toolbarTitle.setText(this.currentTrackName);
         this.setSupportActionBar(this.bind.idToolbar);
@@ -162,9 +159,9 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
+        // init Task Help Manager
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
         this.requestManager = new RequestRecordManager();
-        this.requestTrackManager = new RequestTrackManager();
 
         // Request Perm to write GPX File
         this.requestExportDir = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -264,7 +261,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         });
         this.bind.recordCourseList.setAdapter(this.courseRecyclerAdapter);
 
-        // Restored during Recording Course? add Tmp Course Item!
+        // Restored this activity during Recording Course? also Restore Tmp Course Too!
         if(this.isRestored && this.recordManager.isRecordingCourse()) {
             ItemCourse restoredTmpCourse = new ItemCourse(
                     this.recordManager.getRecordingTrackName(),
@@ -279,7 +276,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     /**
      * Init PlaceMark RecyclerView
-     * Not Load Data here!
+     * Not Load Data yet...
      */
     private void initPlaceMarkList() {
         if(this.bind == null || this.recordManager == null) return;
@@ -328,6 +325,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
     /**
      * request Course List to Server
+     * @param isDelay it true, wait 1sec after request to Server
      */
     private void requestCourseRecord(final boolean isDelay) {
         if(this.bind == null || this.recordManager == null || this.requestManager == null || this.courseRecyclerAdapter == null) return;
@@ -417,12 +415,12 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
                 if(!rawCourseList.isEmpty()) { // when new TRACK has, create *.gpx File
                     this.removeCourseBeforeAddCourse = this.courseRecyclerAdapter.getSelectCourse();
-                    if(this.exporterManager.isExportDirHas()) {
+                    if(this.exporterManager.isExportDirHas()) { // is this has to save *.gpx file Path
 
                         // append upload Course Queue
                         this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, toSendCourseName));
 
-                        // if already has Perm? Export NOW!
+                        // if already has save Path? Export NOW!
                         this.exporterManager.export(this.currentTrackName, toSendCourseName);
 
                     } else { // request Perm With File Picker by Android System
@@ -434,7 +432,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                                 | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
 
-                        // where *.gpx saved? where!
+                        // a init root path where it write *.gpx file!
                         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
                         }
@@ -449,7 +447,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
 
         } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) { // when TRACK EXPORT and Send to Server SUCCESSFULLY
             Log.i("GPS_STATE", "TRACK_COURSE_SEND_SUCCESS");
-
             if(this.requestManager != null && this.removeCourseBeforeAddCourse != null) {
 
                 // if already uploaded Course, remove prev Course
@@ -1193,11 +1190,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         if(this.exporterManager != null) {
             this.exporterManager.release();
             this.exporterManager = null;
-        }
-
-        if(this.requestTrackManager != null) {
-            this.requestTrackManager.release();
-            this.requestTrackManager = null;
         }
 
         // clear image cache where struct Main Memory
