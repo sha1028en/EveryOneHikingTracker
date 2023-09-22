@@ -121,7 +121,7 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
             this.bind.trackName.setText(item.getTrackName());
             this.bind.trackAddress.setText(item.getTrackAddress());
 
-            this.bind.uploadLeftCourse.setVisibility(item.getUploadCourseList().isEmpty()? View.INVISIBLE: View.VISIBLE);
+            this.bind.uploadLeftCourse.setVisibility((item.isCompleteTrack() || item.getUploadCourseList().isEmpty())? View.INVISIBLE: View.VISIBLE);
         }
     }
 }
