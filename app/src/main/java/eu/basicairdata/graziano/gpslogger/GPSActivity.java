@@ -498,7 +498,7 @@ public class GPSActivity extends AppCompatActivity {
         adapter.addFragment(new FragmentGPSFix(), getString(R.string.tab_gpsfix));
         adapter.addFragment(new FragmentTrack(), getString(R.string.tab_track));
         adapter.addFragment(new FragmentTracklist(), getString(R.string.tab_tracklist));
-        adapter.addFragment(new FuncTestFragment(), "func TEST");
+//        adapter.addFragment(new FuncTestFragment(), "func TEST");
         viewPager.setAdapter(adapter);
     }
 

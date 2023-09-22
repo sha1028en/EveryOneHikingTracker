@@ -7,10 +7,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.ExifInterface
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import android.os.Environment.DIRECTORY_DCIM
-import android.os.Environment.DIRECTORY_PICTURES
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import java.io.ByteArrayOutputStream
@@ -20,6 +18,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.lang.ref.WeakReference
 import java.util.LinkedList
+import kotlin.math.abs
 
 
 /**
@@ -94,7 +93,7 @@ class ImageManager {
                     localContext.clear()
                 }
             }
-            return filePath;
+            return filePath
         }
 
         fun parseNameFromUri(context: Context, uri: Uri?): String {
@@ -409,13 +408,16 @@ class ImageManager {
         }
 
         // Convert latitude/longitude to exif format
-        private fun convert(coord: Double): String? {
+        private fun convert(coord: Double): String {
             var coord = coord
-            coord = Math.abs(coord)
+            coord = abs(coord)
+
             val degrees = coord.toInt()
             coord = (coord - degrees) * 60
+
             val minutes = coord.toInt()
             coord = (coord - minutes) * 60
+
             val seconds = (coord * 1000).toInt()
             return "$degrees/1,$minutes/1,$seconds/1000"
         }
@@ -450,7 +452,7 @@ class ImageManager {
             source.compress(Bitmap.CompressFormat.PNG, compressPercent, stream)
             val compressRawData = stream.toByteArray()
 
-            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size);
+            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size)
             source.recycle()
 
             return compressedBitmap
@@ -462,15 +464,15 @@ class ImageManager {
             if(compressPercent < 1 || compressPercent > 100) throw IllegalArgumentException("ImageManager.bitmapToByteArray() wrong param \"compressPercent\"")
 
             val bitmapOption = BitmapFactory.Options()
-            bitmapOption.inJustDecodeBounds = true;
+            bitmapOption.inJustDecodeBounds = true
             bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
             val stream = ByteArrayOutputStream()
 
             source.compress(Bitmap.CompressFormat.PNG, compressPercent, stream)
             val compressRawData = stream.toByteArray()
-            bitmapOption.inJustDecodeBounds = false;
+            bitmapOption.inJustDecodeBounds = false
 
-            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size, bitmapOption);
+            val compressedBitmap = BitmapFactory.decodeByteArray(compressRawData, 0, compressRawData.size, bitmapOption)
             source.recycle()
 
             return compressedBitmap
@@ -489,12 +491,12 @@ class ImageManager {
 //            return compressedBitmap
 
             // 이미지 사이즈 디코딩
-            var imageOption = BitmapFactory.Options();
-            imageOption.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption);
+            var imageOption = BitmapFactory.Options()
+            imageOption.inJustDecodeBounds = true
+            BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption)
 
             // 이미지가 클경우에는, 스케일 사이즈를 대략 적으로만 계산
-            var scale = 1;
+            var scale = 1
             if (imageOption.outWidth > width) {
                 scale = imageOption.outWidth / width
             }
@@ -502,7 +504,7 @@ class ImageManager {
             imageOption = BitmapFactory.Options()
             imageOption.inSampleSize = scale
 
-            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption);
+            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption)
             localContext.clear()
 
             return compressedBitmap
@@ -512,14 +514,14 @@ class ImageManager {
         fun getFileFromImageURI(context: Context, contentUri: Uri): File {
             val localContext: WeakReference<Context> = WeakReference(context)
 
-            val cursor = localContext.get()!!.contentResolver.query(contentUri, null, null, null, null);
+            val cursor = localContext.get()!!.contentResolver.query(contentUri, null, null, null, null)
             var path: String
 
             cursor.use {
                 it!!.moveToLast()
                 path = it.getString(it.getColumnIndex("_data"))
             }
-            return File(path);
+            return File(path)
         }
 
         /**

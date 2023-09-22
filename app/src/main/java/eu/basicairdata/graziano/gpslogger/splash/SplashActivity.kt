@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
@@ -56,7 +55,7 @@ class SplashActivity : AppCompatActivity() {
 
                     } else {
                         Log.w("myApp", "[#] SplashActivity.java - ACCESS_FINE_LOCATION = PERMISSION_DENIED")
-                        allGrantPerm = false;
+                        allGrantPerm = false
                     }
                 }
 
@@ -98,7 +97,7 @@ class SplashActivity : AppCompatActivity() {
 
                     } else {
                         Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_DENIED")
-                        allGrantPerm = false;
+                        allGrantPerm = false
                     }
                 }
 
@@ -111,7 +110,7 @@ class SplashActivity : AppCompatActivity() {
 
                     } else {
                         Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_DENIED")
-                        allGrantPerm = false;
+                        allGrantPerm = false
                     }
                 }
 

@@ -28,7 +28,7 @@ import java.util.Locale;
 
 import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
-import eu.basicairdata.graziano.gpslogger.management.CourseRoadType;
+import eu.basicairdata.graziano.gpslogger.management.define.CourseRoadType;
 
 
 /**

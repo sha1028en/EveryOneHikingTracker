@@ -237,13 +237,13 @@ class EGM96 {
             sharedDocument = sharedFolder.findFile("WW15MGH.DAC");
             if ((sharedDocument != null) && sharedDocument.exists() && (sharedDocument.length() == 2076480)) isSharedDocumentPresent = true;
             Log.w("myApp", "[#] EGM96.java - Shared Copy of EGM file "
-                    + (isSharedDocumentPresent ? "EXISTS: " + sharedDocument.getUri().toString() : "NOT EXISTS"));
+                    + (isSharedDocumentPresent ? "EXISTS: " + sharedDocument.getUri() : "NOT EXISTS"));
 
             // Private Document
             privateDocument = privateFolder.findFile("WW15MGH.DAC");
             if ((privateDocument != null) && privateDocument.exists() && (privateDocument.length() == 2076480)) isPrivateDocumentPresent = true;
             Log.w("myApp", "[#] EGM96.java - Private Copy of EGM file "
-                    + (isPrivateDocumentPresent ? "EXISTS: " + privateDocument.getUri().toString() : "NOT EXISTS"));
+                    + (isPrivateDocumentPresent ? "EXISTS: " + privateDocument.getUri() : "NOT EXISTS"));
 
             if (!isPrivateDocumentPresent && isSharedDocumentPresent) {
                 // Copy file into private folder
@@ -273,7 +273,7 @@ class EGM96 {
 
             // Load the EGM Grid file
             if (isPrivateDocumentPresent) {
-                Log.w("myApp", "[#] EGM96.java - Start loading grid from file: " + privateDocument.getUri().toString());
+                Log.w("myApp", "[#] EGM96.java - Start loading grid from file: " + privateDocument.getUri());
 
                 InputStream fin;
                 try {

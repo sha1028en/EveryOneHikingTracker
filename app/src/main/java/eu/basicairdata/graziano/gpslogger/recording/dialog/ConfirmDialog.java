@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording.enhanced;
+package eu.basicairdata.graziano.gpslogger.recording.dialog;
 
 import android.app.Dialog;
 import android.content.Context;

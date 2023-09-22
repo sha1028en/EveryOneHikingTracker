@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording.enhanced;
+package eu.basicairdata.graziano.gpslogger.recording.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +15,10 @@ import java.io.Serializable;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkImgBinding;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemPlaceMarkImg;
 
 public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkImgRecyclerAdapter.PlaceMarkImgViewHolder> implements Serializable {
     private LinkedList<ItemPlaceMarkImg> placeMarkImgList;
-    private ItemPlacemarkImgBinding bind;
     private OnImageClickListener listener;
 
     interface OnImageClickListener {
@@ -37,9 +37,9 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
     @NonNull @Override
     public PlaceMarkImgViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        this.bind = ItemPlacemarkImgBinding.inflate(layoutInflater, parent, false);
+        eu.basicairdata.graziano.gpslogger.databinding.ItemPlacemarkImgBinding bind = ItemPlacemarkImgBinding.inflate(layoutInflater, parent, false);
 
-        PlaceMarkImgViewHolder holder = new PlaceMarkImgViewHolder(this.bind.getRoot(), this.listener);
+        PlaceMarkImgViewHolder holder = new PlaceMarkImgViewHolder(bind.getRoot(), this.listener);
         return holder;
     }
 
@@ -80,11 +80,12 @@ public class PlaceMarkImgRecyclerAdapter extends RecyclerView.Adapter<PlaceMarkI
                     .load(this.itemImg.getImageUrl())
                     .into(this.bind.placemarkImgView);
 
-            this.bind.placemarkImgView.setOnClickListener(v -> {
-                listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
-            });
-
+            this.bind.placemarkImgView.setOnClickListener(this::onClick);
             this.bind.imgNumberTxt.setText(String.valueOf(position));
+        }
+
+        private void onClick(View v) {
+            listener.onImageClick(this.itemImg, this.getBindingAdapterPosition());
         }
     }
 }

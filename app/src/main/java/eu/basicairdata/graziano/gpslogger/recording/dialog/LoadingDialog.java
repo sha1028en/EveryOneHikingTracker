@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording;
+package eu.basicairdata.graziano.gpslogger.recording.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -15,6 +15,9 @@ import java.lang.ref.WeakReference;
 
 import eu.basicairdata.graziano.gpslogger.databinding.DialogLoadingBinding;
 
+/**
+ * show floating Circle Progress on blank background
+ */
 public class LoadingDialog extends Dialog {
     private DialogLoadingBinding bind;
     private WeakReference<Context> localContext;

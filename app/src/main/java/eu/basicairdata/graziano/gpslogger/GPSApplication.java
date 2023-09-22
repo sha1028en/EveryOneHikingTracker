@@ -47,7 +47,6 @@ import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.GnssStatus;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -376,8 +375,8 @@ public class GPSApplication extends Application implements LocationListener {
      * - For older Android it uses the legacy GpsStatus.Listener;
      */
     private class MyGPSStatus {
-        private GpsStatus.Listener gpsStatusListener;
-        private GnssStatus.Callback mGnssStatusListener;
+//        private GpsStatus.Listener gpsStatusListener;
+        private final GnssStatus.Callback mGnssStatusListener;
 
         public MyGPSStatus() {
             mGnssStatusListener = new GnssStatus.Callback() {

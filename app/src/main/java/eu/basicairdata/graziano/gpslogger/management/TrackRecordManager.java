@@ -17,11 +17,12 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
-import eu.basicairdata.graziano.gpslogger.EventBusMSGNormal;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.LocationExtended;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.define.PlaceMarkType;
 
 /**
  * @author dspark ( sha1028en )
@@ -33,7 +34,6 @@ public class TrackRecordManager {
     private static TrackRecordManager instance = null; // this SINGLETON INSTANCE. never use outside DIRECTLY
     private WeakReference<Context> mLocalContext;
     private GPSApplication gpsApp = GPSApplication.getInstance(); // GPS Observer, Track Recorder Instance
-    private LocationExtended locationExt = null; // current LocationExtends
 
     private int gpsState = GPS_DISABLED; // current GPS State
     private boolean isRecording = false; // now REALLY Recording Track???
@@ -149,14 +149,13 @@ public class TrackRecordManager {
      */
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onEvent(Short msg) {
-        if (msg == EventBusMSG.UPDATE_TRACK) {
-
-        } else if(msg == EventBusMSG.UPDATE_FIX && this.gpsApp != null) {
-            this.locationExt = this.gpsApp.getCurrentLocationExtended();
+        if(msg == EventBusMSG.UPDATE_FIX && this.gpsApp != null) {
+            // current LocationExtends
+            LocationExtended locationExt = this.gpsApp.getCurrentLocationExtended();
             this.gpsState = this.gpsApp.getGPSStatus();
 //            this.gpsApp.getCurrentLocationExtended();
 
-            if(this.gpsState == GPS_OK && this.locationExt != null) {
+            if(this.gpsState == GPS_OK && locationExt != null) {
                 this.totalSatellitesCnt = gpsApp.getNumberOfSatellitesTotal();
                 this.availableSatellitesCnt = gpsApp.getNumberOfSatellitesUsedInFix();
 
@@ -175,9 +174,6 @@ public class TrackRecordManager {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void onEvent(EventBusMSGNormal msg) {}
-
     /**
      * record PlaceMarker when GPS provider ENABLED
      * @deprecated internal struct has been changed. still work successfully
@@ -186,8 +182,6 @@ public class TrackRecordManager {
      * @param parentTrackName placemarker's parent Track Name
      */
     public void addPlaceMark(@NonNull final String placeMarkDesc, @NonNull final String parentTrackName) {
-        // add black desc place marker <-
-//        this.gpsApp.setQuickPlacemarkRequest(true);
         if (!gpsApp.isStopButtonFlag() || this.gpsApp.getGPSStatus() != GPS_OK) {
             if (!gpsApp.isFirstFixFound() && this.gpsApp.getCurrentLocationExtended() == null) {
                 toast.cancel();
@@ -201,7 +195,6 @@ public class TrackRecordManager {
         this.gpsApp.setCurrentTrackName(parentTrackName);
         this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkRequested(true);
-        //        EventBus.getDefault().post(EventBusMSG.REQUEST_ADD_PLACEMARK);
     }
 
     public void addPlaceMark(@NonNull final String placeMarkName, @NonNull final String placeMarkType, @NonNull final String parentTrackRegion, @NonNull final String parentTrackName, final boolean isEnablePlaceMark) {
@@ -214,7 +207,6 @@ public class TrackRecordManager {
                 return;
             }
         }
-        // this.gpsApp.setQuickPlacemarkRequest(true);
         this.gpsApp.setPlacemarkName(placeMarkName);
         this.gpsApp.setPlacemarkType(placeMarkType);
         this.gpsApp.setCurrentTrackName(parentTrackName);

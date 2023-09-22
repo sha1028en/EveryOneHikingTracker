@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording.enhanced;
+package eu.basicairdata.graziano.gpslogger.recording.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,21 +11,22 @@ import java.util.LinkedList;
 
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ItemCourseBinding;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourse;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
 
-public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRecyclerAdapter.CourseNameViewHolder> {
+public class CourseRecyclerAdapter extends RecyclerView.Adapter<CourseRecyclerAdapter.CourseNameViewHolder> {
     private ItemCourseBinding bind;
-    private LinkedList<ItemCourseEnhanced> courseList;
+    private LinkedList<ItemCourse> courseList;
     private String selectedCourseName; // Cursor
-    private ItemCourseEnhanced selectCourse; // Cursor
+    private ItemCourse selectCourse; // Cursor
 
     // when checkBox state changed, notify others
     private OnItemSelectListener listener;
     public interface OnItemSelectListener {
-        void onItemSelected(String courseType, ItemCourseEnhanced item);
+        void onItemSelected(String courseType, ItemCourse item);
     }
 
-    public CourseNameRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
+    public CourseRecyclerAdapter(@NonNull final OnItemSelectListener listener) {
         this.courseList = new LinkedList<>();
         this.selectedCourseName = "";
         this.listener = listener;
@@ -79,7 +80,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
     private void updateItemSelect(int clickedCoursePosition) {
         if(this.courseList != null) {
             int index = 0;
-            for(ItemCourseEnhanced item : this.courseList) {
+            for(ItemCourse item : this.courseList) {
                 item.setClicked(clickedCoursePosition == index);
                 ++index;
             }
@@ -87,7 +88,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         }
     }
 
-    public void addCourseItem(@NonNull final ItemCourseEnhanced item) {
+    public void addCourseItem(@NonNull final ItemCourse item) {
         if(this.courseList != null) {
             this.courseList.add(item);
             this.notifyItemChanged(this.getItemCount());
@@ -98,7 +99,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
      * add Course and Choose it
      * @param item to add Course item
      */
-    public void addNewCourseItem(@NonNull final ItemCourseEnhanced item) {
+    public void addNewCourseItem(@NonNull final ItemCourse item) {
         if(this.courseList != null) {
             this.courseList.add(item);
             this.notifyItemChanged(this.getItemCount());
@@ -110,7 +111,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         this.selectCourse = item;
     }
 
-    public void addCourseItems(@NonNull final LinkedList<ItemCourseEnhanced> item) {
+    public void addCourseItems(@NonNull final LinkedList<ItemCourse> item) {
         if(this.courseList != null) {
             this.courseList.addAll(item);
             this.notifyDataSetChanged();
@@ -123,12 +124,12 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
      * @param toReplaceItem to Replace Item
      * @return is list has changed???
      */
-    public boolean replaceCourseItem(@NonNull final ItemCourseEnhanced toReplaceItem) {
+    public boolean replaceCourseItem(@NonNull final ItemCourse toReplaceItem) {
         boolean hasFound = false;
 
         if(this.courseList != null) {
             int index = 0;
-            for(ItemCourseEnhanced buffer : this.courseList) {
+            for(ItemCourse buffer : this.courseList) {
                 // is it has same TrackName, CourseName?
                 if(buffer.getTrackName().equals(toReplaceItem.getTrackName()) && buffer.getCourseName().equals(toReplaceItem.getCourseName())) {
                     hasFound = true;
@@ -145,8 +146,8 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return hasFound;
     }
 
-    public LinkedList<ItemCourseEnhanced> getCloneCourseList() {
-        LinkedList<ItemCourseEnhanced> clonedCourseList = (LinkedList<ItemCourseEnhanced>) this.courseList.clone();
+    public LinkedList<ItemCourse> getCloneCourseList() {
+        LinkedList<ItemCourse> clonedCourseList = (LinkedList<ItemCourse>) this.courseList.clone();
         return clonedCourseList;
     }
 
@@ -165,17 +166,17 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return this.selectedCourseName;
     }
 
-    public ItemCourseEnhanced getSelectCourse() {
+    public ItemCourse getSelectCourse() {
         if(this.selectCourse != null) return selectCourse;
         else return null;
     }
 
-    public void updateCourse(@NonNull final ItemCourseEnhanced course) {
+    public void updateCourse(@NonNull final ItemCourse course) {
         int i = 0;
         boolean isUpdate = false;
 
         if(this.courseList != null) {
-            for(ItemCourseEnhanced item : this.courseList) {
+            for(ItemCourse item : this.courseList) {
                 if(item.getCourseName().equals(course.getCourseName()) && item.getTrackName().equals(course.getTrackName())) {
                     isUpdate = true;
                     break;
@@ -192,11 +193,11 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
 
     public boolean removeCourse(@NonNull final String trackName, @NonNull final String courseName) {
         boolean isRemove = false;
-        ItemCourseEnhanced toRemoveCourse = null;
+        ItemCourse toRemoveCourse = null;
         int i = 0;
 
         if(this.courseList != null && this.bind != null) {
-            for(ItemCourseEnhanced course : this.courseList) {
+            for(ItemCourse course : this.courseList) {
                 if(course.getTrackName().equals(trackName) && course.getCourseName().equals(courseName)) {
                     toRemoveCourse = course;
                     break;
@@ -216,7 +217,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
         return isRemove;
     }
 
-    public boolean removeCourse(final ItemCourseEnhanced course) {
+    public boolean removeCourse(final ItemCourse course) {
         boolean isRemove = false;
 
         if(this.courseList != null && course != null && this.bind != null) {
@@ -240,7 +241,7 @@ public class CourseNameRecyclerAdapter extends RecyclerView.Adapter<CourseNameRe
             this.bind = ItemCourseBinding.bind(itemView);
         }
 
-        public void onBind(ItemCourseEnhanced item) {
+        public void onBind(ItemCourse item) {
             if(this.bind != null) {
                 this.bind.courseTitle.setText(item.getCourseName());
                 this.bind.courseDistance.setText(String.format("%dm", (int) item.getCourseDistance()));

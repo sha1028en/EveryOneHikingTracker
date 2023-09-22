@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 import eu.basicairdata.graziano.gpslogger.BuildConfig;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourse;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
 import eu.basicairdata.graziano.gpslogger.tracklist.ItemTrackData;
 import kotlinx.coroutines.Dispatchers;
 import okhttp3.MultipartBody;
@@ -31,10 +32,6 @@ import okhttp3.Response;
 
 public class RequestTrackManager {
     private BackGroundAsyncTask<LinkedList<ItemTrackData>> requestTrackListTask;
-
-    public interface OnRequestResponse<V> {
-        void onRequestResponse(final V response, final boolean isSuccess);
-    }
 
     public RequestTrackManager() {
         this.requestTrackListTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
@@ -151,16 +148,16 @@ public class RequestTrackManager {
             @NonNull final String courseType,
             @NonNull final DocumentFile courseFile,
             @NonNull final String fileName,
-            @NonNull OnRequestResponse<ItemCourseEnhanced> listener) {
+            @NonNull OnRequestResponse<ItemCourse> listener) {
 
-        BackGroundAsyncTask<ItemCourseEnhanced> requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
-        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourseEnhanced> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+        BackGroundAsyncTask<ItemCourse> requestCourseAddTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
+        BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemCourse> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             private boolean isSuccess = true;
             @Override
             public void preTask() {}
 
             @Override
-            public ItemCourseEnhanced doTask() {
+            public ItemCourse doTask() {
                 OkHttpClient connection = new OkHttpClient.Builder()
                         .connectTimeout(5, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
@@ -203,7 +200,7 @@ public class RequestTrackManager {
             }
 
             @Override
-            public void endTask(ItemCourseEnhanced value) {
+            public void endTask(ItemCourse value) {
                 listener.onRequestResponse(null, this.isSuccess);
             }
 

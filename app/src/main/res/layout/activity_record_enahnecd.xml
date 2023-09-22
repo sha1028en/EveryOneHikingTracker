@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    tools:context=".recording.enhanced.RecordEnhancedActivity">
+    tools:context=".recording.RecordEnhancedActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -93,9 +93,9 @@
                             android:focusable="false"
                             android:paddingTop="6dp"
                             android:paddingBottom="6dp"
-                            android:drawableStart="@drawable/ic_stop_disable_24"
                             android:text="종료"
-                            android:textColor="#0099d7" />
+                            android:textColor="#0099d7"
+                            app:drawableStartCompat="@drawable/ic_stop_disable_24" />
 
                         <TextView
                             android:id="@+id/record_control_btn"
@@ -126,7 +126,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:buttonTint="@color/colorPrimary"
-                            android:checked="true"
+                            android:checked="false"
                             android:text="황토"
                             android:textColor="@color/textColorSecondary"/>
                     </LinearLayout>

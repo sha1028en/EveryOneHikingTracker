@@ -5,22 +5,13 @@ import static android.os.Environment.DIRECTORY_DCIM;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
-import kotlinx.coroutines.Dispatchers;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class ExporterManager {
     private GPSApplication gpsApp;
@@ -59,7 +50,7 @@ public class ExporterManager {
         return Uri.fromFile(dir);
     }
 
-    public static File pathToFile(@NonNull Context context, @NonNull final String directoryPath, @NonNull final String fileName) {
+    public static File pathToFile(@NonNull final String directoryPath, @NonNull final String fileName) {
         File file = new File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).getPath() + "/" + directoryPath + "/" + fileName);
         return file;
     }

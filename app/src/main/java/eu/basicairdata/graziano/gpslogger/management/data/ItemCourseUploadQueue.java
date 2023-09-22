@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.management;
+package eu.basicairdata.graziano.gpslogger.management.data;
 
 public class ItemCourseUploadQueue {
     private final int trackId; // UNIQUE track's id

@@ -1,8 +1,6 @@
-package eu.basicairdata.graziano.gpslogger.management;
+package eu.basicairdata.graziano.gpslogger.management.define;
 
-/**
- * @deprecated not use anymore
- */
+
 public enum TrackRegionType {
     SEOUL("서울"),
     INCHEON("인천"),
@@ -22,8 +20,9 @@ public enum TrackRegionType {
     GWANGJU("광주"),
     JEJU("제주");
 
-    private String regionName;
+    private final String regionName;
 
+    // INIT
     private TrackRegionType(String regionName) {
         this.regionName = regionName;
     }

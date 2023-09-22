@@ -24,8 +24,6 @@ package eu.basicairdata.graziano.gpslogger;
 import android.location.GnssStatus;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
-import android.os.Build;
-import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
 
@@ -97,7 +95,6 @@ public class Satellites {
      * Updates the status of the satellites using the new GnssStatus.
      * For Android VERSION_CODES.N and above.
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void updateStatus(GnssStatus gnssStatus) {
         if (gnssStatus != null) {
             ArrayList <Satellite> satellites = new ArrayList<>();

@@ -32,7 +32,6 @@ import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -180,7 +179,7 @@ public class ExternalViewerChecker {
         }
 
         // Sort List by Package Name
-        Collections.sort(externalViewerList, comparator);
+        externalViewerList.sort(comparator);
 
         // Apply Exceptions
         for (ExternalViewer a : externalViewerList) {

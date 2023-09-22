@@ -30,7 +30,7 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
  * height using the EGM Correction.
  */
 public class LocationExtended {
-    private Location location;
+    private final Location location;
 
     private int primaryId = -1; // to INSERT / QUERY
     private long trackId = -1;

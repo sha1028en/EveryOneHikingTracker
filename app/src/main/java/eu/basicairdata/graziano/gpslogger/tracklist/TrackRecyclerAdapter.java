@@ -86,7 +86,7 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
     }
 
     public void clearItems() {
-        if (this.trackList != null) {
+        if (this.trackList != null && !this.trackList.isEmpty()) {
             this.trackList.clear();
             this.notifyDataSetChanged();
         }
@@ -122,15 +122,6 @@ public class TrackRecyclerAdapter extends RecyclerView.Adapter<TrackRecyclerAdap
             this.bind.trackAddress.setText(item.getTrackAddress());
 
             this.bind.uploadLeftCourse.setVisibility(item.getUploadCourseList().isEmpty()? View.INVISIBLE: View.VISIBLE);
-//            this.bind.trackCourseState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDoneCourseInfo? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
-//            this.bind.trackCourseState.setTextColor(item.isDoneCourseInfo?
-//                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
-//                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
-//
-//            this.bind.trackPictureState.setCompoundDrawablesWithIntrinsicBounds(0, 0, item.isDonePlacemarkPic? R.drawable.ic_complete_24: R.drawable.ic_not_done_24, 0);
-//            this.bind.trackPictureState.setTextColor(item.isDonePlacemarkPic?
-//                    this.bind.getRoot().getContext().getColor(R.color.textColorHighlight):
-//                    this.bind.getRoot().getContext().getColor(R.color.textColorWaring));
         }
     }
 }

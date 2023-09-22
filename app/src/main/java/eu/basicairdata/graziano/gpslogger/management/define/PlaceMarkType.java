@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.management;
+package eu.basicairdata.graziano.gpslogger.management.define;
 
 /**
  * PlaceMark Type Define

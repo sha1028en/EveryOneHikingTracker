@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording.enhanced;
+package eu.basicairdata.graziano.gpslogger.management.data;
 
 import androidx.annotation.NonNull;
 
@@ -65,7 +65,7 @@ public class ItemPlaceMarkImg implements Serializable {
         this.imgLng = imgLng;
     }
 
-    @Override
+    @NonNull @Override
     public String toString() {
         return  "{" +
                 "imgId=" + imgId +

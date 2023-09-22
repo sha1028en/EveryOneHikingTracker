@@ -1,19 +1,14 @@
-package eu.basicairdata.graziano.gpslogger.management;
+package eu.basicairdata.graziano.gpslogger.management.data;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkEnhanced;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkImg;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemPlaceMarkType;
-
 
 public class ItemTrackRecord implements Serializable {
-    private LinkedList<ItemCourseEnhanced> itemCourseList;
+    private LinkedList<ItemCourse> itemCourseList;
     private LinkedList<ItemPlaceMarkImg> itemPlacemarkImgList;
-    private LinkedList<ItemPlaceMarkEnhanced> itemPlaceMarkList;
+    private LinkedList<ItemPlaceMark> itemPlaceMarkList;
     private LinkedList<ItemPlaceMarkType> itemPlaceMarkTypeList;
 
     public ItemTrackRecord() {
@@ -23,11 +18,11 @@ public class ItemTrackRecord implements Serializable {
         this.itemPlaceMarkList = new LinkedList<>();
     }
 
-    public LinkedList<ItemPlaceMarkEnhanced> getItemPlaceMarkList() {
+    public LinkedList<ItemPlaceMark> getItemPlaceMarkList() {
         return itemPlaceMarkList;
     }
 
-    public void setItemPlaceMarkList(LinkedList<ItemPlaceMarkEnhanced> itemPlaceMarkList) {
+    public void setItemPlaceMarkList(LinkedList<ItemPlaceMark> itemPlaceMarkList) {
         Collections.sort(itemPlaceMarkList);
         this.itemPlaceMarkList = itemPlaceMarkList;
     }
@@ -40,11 +35,11 @@ public class ItemTrackRecord implements Serializable {
         this.itemPlacemarkImgList = itemPlacemarkImgList;
     }
 
-    public LinkedList<ItemCourseEnhanced> getItemCourseList() {
+    public LinkedList<ItemCourse> getItemCourseList() {
         return itemCourseList;
     }
 
-    public void setItemCourseList(LinkedList<ItemCourseEnhanced> itemCourseList) {
+    public void setItemCourseList(LinkedList<ItemCourse> itemCourseList) {
         this.itemCourseList = itemCourseList;
     }
 

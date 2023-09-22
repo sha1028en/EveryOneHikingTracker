@@ -40,21 +40,21 @@ public class ActionsBroadcastReceiver extends BroadcastReceiver {
         String broadcastedAction = intent.getAction();
         if (broadcastedAction != null) {  // https://github.com/BasicAirData/GPSLogger/issues/132
             switch (broadcastedAction) {
-                case Intent.ACTION_SCREEN_OFF:
+                case Intent.ACTION_SCREEN_OFF ->
                     // Turns off the EventBus Signals of the Recording Thread
                     // in order to save Battery
-                    GPSApplication.getInstance().onScreenOff();
-                    break;
-                case Intent.ACTION_SCREEN_ON:
+                        GPSApplication.getInstance().onScreenOff();
+
+                case Intent.ACTION_SCREEN_ON ->
                     // Turns on the EventBus Signals of the Recording Thread
-                    GPSApplication.getInstance().onScreenOn();
-                    break;
-                case Intent.ACTION_SHUTDOWN:
+                        GPSApplication.getInstance().onScreenOn();
+
+                case Intent.ACTION_SHUTDOWN -> {
                     // Gracefully finish to write data and close the Database
                     if (GPSApplication.getInstance() != null) {  // https://github.com/BasicAirData/GPSLogger/issues/146
                         GPSApplication.getInstance().onShutdown();
                     }
-                    break;
+                }
             }
         }
     }

@@ -23,7 +23,6 @@ package eu.basicairdata.graziano.gpslogger;
 
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -46,10 +45,11 @@ import androidx.documentfile.provider.DocumentFile;
 
 import org.greenrobot.eventbus.EventBus;
 
-import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.OnRequestResponse;
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.ItemCourseEnhanced;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourse;
 
 /**
  * A Thread that performs the exportation of a Track in KML, GPX, and/or TXT format.
@@ -1078,6 +1078,7 @@ class Exporter extends Thread {
                 kmlBW.flush();
                 kmlBW.close();
             }
+
             if (exportGPX) {
                 // List of Track point
                 trackGpxBW.write("</gpx>" + newLine + " ");
@@ -1091,9 +1092,9 @@ class Exporter extends Thread {
                         track.getCourseType(),
                         this.gpxFile,
                         gpsApp.getFileName(track),
-                        new RequestTrackManager.OnRequestResponse<>() {
+                        new OnRequestResponse<>() {
                             @Override
-                            public void onRequestResponse(ItemCourseEnhanced response, boolean isSuccess) {
+                            public void onRequestResponse(ItemCourse response, boolean isSuccess) {
                                 uploadManager.release();
 
                                 if(isSuccess) {
@@ -1103,7 +1104,6 @@ class Exporter extends Thread {
                                         recordManager = null;
                                     }
                                     EventBus.getDefault().post(EventBusMSG.TRACK_COURSE_SEND_SUCCESS);
-
                                 }
                             }
                         });
@@ -1162,6 +1162,7 @@ class Exporter extends Thread {
                         try {
                             arrayGeopoints.put(loc);
                             //Log.w("myApp", "[#] Exporter.java - " + ArrayGeopoints.size());
+
                         } catch (InterruptedException e) {
                             Log.w("myApp", "[#] Exporter.java - Interrupted: " + e);
                         }

@@ -154,7 +154,7 @@ public class GPSService extends Service {
         recordingState = isIconRecording();
         builder = new NotificationCompat.Builder(this, CHANNEL_ID);
         //builder.setSmallIcon(R.drawable.ic_notification_24dp)
-        builder.setSmallIcon(recordingState ? R.mipmap.ic_notify_recording_24dp : R.mipmap.ic_notify_24dp)
+        builder.setSmallIcon(R.mipmap.ic_gpx_tracker) //recordingState ? R.mipmap.ic_notify_recording_24dp : R.mipmap.ic_notify_24dp)
                 .setColor(getResources().getColor(R.color.colorPrimaryLight))
                 .setContentTitle(getString(R.string.app_name))
                 .setShowWhen(false)

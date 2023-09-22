@@ -42,7 +42,7 @@ import static eu.basicairdata.graziano.gpslogger.GPSApplication.NOT_AVAILABLE;
 
 import androidx.annotation.NonNull;
 
-import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
 
 /**
  * A SQLite Helper wrapper that allow to easily manage the database that the app

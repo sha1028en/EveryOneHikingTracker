@@ -1,13 +1,21 @@
 package eu.basicairdata.graziano.gpslogger.tracklist;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -21,17 +29,24 @@ import eu.basicairdata.graziano.gpslogger.GPSApplication;
 import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.databinding.ActivityTrackListBinding;
 import eu.basicairdata.graziano.gpslogger.management.ExporterManager;
-import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.OnRequestResponse;
 import eu.basicairdata.graziano.gpslogger.management.RequestTrackManager;
 import eu.basicairdata.graziano.gpslogger.management.TrackRecordManager;
-import eu.basicairdata.graziano.gpslogger.recording.enhanced.RecordEnhancedActivity;
+import eu.basicairdata.graziano.gpslogger.management.define.TrackRegionType;
+import eu.basicairdata.graziano.gpslogger.recording.RecordEnhancedActivity;
 
 public class TrackListActivity extends AppCompatActivity {
     private ActivityTrackListBinding bind; // View n Layout Instance
+
     private TrackRecordManager recordManager; // Track, Course, Placemark control Manager
     private RequestTrackManager requestTrackManager; // request and response Track Data from Server
     private TrackRecyclerAdapter trackListAdapter; // Track List View Adapter ( RecyclerView )
     private ExporterManager exporterManager;
+
+    private ActivityResultLauncher<Intent> requestExportDir; // Write Document;
+    private LinkedList<ItemCourseUploadQueue> toFirstUploadCourseList;
+    private String selectedRegion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +62,33 @@ public class TrackListActivity extends AppCompatActivity {
 //
 //            }
 //        }
+        this.toFirstUploadCourseList = new LinkedList<>();
+
+        // Request Perm to write GPX File
+        this.requestExportDir = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result == null || this.bind == null || this.exporterManager == null || this.recordManager == null) return;
+
+            Intent resultData = result.getData();
+            if (resultData != null) {
+                Uri treeUri = resultData.getData();
+                grantUriPermission(getPackageName(), treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+                GPSApplication.getInstance().getContentResolver().takePersistableUriPermission(treeUri, Intent
+                        .FLAG_GRANT_READ_URI_PERMISSION | Intent
+                        .FLAG_GRANT_WRITE_URI_PERMISSION);
+                // set Path where save *.gpx file
+                this.exporterManager.setExportDir(treeUri);
+
+                for (ItemCourseUploadQueue toUploadCourse : this.toFirstUploadCourseList) {
+                    this.exporterManager.export(toUploadCourse.getTrackName(), toUploadCourse.getCourseName());
+                }
+            }
+        });
+
+        // init last selected region
+        this.loadLastRegion();
+        this.bind.selectRegion.setText(this.selectedRegion);
+
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
         this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
@@ -60,7 +102,18 @@ public class TrackListActivity extends AppCompatActivity {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
-        this.requestTrackList(this.bind.selectRegion.getText().toString());
+        this.requestTrackList(this.selectedRegion);
+    }
+
+    private void loadLastRegion() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        this.selectedRegion = preferences.getString(GPSApplication.ATV_EXTRA_TRACK_REGION, TrackRegionType.SEOUL.getRegionName());
+    }
+
+    private void putLastRegion(@NonNull final String lastSelectRegion) {
+        SharedPreferences.Editor lastRegionEditor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+        lastRegionEditor.putString(GPSApplication.ATV_EXTRA_TRACK_REGION, lastSelectRegion);
+        lastRegionEditor.apply();
     }
 
     private void initViewListener() {
@@ -69,6 +122,7 @@ public class TrackListActivity extends AppCompatActivity {
                 if(this.bind == null || this.requestTrackManager == null) return;
                 this.bind.selectRegion.setText(msg);
                 this.requestTrackList(msg);
+                this.selectedRegion = msg;
             });
             selectRegionDialog.show();
         });
@@ -92,10 +146,29 @@ public class TrackListActivity extends AppCompatActivity {
                }
 
                case 1 -> { // upload left Course
-                    if(item.getUploadCourseList().isEmpty() || this.exporterManager == null) return;
-                    for (ItemCourseUploadQueue toUploadCourse : item.getUploadCourseList()) {
-                        this.exporterManager.export(toUploadCourse.getTrackName(), toUploadCourse.getCourseName());
-                    }
+                   if(item.getUploadCourseList().isEmpty() || this.exporterManager == null) return;
+
+                   if(this.exporterManager.isExportDirHas()) { // if already has Perm? Export NOW!
+                       for (ItemCourseUploadQueue toUploadCourse : item.getUploadCourseList()) {
+                           this.exporterManager.export(toUploadCourse.getTrackName(), toUploadCourse.getCourseName());
+                       }
+
+                   } else { // request Perm With File Picker by Android System
+                       Intent intent = new Intent();
+                       intent.setAction(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                       intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+                       intent.putExtra("android.content.extra.FANCY", true);
+                       intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                               | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                               | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+
+                       // where *.gpx file save? where!
+                       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                           intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, exporterManager.pathToUri("Trekking"));
+                       }
+                       this.toFirstUploadCourseList = item.getUploadCourseList();
+                       this.requestExportDir.launch(intent);
+                   }
                }
            }
        });
@@ -104,7 +177,7 @@ public class TrackListActivity extends AppCompatActivity {
 
    private void requestTrackList(@Nullable final String requestRegion) {
        if(this.requestTrackManager == null || this.bind == null || this.trackListAdapter == null) return;
-       this.requestTrackManager.requestTrackList(requestRegion, new RequestTrackManager.OnRequestResponse<>() {
+       this.requestTrackManager.requestTrackList(requestRegion, new OnRequestResponse<>() {
            @Override
            public void onRequestResponse(LinkedList<ItemTrackData> response, boolean isSuccess) {
                if (isSuccess) {
@@ -135,6 +208,8 @@ public class TrackListActivity extends AppCompatActivity {
         TrackRecordManager.destroyInstance();
         this.recordManager = null;
 
+        this.putLastRegion(this.selectedRegion);
+
         if(this.trackListAdapter != null) {
             this.trackListAdapter.release();
             this.trackListAdapter = null;
@@ -149,10 +224,9 @@ public class TrackListActivity extends AppCompatActivity {
 
    @Subscribe(threadMode = ThreadMode.BACKGROUND)
    public void onEvent(Short msg) {
-        if (msg == EventBusMSG.UPDATE_FIX) {
 
-        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
-            this.requestTrackList(this.bind.selectRegion.getText().toString());
+        if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
+            this.requestTrackList(this.selectedRegion);
         }
    }
 }

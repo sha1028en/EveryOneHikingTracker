@@ -1,12 +1,12 @@
-package eu.basicairdata.graziano.gpslogger.recording.enhanced;
+package eu.basicairdata.graziano.gpslogger.management.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import eu.basicairdata.graziano.gpslogger.management.CourseRoadType;
+import eu.basicairdata.graziano.gpslogger.management.define.CourseRoadType;
 
-public class ItemCourseEnhanced implements Serializable {
+public class ItemCourse implements Serializable {
     private final String trackName;
     private String courseName;
 
@@ -23,7 +23,7 @@ public class ItemCourseEnhanced implements Serializable {
     private String courseType;
     private boolean isClicked;
 
-    public ItemCourseEnhanced(final String trackName, String courseName, final int trackId, final int courseId, double distance, String courseType) {
+    public ItemCourse(final String trackName, String courseName, final int trackId, final int courseId, double distance, String courseType) {
         this.trackName = trackName;
         this.courseName = courseName;
         this.courseId = courseId;
@@ -127,7 +127,7 @@ public class ItemCourseEnhanced implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ItemCourseEnhanced that = (ItemCourseEnhanced) o;
+        ItemCourse that = (ItemCourse) o;
         return courseName.equals(that.courseName);
     }
 

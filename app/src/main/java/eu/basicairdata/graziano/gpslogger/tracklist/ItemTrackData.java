@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.LinkedList;
 
-import eu.basicairdata.graziano.gpslogger.management.ItemCourseUploadQueue;
+import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
 
 public class ItemTrackData {
 

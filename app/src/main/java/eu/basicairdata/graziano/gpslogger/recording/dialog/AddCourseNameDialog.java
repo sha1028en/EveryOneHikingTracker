@@ -1,4 +1,4 @@
-package eu.basicairdata.graziano.gpslogger.recording;
+package eu.basicairdata.graziano.gpslogger.recording.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -39,18 +39,16 @@ public class AddCourseNameDialog  extends DialogFragment {
             inputManager.showSoftInput(this.bind.courseNameDescription, InputMethodManager.SHOW_IMPLICIT);
         }, 200L);
 
-        builder.setView(this.bind.getRoot())
-                .setPositiveButton(R.string.dlg_button_add, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        TrackRecordManager recordManager = TrackRecordManager.getInstance();
-                        if(isAdded() && recordManager != null && callBackMessageListener != null) {
-                            String addedCourseName = bind.courseNameDescription.getText().toString();
-                            callBackMessageListener.onReceiveMessage(addedCourseName);
-                        }
-                    }
-                });
-
+        builder.setView(this.bind.getRoot()).setPositiveButton(R.string.dlg_button_add, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                TrackRecordManager recordManager = TrackRecordManager.getInstance();
+                if(isAdded() && recordManager != null && callBackMessageListener != null) {
+                    String addedCourseName = bind.courseNameDescription.getText().toString();
+                    callBackMessageListener.onReceiveMessage(addedCourseName);
+                }
+            }
+        });
         return builder.create();
     }
 
