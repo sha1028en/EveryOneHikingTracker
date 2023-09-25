@@ -11,13 +11,12 @@ public class ItemTrackData {
     private final long trackId; // Track Id
     private final String trackName; // Track Name
     private final String trackAddress; // Track Address
-    private final String trackRegion;
+    private final String trackRegion; // Track Region
 
     private final boolean isCompleteTrack; // is this Track Already Complete ( IF ITS TRUE, NEVER MODIFY THIS TRACK )
     private boolean isDoneCourseInfo = false; // is CourseInfo has ???
     private boolean isDonePlacemarkPic = false; // is placemark picture has ???
-
-    private LinkedList<ItemCourseUploadQueue> toUploadCourseList;
+    private LinkedList<ItemCourseUploadQueue> toUploadCourseList; // is this Track has NOT upload Course Record?
 
     public ItemTrackData(final long trackId, @NonNull final String trackName, @NonNull final String trackAddress, @NonNull final String trackRegion, final boolean isCompleteTrack) {
         this.trackId = trackId;
@@ -27,7 +26,6 @@ public class ItemTrackData {
         this.isCompleteTrack = isCompleteTrack;
         this.toUploadCourseList = new LinkedList<>();
     }
-
 
     public long getTrackId() {
         return this.trackId;

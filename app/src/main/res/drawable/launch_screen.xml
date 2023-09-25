@@ -26,7 +26,7 @@
   <!-- App Logo -->
   <item>
     <bitmap
-      android:src="@mipmap/gps_logger_big"
+      android:src="@mipmap/ic_gpx_tracker"
       android:gravity="center"/>
   </item>
 </layer-list>

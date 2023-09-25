@@ -134,7 +134,7 @@ public class GPSService extends Service {
                 builder.setContentText(notificationText);
                 if (isIconRecording() != recordingState) {
                     recordingState = isIconRecording();
-                    builder.setSmallIcon(recordingState ? R.mipmap.ic_notify_recording_24dp : R.mipmap.ic_notify_24dp);
+                    builder.setSmallIcon(R.mipmap.ic_gpx_tracker); //recordingState ? R.mipmap.ic_notify_recording_24dp : R.mipmap.ic_notify_24dp);
                 }
                 mNotificationManager.notify(ID, builder.build());
                 oldNotificationText = notificationText;

@@ -134,15 +134,15 @@ public class TrackRecordManager {
 
     /**
      * init EventBus which recev Gps, add mark... events!
+     * NEVER CALL THIS OUTSIDE or DIRECTLY
      */
-    public void initEventBus() {
+    private void initEventBus() {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
         EventBus.getDefault().register(this);
         EventBus.getDefault().post(EventBusMSG.APP_RESUME);
     }
-
 
     /**
      * @return count of ALL Satellites INCLUDE not Available satellites
@@ -417,6 +417,12 @@ public class TrackRecordManager {
         return toUploadQueueList;
     }
 
+    /**
+     * get still not Upload CourseList
+     *
+     * @param trackId Track Id where u search
+     * @return ItemCourseUploadQueue LinkedList or EMPTY list
+     */
     public LinkedList<ItemCourseUploadQueue> getCourseUploadQueueList(final int trackId) {
         LinkedList<ItemCourseUploadQueue> toUploadQueueList = new LinkedList<>();
         if(this.gpsApp != null) {
@@ -478,6 +484,9 @@ public class TrackRecordManager {
         return this.isRecording;
     }
 
+    /**
+     * @return is this Course Recording has Paused?
+     */
     public boolean isPauseRecordingCourse() {
         boolean isPauseRecording = false;
         if(this.gpsApp != null) {
@@ -490,7 +499,7 @@ public class TrackRecordManager {
      * @return is it Recording Course or add Placemark
      */
     public boolean isAvailableRecord() {
-        if(this.gpsApp == null || this.mLocalContext == null || this.mLocalContext.get() == null) return false;
+        if(this.gpsApp == null) return false;
         return this.gpsState == GPS_OK;
     }
 
