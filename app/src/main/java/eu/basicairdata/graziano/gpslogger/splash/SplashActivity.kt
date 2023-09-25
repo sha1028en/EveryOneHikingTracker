@@ -69,6 +69,7 @@ class SplashActivity : AppCompatActivity() {
                     if (perms[Manifest.permission.INTERNET] == PackageManager.PERMISSION_GRANTED) {
                         Log.w("myApp", "[#] SplashActivity.java - INTERNET = PERMISSION_GRANTED")
 
+
                     } else {
                         Log.w("myApp", "[#] SplashActivity.java - INTERNET = PERMISSION_DENIED")
                         allGrantPerm = false

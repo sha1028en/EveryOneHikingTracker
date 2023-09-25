@@ -23,7 +23,6 @@ import eu.basicairdata.graziano.gpslogger.R;
 import eu.basicairdata.graziano.gpslogger.Track;
 import eu.basicairdata.graziano.gpslogger.management.data.ItemCourseUploadQueue;
 import eu.basicairdata.graziano.gpslogger.management.define.CourseRoadType;
-import eu.basicairdata.graziano.gpslogger.management.define.PlaceMarkType;
 import eu.basicairdata.graziano.gpslogger.management.define.TrackRegionType;
 
 /**
@@ -159,26 +158,45 @@ public class TrackRecordManager {
         return this.availableSatellitesCnt;
     }
 
+    /**
+     * @return Track Name if it recording... or return EMPTY String
+     */
     public String getRecordingTrackName() {
         return recordingTrackName;
     }
 
+    /**
+     * @return TrackID if it recording... or return -1
+     */
     public int getRecordingTrackId() {
         return recordingTrackId;
     }
 
+    /**
+     * @return Course Name if it recording... or return EMPTY String
+     */
     public String getRecordingCourseName() {
         return recordingCourseName;
     }
 
+    /**
+     * @return Course Region Type if it Recording... or return EMPTY String
+     */
     public String getRecordingTrackRegionType() {
         return recordingTrackRegionType;
     }
 
+    /**
+     * @return Course Road Type if it Recording... or Return EMPTY String
+     */
     public String getRecordingCourseRoadType() {
         return recordingCourseRoadType;
     }
 
+    /**
+     * update Course's Course Road Type if it Recording.. or ignored
+     * @param courseRoadType to update Course Road Type
+     */
     public void setRecordingCourseRoadType(@NonNull final String courseRoadType) {
         if(this.isRecording) this.recordingCourseRoadType = courseRoadType;
     }
@@ -192,7 +210,6 @@ public class TrackRecordManager {
             // current LocationExtends
             LocationExtended locationExt = this.gpsApp.getCurrentLocationExtended();
             this.gpsState = this.gpsApp.getGPSStatus();
-//            this.gpsApp.getCurrentLocationExtended();
 
             if(this.gpsState == GPS_OK && locationExt != null) {
                 this.totalSatellitesCnt = gpsApp.getNumberOfSatellitesTotal();
@@ -264,11 +281,26 @@ public class TrackRecordManager {
         if(this.gpsApp == null) return;
         this.gpsApp.gpsDataBase.updatePlacemark(trackName, courseName, isEnable);
     }
-    public void addCourseUploadQueue(@NonNull final ItemCourseUploadQueue toAppendItem) {
+
+    // when start to Upload Course Record to Server
+    // that Course Record will append "uploaded_queue"
+    // if upload successfully? retire this Course Record from "uploaded_queue"
+    // if upload failed? still course record exist from "uploaded_queue"
+    // so... we can know is this course Uploaded
+
+    /**
+     * put Course Record into Uploaded Queue
+     * @param toAppendItem Recorded Course Data
+     */
+    public void putCourseUploadQueue(@NonNull final ItemCourseUploadQueue toAppendItem) {
         if(this.gpsApp == null) return;
         this.gpsApp.gpsDataBase.addCourseUploadedQueue(toAppendItem);
     }
 
+    /**
+     * retire Course Record into Uploaded Queue
+     * @param toRetireItem to Retire Course Record
+     */
     public void retireCourseUploadQueue(@NonNull final ItemCourseUploadQueue toRetireItem) {
         if(this.gpsApp == null) return;
         this.gpsApp.gpsDataBase.deleteCourseUploadQueue(toRetireItem);
@@ -278,6 +310,7 @@ public class TrackRecordManager {
 
     /**
      * start Record Track when GPS provider is ENABLED
+     * and remember this course's value
      */
     public void startRecordCourse(final long trackId ,@NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion) {
         if(this.isRecording /*|| this.availableSatellitesCnt > 4*/) return;
@@ -301,6 +334,7 @@ public class TrackRecordManager {
 
     /**
      * stop record track if it recording track
+     * and forgot this course's value
      *
      * @param trackId     to save track Id
      * @param trackName   to save track Name
@@ -309,7 +343,7 @@ public class TrackRecordManager {
      * @param courseType  to save track Type ( Wooden or Dirty )
      * @see GPSApplication::onRequestStop(bool, bool)
      */
-    public void stopRecordTrack(final long trackId, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, String courseType) {
+    public void stopRecordCourse(final long trackId, @NonNull final String trackName, @NonNull final String courseName, @NonNull final String trackRegion, String courseType) {
         if(this.gpsApp == null || !this.isRecording) return;
 
         this.gpsApp.setStopButtonFlag(true, gpsApp.getCurrentTrack().getNumberOfLocations() + gpsApp.getCurrentTrack().getNumberOfPlacemarks() > 0 ? 1000 : 300);
@@ -358,18 +392,21 @@ public class TrackRecordManager {
         this.recordingTrackRegionType = TrackRegionType.SEOUL.getRegionName();
     }
 
+    /**
+     * Pause Recording Course if it Recording
+     */
     public void pauseRecordTrack() {
         if(this.gpsApp == null || !this.gpsApp.isRecording()) return;
         this.gpsApp.setRecording(false);
     }
 
+    /**
+     * Resume Recording Course if it Paused Recording
+     */
     public void resumeRecordCourse() {
         if(this.gpsApp == null || this.gpsApp.isRecording()) return;
         this.gpsApp.setRecording(true);
     }
-
-
-
 
     // SELECT METHOD
     public LinkedList<ItemCourseUploadQueue> getCourseUploadQueueList(@NonNull final String trackName, @NonNull final String courseName) {
@@ -420,14 +457,23 @@ public class TrackRecordManager {
         return placeMarkList;
     }
 
+    /**
+     * @return Last Observe Latitude or... return 0.0f
+     */
     public double getLastObserveLat() {
         return this.lastObserveLat;
     }
 
+    /**
+     * @return Last Observe Longitude or... return 0.0f
+     */
     public double getLastObserveLng() {
         return this.lastObserveLng;
     }
 
+    /**
+     * @return is this Course Recording?
+     */
     public boolean isRecordingCourse() {
         return this.isRecording;
     }
@@ -500,18 +546,18 @@ public class TrackRecordManager {
 //        return true;
 //    }
 
-    private String getNameByPlacemarkType(PlaceMarkType type) {
-        String placemarkType = "기타 시설물";
-
-        switch (type) {
-            case ENTRANCE -> placemarkType = "나눔길 입구";
-            case PARKING -> placemarkType = "주차장";
-            case TOILET -> placemarkType = "화장실";
-            case REST_AREA -> placemarkType = "쉼터";
-            case BUS_STOP -> placemarkType = "버스";
-            case OBSERVATION_DECK -> placemarkType = "전망대";
-            case ETC -> placemarkType = "기타 시설물";
-        }
-        return placemarkType;
-    }
+//    private String getNameByPlacemarkType(PlaceMarkType type) {
+//        String placemarkType = "기타 시설물";
+//
+//        switch (type) {
+//            case ENTRANCE -> placemarkType = "나눔길 입구";
+//            case PARKING -> placemarkType = "주차장";
+//            case TOILET -> placemarkType = "화장실";
+//            case REST_AREA -> placemarkType = "쉼터";
+//            case BUS_STOP -> placemarkType = "버스";
+//            case OBSERVATION_DECK -> placemarkType = "전망대";
+//            case ETC -> placemarkType = "기타 시설물";
+//        }
+//        return placemarkType;
+//    }
 }

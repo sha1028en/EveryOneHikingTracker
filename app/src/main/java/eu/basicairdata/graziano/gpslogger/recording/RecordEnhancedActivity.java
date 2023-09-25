@@ -56,7 +56,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -180,7 +179,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 final String toSendCourseName = this.isRestored? this.lastRecordCourseName: this.courseRecyclerAdapter.getSelectedCourseName();
 
                 // append upload Course Queue
-                this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName()));
+                this.recordManager.putCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, this.courseRecyclerAdapter.getSelectedCourseName()));
                 this.exporterManager.setExportDir(treeUri);
                 this.exporterManager.export(this.currentTrackName, toSendCourseName);
             }
@@ -421,7 +420,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                     if(this.exporterManager.isExportDirHas()) { // is this has to save *.gpx file Path
 
                         // append upload Course Queue
-                        this.recordManager.addCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, toSendCourseName));
+                        this.recordManager.putCourseUploadQueue(new ItemCourseUploadQueue(this.currentTrackId, this.currentTrackName, toSendCourseName));
 
                         // if already has save Path? Export NOW!
                         this.exporterManager.export(this.currentTrackName, toSendCourseName);
@@ -662,7 +661,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             final int toRecordTrackId;
 
             if(toRecordCourse != null && !this.isRestored) {
-                toRecordTrackId = toRecordCourse.getTrackId();
+                toRecordTrackId = this.currentTrackId;
                 toRecordTrackName = toRecordCourse.getTrackName();
                 toRecordCourseName = toRecordCourse.getCourseName();
                 toRecordTrackRegionType = this.currentTrackRegion;
@@ -677,7 +676,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             }
 
             if(!toRecordCourseName.isBlank()) {
-                this.recordManager.stopRecordTrack(toRecordTrackId, toRecordTrackName, toRecordCourseName, toRecordTrackRegionType, toRecordCourseType);
+                this.recordManager.stopRecordCourse(toRecordTrackId, toRecordTrackName, toRecordCourseName, toRecordTrackRegionType, toRecordCourseType);
                 this.isPauseCourseRecording = false;
                 this.lastRecordCourseName = toRecordCourseName;
                 this.updateUpsideControlPanelState();

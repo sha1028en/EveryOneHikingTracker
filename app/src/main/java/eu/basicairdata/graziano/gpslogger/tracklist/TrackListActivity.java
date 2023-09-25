@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
+import android.util.Log;
 import android.widget.Toast;
 
 
@@ -224,12 +225,12 @@ public class TrackListActivity extends AppCompatActivity {
 
    @Subscribe(threadMode = ThreadMode.BACKGROUND)
    public void onEvent(Short msg) {
-
         if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
+            Log.d("GPS_STATE", "TRACK_COURSE_SEND_SUCCESS");
             this.requestTrackList(this.selectedRegion);
 
         } else if (msg == EventBusMSG.TRACK_COURSE_SEND_EMPTY) {
-//            this.re
+            Log.d("GPS_STATE", "TRACK_COURSE_SEND_EMPTY");
         }
    }
 }
