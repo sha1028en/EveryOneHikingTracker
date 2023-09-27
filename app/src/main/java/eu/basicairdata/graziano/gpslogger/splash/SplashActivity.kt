@@ -60,7 +60,7 @@ class SplashActivity : AppCompatActivity() {
                         gpsApp.updateGPSLocationFrequency()
 
                     } else {
-                        Toast.makeText(this.bind.root.context, "위치 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.bind.root.context, this.getString(R.string.req_perm_location), Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - ACCESS_FINE_LOCATION = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -82,7 +82,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - CAMERA = PERMISSION_GRANTED")
 
                     } else {
-                        Toast.makeText(this.bind.root.context, "카메라 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.bind.root.context, this.getString(R.string.req_perm_camera), Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - CAMERA = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -94,7 +94,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_GRANTED")
 
                     } else {
-                        Toast.makeText(this.bind.root.context, "사진 및 동영상 권한을\n허용해 주셔야 앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.bind.root.context, this.getString(R.string.req_perm_access_media_img), Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - READ_MEDIA_IMG = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -115,7 +115,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_GRANTED")
 
                     } else {
-                        Toast.makeText(this.bind.root.context, "외부저장소 읽기 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.bind.root.context, this.getString(R.string.req_perm_read_external_storage), Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - READ_EXTERNAL_STORAGE = PERMISSION_DENIED")
                         allGrantPerm = false
                     }
@@ -129,7 +129,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_GRANTED")
 
                     } else {
-                        Toast.makeText(this.bind.root.context, "외부저장소 쓰기 권한을 허용해 주셔야\n앱을 사용 하실수 있습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this.bind.root.context, this.getString(R.string.req_perm_write_external_storage), Toast.LENGTH_SHORT).show()
                         Log.w("myApp", "[#] SplashActivity.java - WRITE_EXTERNAL_STORAGE = PERMISSION_DENIED")
                         allGrantPerm = false
                     }

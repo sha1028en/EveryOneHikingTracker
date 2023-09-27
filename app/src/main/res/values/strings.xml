@@ -244,6 +244,11 @@
     <string name="UM_kn">kn</string>
     <string name="UM_s">s</string>
 
+    <string name="req_perm_read_external_storage">You must allow external storage read permission.\nYou can use the app.</string>
+    <string name="req_perm_write_external_storage">You must allow external storage write permission.You can use the app.</string>
+    <string name="req_perm_access_media_img">You must allow Photo and video permissions\nYou can use the app.</string>
+    <string name="req_perm_location">You must allow location permission.\nYou can use the app.</string>
+    <string name="req_perm_camera">You must allow camera permission.\nYou can use the app.</string>
 
     <!--Region of South Korea which record track    -->
     <string name="track_region_seoul">서울</string>

@@ -65,6 +65,13 @@ class ImageManager {
             return ""
         }
 
+        /**
+         * parse File Path from Uri
+         *
+         * @param context android Context
+         * @param uri uri to parse File Path
+         * @return file Path or ""
+         */
         fun parsePathFromUri(context: Context, uri: Uri?): String {
             if(uri == null) return ""
             var filePath = ""
@@ -213,6 +220,17 @@ class ImageManager {
             return imageList
         }
 
+        /**
+         * load Images from File
+         *
+         * @param context Android Context
+         * @param fileName to load Image File Name
+         *
+         * @return ImageUriList or FileNotFoundException
+         * @throws NullPointerException wrong param state
+         * @throws IllegalArgumentException wrong param value
+         * @throws FileNotFoundException fail to Open File or Load Images
+         */
         @Throws(FileNotFoundException::class)
         fun loadImageUriList(context: Context, fileName: String, filePath: String): LinkedList<Uri?> {
             val localContext = WeakReference(context)
@@ -391,6 +409,15 @@ class ImageManager {
             return isRemoved
         }
 
+        /**
+         * set Location into imageUri
+         *
+         * @param image to set Location
+         * @param lat to set Image lat
+         * @param lng to set Image lng
+         *
+         * @throws IllegalArgumentException wrong lat or lng value
+         */
         @Throws(IllegalArgumentException::class, IOException::class)
         fun addLocationIntoImage(image: Uri, lat: Double, lng: Double) {
             if(lat <= 0.0f || lng <= 0.0f) throw IllegalArgumentException("wrong param value: lat, lng")
@@ -409,7 +436,7 @@ class ImageManager {
             rawImageFileDescriptor.close()
         }
 
-        // Convert latitude/longitude to exif format
+        // Convert lat / lng to exif format
         private fun convert(coord: Double): String {
             var coord = coord
             coord = abs(coord)
@@ -483,35 +510,35 @@ class ImageManager {
         @Throws(FileNotFoundException::class)
         fun loadBitmapWithCompressAggressive(context: Context, sourceUri: Uri, width: Int, height: Int) : Bitmap? {
             val localContext = WeakReference(context)
-//            val bitmapOption = BitmapFactory.Options()
-//            bitmapOption.inJustDecodeBounds = false
-//            bitmapOption.inSampleSize = this.calculateInImageScale(bitmapOption, width, height)
-//
-//            val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, bitmapOption)
-//            localContext.clear()
-//
-//            return compressedBitmap
 
-            // 이미지 사이즈 디코딩
+            // init resize image scale
             var imageOption = BitmapFactory.Options()
             imageOption.inJustDecodeBounds = true
             BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption)
 
-            // 이미지가 클경우에는, 스케일 사이즈를 대략 적으로만 계산
+            // calc image size n scale
             var scale = 1
             if (imageOption.outWidth > width) {
                 scale = imageOption.outWidth / width
             }
-            // 샘플 사이즈로 디코딩
+
+            // resize img
             imageOption = BitmapFactory.Options()
             imageOption.inSampleSize = scale
 
+            // resize img
             val compressedBitmap = BitmapFactory.decodeStream(localContext.get()!!.contentResolver.openInputStream(sourceUri), null, imageOption)
             localContext.clear()
 
             return compressedBitmap
         }
 
+        /**
+         * Image Uri to convert File
+         *
+         * @param context android Context
+         * @param contentUri to convert File
+         */
         fun getFileFromImageURI(context: Context, contentUri: Uri): File {
             val localContext: WeakReference<Context> = WeakReference(context)
 
