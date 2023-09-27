@@ -418,7 +418,7 @@ public class TrackRecordManager {
     }
 
     /**
-     * get still not Upload CourseList
+     * get CourseList which not uploaded
      *
      * @param trackId Track Id where u search
      * @return ItemCourseUploadQueue LinkedList or EMPTY list

@@ -9,6 +9,9 @@ import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.define.PlaceMarkType;
 
+/**
+ * a Type of PlaceMark DataClass which show List
+ */
 public class ItemPlaceMark implements Comparator<ItemPlaceMark>, Comparable<ItemPlaceMark>, Serializable {
 //    private int placeMarkId = -1;           // this placemark's UNIQUE id
     private String trackName;               // this placemark's Parent Track Name
@@ -16,13 +19,13 @@ public class ItemPlaceMark implements Comparator<ItemPlaceMark>, Comparable<Item
     private String placeMarkType;           // this placemark type ( REST, ETC... )
     private String placeMarkDesc;           // this placemark desc ( selection information )
 
-    private LinkedList<ItemPlaceMarkImg> placeMarkImgItemList;
+    private LinkedList<ItemPlaceMarkImg> placeMarkImgItemList; // kind of placemark types Image List
 
-    private double lat = 0.0f;
-    private double lng = 0.0f;
+    private double lat = 0.0f; // not use
+    private double lng = 0.0f; // not use
 
-    private boolean isPlaceMarkEnable;      // it is not collectable placemark
-    private boolean isPlaceMarkStateChange;      // when this placemark state has changed???
+    private boolean isPlaceMarkEnable; // it is not collectable placemark
+    private boolean isPlaceMarkStateChange; // when this placemark state has changed???
 
 
     public ItemPlaceMark(String trackName, String placeMarkTitle, String placeMarkType, String placeMarkDesc, boolean isPlaceMarkEnable) {
@@ -142,13 +145,14 @@ public class ItemPlaceMark implements Comparator<ItemPlaceMark>, Comparable<Item
 
     /**
      * sort list by placemark type and title
+     *
      * @param o1 the first object to be compared.
      * @param o2 the second object to be compared.
      * @return compare result
      */
     @Override
     public int compare(ItemPlaceMark o1, ItemPlaceMark o2) {
-        // add placemark infomation label must be place roof
+        // add placemark infomation label must be placed roof
         if(o1.trackName.equals("label") && o1.placeMarkDesc.equals("label") && o1.placeMarkTitle.equals("label") && o1.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o1 is high
         else if(o2.trackName.equals("label") && o2.placeMarkDesc.equals("label") && o2.placeMarkTitle.equals("label") && o2.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
 
@@ -161,7 +165,7 @@ public class ItemPlaceMark implements Comparator<ItemPlaceMark>, Comparable<Item
 
     @Override
     public int compareTo(ItemPlaceMark o) {
-        // add placemark infomation label must be place roof
+        // add placemark infomation label must be placed roof
         if(o.trackName.equals("label") && o.placeMarkDesc.equals("label") && o.placeMarkTitle.equals("label") && o.placeMarkType.equals(PlaceMarkType.ETC.name())) return 1; // o is high
         else if(this.trackName.equals("label") && this.placeMarkDesc.equals("label") && this.placeMarkTitle.equals("label") && this.placeMarkType.equals(PlaceMarkType.ETC.name())) return -1; // o2 is high
 
@@ -186,7 +190,7 @@ public class ItemPlaceMark implements Comparator<ItemPlaceMark>, Comparable<Item
         return Objects.hash(trackName, placeMarkTitle, placeMarkType);
     }
 
-    @Override
+    @NonNull @Override
     public String toString() {
         return "ItemPlaceMarkData{" +
                 "trackName='" + trackName + '\'' +

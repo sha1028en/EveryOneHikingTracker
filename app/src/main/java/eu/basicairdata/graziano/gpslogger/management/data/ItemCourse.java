@@ -6,22 +6,28 @@ import java.util.Objects;
 
 import eu.basicairdata.graziano.gpslogger.management.define.CourseRoadType;
 
+/**
+ * A Course Record, which show list
+ *
+ * @see eu.basicairdata.graziano.gpslogger.recording.RecordEnhancedActivity
+ * @see eu.basicairdata.graziano.gpslogger.recording.adapter.CourseRecyclerAdapter
+ */
 public class ItemCourse implements Serializable {
-    private final String trackName;
-    private String courseName;
+    private final String trackName; // this course's track Name
+    private String courseName; // this course Name
 
     // to server query
-    private int courseId;
-    private int trackId;
+    private int courseId; // this course Id when it uploaded
+    private int trackId; // this course's track Id
 
-    private String courseFileUrl;
-    private ArrayList<Double> latList;
-    private ArrayList<Double> lngList;
+    private String courseFileUrl; // this course's *.gpx file url if it uploaded
+    private ArrayList<Double> latList; // this course lat List if it uploaded
+    private ArrayList<Double> lngList; // this course lng List if it uploaded
 
     // UI
-    private double courseDistance;
-    private String courseType;
-    private boolean isClicked;
+    private double courseDistance; // this course Distance if it uploaded
+    private String courseType; // this course Type if it Recorded
+    private boolean isClicked; // is this course Selected by User Input ( touch )
 
     public ItemCourse(final String trackName, String courseName, final int trackId, final int courseId, double distance, String courseType) {
         this.trackName = trackName;

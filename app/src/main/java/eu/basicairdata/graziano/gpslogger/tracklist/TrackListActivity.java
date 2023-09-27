@@ -94,7 +94,7 @@ public class TrackListActivity extends AppCompatActivity {
 
         this.recordManager = TrackRecordManager.createInstance(this);
         this.requestTrackManager = new RequestTrackManager();
-        this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
+        this.exporterManager = new ExporterManager(GPSApplication.getInstance());
         this.initViewListener();
     }
 

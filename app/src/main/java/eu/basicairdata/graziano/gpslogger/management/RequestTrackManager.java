@@ -53,6 +53,7 @@ public class RequestTrackManager {
     public void requestTrackList(@Nullable final String requestRegion, @NonNull final OnRequestResponse<LinkedList<ItemTrackData>> listener) {
         if(this.requestTrackListTask != null && this.requestTrackListTask.isTaskAlive()) this.requestTrackListTask.cancelTask();
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<LinkedList<ItemTrackData>> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            private boolean isSuccess = true;
             @Override
             public void preTask() {}
 
@@ -117,6 +118,7 @@ public class RequestTrackManager {
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
                     e.printStackTrace();
+                    this.isSuccess = false;
 
                 } finally {
                     if (connection != null) connection.disconnect();
@@ -126,7 +128,7 @@ public class RequestTrackManager {
 
             @Override
             public void endTask(LinkedList<ItemTrackData> value) {
-                listener.onRequestResponse(value, true);
+                listener.onRequestResponse(value, this.isSuccess);
             }
 
             @Override
@@ -142,6 +144,7 @@ public class RequestTrackManager {
 
     // REQUEST ADD COURSE
     // for Exporter.
+    // this Task Will Not Canceled by other component
     public void requestAddCourse(
             final int trackId,
             @NonNull final String courseName,
@@ -194,7 +197,6 @@ public class RequestTrackManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.isSuccess = false;
-                    return null;
                 }
                 return null;
             }

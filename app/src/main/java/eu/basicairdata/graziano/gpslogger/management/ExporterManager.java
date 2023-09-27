@@ -15,21 +15,28 @@ import eu.basicairdata.graziano.gpslogger.GPSApplication;
 
 public class ExporterManager {
     private GPSApplication gpsApp;
-    private WeakReference<Context> localContext;
 
-    public ExporterManager(@NonNull final GPSApplication gpsApplication, @NonNull final Context context) {
+    /**
+     * init
+     * @param gpsApplication Android Application
+     */
+    public ExporterManager(@NonNull final GPSApplication gpsApplication) {
         this.gpsApp = gpsApplication;
-        this.localContext = new WeakReference<>(context);
     }
 
+    /**
+     * release this
+     */
     public void release() {
         this.gpsApp = null;
-        if(this.localContext != null) {
-            this.localContext.clear();
-            this.localContext = null;
-        }
     }
 
+    /**
+     * convert File Path to Uri
+     *
+     * @param path to convert File Path
+     * @return Uri or NULL
+     */
     public Uri pathToUri(@NonNull final String path) {
         File dir;
         dir = new File(Environment.getExternalStoragePublicDirectory(DIRECTORY_DCIM).getAbsolutePath() + "/" + path);
@@ -55,15 +62,26 @@ public class ExporterManager {
         return file;
     }
 
+    /**
+     * @param path set path to export
+     */
     public void setExportDir(@NonNull final Uri path) {
         if(this.gpsApp != null) gpsApp.setPrefExportFolder(path.toString());
     }
 
+    /**
+     * @return is export path has?
+     */
     public boolean isExportDirHas() {
         if(this.gpsApp == null) return false;
         return gpsApp.isExportFolderWritable();
     }
 
+    /**
+     * export track to local course record
+     * @param trackName to export course's track Name
+     * @param courseName to export course Name
+     */
     public void export(@NonNull final String trackName, @NonNull final String courseName) {
         if(this.gpsApp != null) {
             this.gpsApp.toExportLoadJob(GPSApplication.JOB_TYPE_EXPORT, trackName, courseName);

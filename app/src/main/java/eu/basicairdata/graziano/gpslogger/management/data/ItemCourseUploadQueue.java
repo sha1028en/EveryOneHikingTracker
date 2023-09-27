@@ -1,5 +1,8 @@
 package eu.basicairdata.graziano.gpslogger.management.data;
 
+/**
+ * Data Class which Remember Is this Course Send to Server Successfully ???
+ */
 public class ItemCourseUploadQueue {
     private final int trackId; // UNIQUE track's id
     private final String trackName; // UNIQUE track's name

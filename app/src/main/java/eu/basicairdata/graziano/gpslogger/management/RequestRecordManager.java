@@ -45,7 +45,9 @@ public class RequestRecordManager {
     private BackGroundAsyncTask<ItemPlaceMarkImg> requestMoveImgPosTask;
     private BackGroundAsyncTask<ItemPlaceMarkImg> requestRemoveImgTask;
 
-
+    /**
+     * init
+     */
     public RequestRecordManager() {
         this.requestTrackRecordTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         this.requestCourseRemoveTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
@@ -55,6 +57,9 @@ public class RequestRecordManager {
         this.requestPlaceMarkTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
     }
 
+    /**
+     * release this and cancel Almost Task
+     */
     public void release() {
         if(this.requestTrackRecordTask != null) {
             this.requestTrackRecordTask.cancelTask();
@@ -423,8 +428,7 @@ public class RequestRecordManager {
         final BackGroundAsyncTask<Boolean> requestPlacemarkEnableChangeTask = new BackGroundAsyncTask<>(Dispatchers.getIO());
         final BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<Boolean> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
             @Override
-            public void preTask() {
-            }
+            public void preTask() {}
 
             @Override
             public Boolean doTask() {
@@ -542,7 +546,7 @@ public class RequestRecordManager {
 
 
     /**
-     * REQUEST TRACKS ALL RECORDS
+     * REQUEST TRACK's ALL RECORDS
      *
      * @param trackId to request Track Id
      * @param delayMillis to delay MilliSeconds
@@ -633,7 +637,7 @@ public class RequestRecordManager {
     }
 
     /**
-     * PLACEMARK TYPE TO KOREAN TEXT
+     * PLACEMARK TYPE convert to KOREAN text
      * @param type TO CONVERT Placemark Type
      *
      * @return Converted Korean Text
@@ -657,6 +661,7 @@ public class RequestRecordManager {
 
     /**
      * parse Placemark List from RAW Record
+     *
      * @param trackId track Id to Record DataClass
      * @param rawRecordJson Raw Record to parse placemark
      *
@@ -697,6 +702,7 @@ public class RequestRecordManager {
 
     /**
      * parse Placemark List from RAW Record
+     *
      * @param trackId track Id to Record DataClass
      * @param rawRecordJson Raw Record to parse Placemark
      *
@@ -787,7 +793,6 @@ public class RequestRecordManager {
                 } catch (IOException | NullPointerException e) {
                     e.printStackTrace();
                 }
-
                 courseList.add(course);
             }
 

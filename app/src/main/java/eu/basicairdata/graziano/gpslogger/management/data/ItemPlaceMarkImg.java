@@ -5,6 +5,11 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * a Single Image Data class
+ *
+ * @see ItemPlaceMark parent Data Class
+ */
 public class ItemPlaceMarkImg implements Serializable {
     private int TrackId; // this img's track Id ( parent )
     private final String placeMarkType; // this img's Type ( ETC, PARKING... )

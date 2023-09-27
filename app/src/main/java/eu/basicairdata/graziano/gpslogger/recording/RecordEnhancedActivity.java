@@ -160,7 +160,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
         }
         EventBus.getDefault().register(this);
         // init Task Help Manager
-        this.exporterManager = new ExporterManager(GPSApplication.getInstance(), this.bind.getRoot().getContext());
+        this.exporterManager = new ExporterManager(GPSApplication.getInstance());
         this.requestManager = new RequestRecordManager();
 
         // Request Perm to write GPX File
