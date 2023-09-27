@@ -552,6 +552,7 @@ public class RequestRecordManager {
         if(this.requestTrackRecordTask == null) return;
         if(this.requestTrackRecordTask.isTaskAlive()) this.requestTrackRecordTask.cancelTask();
         BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<ItemTrackRecord> responseReceiver = new BackGroundAsyncTask.Companion.BackGroundAsyncTaskListener<>() {
+            private boolean isSuccess = true;
             @Override
             public void preTask() {}
 
@@ -608,6 +609,7 @@ public class RequestRecordManager {
 
                 } catch (IOException | JSONException | IndexOutOfBoundsException e) {
                     e.printStackTrace();
+                    this.isSuccess = false;
 
                 } finally {
                     if (connection != null) connection.disconnect();
@@ -617,7 +619,7 @@ public class RequestRecordManager {
 
             @Override
             public void endTask(ItemTrackRecord value) {
-                listener.onRequestResponse(value, true);
+                listener.onRequestResponse(value, this.isSuccess);
             }
 
             @Override

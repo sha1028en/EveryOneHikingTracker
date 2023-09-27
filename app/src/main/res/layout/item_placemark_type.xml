@@ -30,7 +30,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="서설물 사진 등록"
+            android:text="시설물 사진 등록"
             android:textColor="@color/textColorSecondary"
             android:textStyle="bold"
             android:gravity="center"/>

@@ -24,6 +24,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import eu.basicairdata.graziano.gpslogger.EventBusMSG;
 import eu.basicairdata.graziano.gpslogger.GPSApplication;
@@ -39,6 +40,7 @@ import eu.basicairdata.graziano.gpslogger.recording.RecordEnhancedActivity;
 
 public class TrackListActivity extends AppCompatActivity {
     private ActivityTrackListBinding bind; // View n Layout Instance
+    private final AtomicBoolean isLeftCourseUpload = new AtomicBoolean(false);
 
     private TrackRecordManager recordManager; // Track, Course, Placemark control Manager
     private RequestTrackManager requestTrackManager; // request and response Track Data from Server
@@ -148,6 +150,11 @@ public class TrackListActivity extends AppCompatActivity {
 
                case 1 -> { // upload left Course
                    if(item.getUploadCourseList().isEmpty() || this.exporterManager == null) return;
+                   if(this.isLeftCourseUpload.get()) {
+                       Toast.makeText(this.bind.getRoot().getContext(), "코스를 업로드 하는중 입니다...", Toast.LENGTH_SHORT).show();
+                       return;
+                   }
+                   this.isLeftCourseUpload.set(true);
 
                    if(this.exporterManager.isExportDirHas()) { // if already has Perm? Export NOW!
                        for (ItemCourseUploadQueue toUploadCourse : item.getUploadCourseList()) {
@@ -188,11 +195,12 @@ public class TrackListActivity extends AppCompatActivity {
                        trackListAdapter.addItems(response);
                    });
 
-               } else {
-                   runOnUiThread(() -> {
-                       Toast.makeText(TrackListActivity.this, "서버와 연결이 실패했습니다. 다시 시도해 보세요.", Toast.LENGTH_SHORT).show();
-                   });
                }
+//               else {
+//                   runOnUiThread(() -> {
+//                       Toast.makeText(TrackListActivity.this, "서버와 연결이 실패했습니다. 다시 시도해 보세요.", Toast.LENGTH_SHORT).show();
+//                   });
+//               }
            }
        });
    }
@@ -227,10 +235,16 @@ public class TrackListActivity extends AppCompatActivity {
    public void onEvent(Short msg) {
         if (msg == EventBusMSG.TRACK_COURSE_SEND_SUCCESS) {
             Log.d("GPS_STATE", "TRACK_COURSE_SEND_SUCCESS");
+            this.isLeftCourseUpload.set(false);
             this.requestTrackList(this.selectedRegion);
 
         } else if (msg == EventBusMSG.TRACK_COURSE_SEND_EMPTY) {
             Log.d("GPS_STATE", "TRACK_COURSE_SEND_EMPTY");
+            this.isLeftCourseUpload.set(false);
+
+        } else if (msg == EventBusMSG.TRACK_COURSE_SEND_FAILED) {
+            Log.d("GPS_STATE", "TRACK_COURSE_SEND_FAILED");
+            this.isLeftCourseUpload.set(false);
         }
    }
 }

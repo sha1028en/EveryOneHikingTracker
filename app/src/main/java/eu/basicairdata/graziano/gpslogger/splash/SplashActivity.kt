@@ -99,6 +99,8 @@ class SplashActivity : AppCompatActivity() {
                         allGrantPerm = false
                     }
 
+                    // this PERM is not MUST GRANT perm
+                    // if it isnt GRANT PERM, didnt post Notification to show GPS_STATE
                     if(perms[Manifest.permission.POST_NOTIFICATIONS] == PackageManager.PERMISSION_GRANTED) {
                         Log.w("myApp", "[#] SplashActivity.java - POST_NOTI = PERMISSION_DENIED")
 

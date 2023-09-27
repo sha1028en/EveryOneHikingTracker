@@ -164,10 +164,10 @@ public class GPSService extends Service {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentText(composeContentText());
 
-        final Intent startIntent = new Intent(getApplicationContext(), GPSActivity.class);
-        startIntent.setAction(Intent.ACTION_MAIN);
-        startIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        startIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        final Intent startIntent = new Intent(); //getApplicationContext(), GPSActivity.class);
+//        startIntent.setAction(Intent.ACTION_MAIN);
+//        startIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+//        startIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 1, startIntent, PendingIntent.FLAG_IMMUTABLE);
         builder.setContentIntent(contentIntent);
         return builder.build();
