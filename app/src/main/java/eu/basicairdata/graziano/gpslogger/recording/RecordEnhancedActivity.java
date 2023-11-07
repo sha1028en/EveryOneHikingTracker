@@ -195,10 +195,13 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                 String fileName = ImageManager.Companion.parseNameFromUri(bind.getRoot().getContext(), tmpFile);
                 if (!fileName.isBlank()) {
                     try {
-                        LinkedList<Uri> imgList = ImageManager.Companion.loadImageUriList(bind.getRoot().getContext(), this.currentPoiType,  "Trekking/" + this.currentTrackName + "/" + this.currentPoiType + "/" + this.currentPoiType);
-                        final Uri imgFile = imgList.getLast();
-                        ImageManager.Companion.addLocationIntoImage(imgFile, recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
-                        this.requestManager.requestAddImg(currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), imgList.getLast()), fileName, new OnRequestResponse<>() {
+                        // 2023-11-07 dspark
+                        // 이 씹새끼가 범인이였다.
+//                        LinkedList<Uri> imgList = ImageManager.Companion.loadImageUriList(bind.getRoot().getContext(), this.currentPoiType,  "Trekking/" + this.currentTrackName + "/" + this.currentPoiType + "/" + this.currentPoiType);
+//                        final Uri imgFile = imgList.getLast();
+//                        Log.d("dspark", imgFile.toString());
+                        ImageManager.Companion.addLocationIntoImage(this.tmpFile, recordManager.getLastObserveLat(), recordManager.getLastObserveLng());
+                        this.requestManager.requestAddImg(currentTrackId, currentPoiType, ImageManager.Companion.getFileFromImageURI(this.bind.getRoot().getContext(), this.tmpFile), fileName, new OnRequestResponse<>() {
                             @Override
                             public void onRequestResponse(ItemPlaceMarkImg response, boolean isSuccess) {
                                 runOnUiThread(() -> {
@@ -213,7 +216,6 @@ public class RecordEnhancedActivity extends AppCompatActivity {
                                 });
                             }
                         });
-                        imgList.clear();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -311,7 +313,7 @@ public class RecordEnhancedActivity extends AppCompatActivity {
             }
             currentPoiType = placemarkItem.getPlaceMarkType();
 
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //            ImageManager.Companion.createEmptyDirectory("Trekking/" + currentTrackName + "/" + placemarkItem.getPlaceMarkType(), placemarkItem.getPlaceMarkTitle());
 
             tmpFile = ImageManager.Companion.createTmpFile(

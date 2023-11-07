@@ -56,6 +56,7 @@
         <activity
             android:name=".recording.RecordEnhancedActivity"
             android:screenOrientation="portrait"
+            android:configChanges="screenSize|orientation"
             android:launchMode="singleTask"
             android:exported="false"/>
 
@@ -69,16 +70,17 @@
             android:name=".splash.SplashActivity"
             android:screenOrientation="portrait"
             android:exported="true">
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".recording.RecordingActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+<!--        <activity-->
+<!--            android:name=".recording.RecordingActivity"-->
+<!--            android:exported="false"-->
+<!--            android:screenOrientation="portrait" />-->
 
         <activity
             android:name=".GPSActivity"
@@ -132,5 +134,4 @@
             </intent-filter>
         </service>
     </application>
-
 </manifest>
